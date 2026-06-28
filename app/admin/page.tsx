@@ -1,3 +1,4 @@
+
 export default function AdminPage() {
   return (
     <div className="min-h-screen bg-zinc-50 px-6 py-24 text-zinc-900 dark:bg-black dark:text-zinc-50">
@@ -12,7 +13,8 @@ export default function AdminPage() {
             退出登录：
             <a href="/login" className="font-semibold text-slate-900 underline dark:text-slate-100">
               返回登录页面并登出
-            </a>
+			</a>
+			<a href="/dashboard" className="ml-4">首页</a>
           </p>
         </div>
       </div>

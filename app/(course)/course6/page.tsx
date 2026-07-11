@@ -2,6 +2,10 @@ import { headers, cookies } from 'next/headers';
 
 import { getSecret } from '@/lib/secret';
 
+// RSC 不支持浏览器端交互（不能用 useState/useEffect，也不能绑事件），但可以渲染客户端组件并传递可序列化的 props。配合方式很简单：
+// RSC 做数据与模板拼装。
+// 客户端组件承接交互与副作用。
+
 export default async function PostsPage() {
     const res = await fetch('https://jsonplaceholder.typicode.com/posts', {
         // next: { revalidate: 120 },

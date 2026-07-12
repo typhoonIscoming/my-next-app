@@ -1,5 +1,15 @@
 import SearchBar from '@/components/SearchBar';
 import ChangeTheme from './components/changeTheme';
+import { FormDemo } from './components/FormDemo';
+import {
+    Card,
+    CardHeader,
+    CardTitle,
+    CardDescription,
+    CardContent,
+    CardFooter,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 export default async function Course8Page({
     searchParams,
@@ -20,6 +30,20 @@ export default async function Course8Page({
             <div className="mt-4">
                 <ChangeTheme />
             </div>
+            <Card className="w-full mt-10">
+                <CardHeader>
+                    <CardTitle>Create project</CardTitle>
+                    <CardDescription>
+                        Deploy your new project in one-click.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <FormDemo />
+                </CardContent>
+                <CardFooter className="justify-end">
+                    <Button>Deploy</Button>
+                </CardFooter>
+            </Card>
         </div>
     );
 }

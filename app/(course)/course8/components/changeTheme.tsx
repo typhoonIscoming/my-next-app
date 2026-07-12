@@ -2,6 +2,7 @@
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 export default function CssVariableDemo() {
     const { theme, setTheme } = useTheme();
@@ -14,14 +15,15 @@ export default function CssVariableDemo() {
         <div className="p-6 rounded-xl border border-border bg-background text-foreground shadow-sm transition-colors duration-300">
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Semantic Colors Demo</h3>
-                <button
+                <Button
+                    variant="destructive"
                     onClick={() =>
                         setTheme(theme === 'dark' ? 'light' : 'dark')
                     }
                     className="px-3 py-1 text-sm rounded-md bg-foreground text-background font-medium"
                 >
                     Toggle Theme
-                </button>
+                </Button>
             </div>
             <div
                 className={cn(

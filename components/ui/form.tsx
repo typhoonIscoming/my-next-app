@@ -57,11 +57,13 @@ type FormProps<TFieldValues extends FieldValues> = Omit<
 > & {
     form: UseFormReturn<TFieldValues>;
     onSubmit: (data: TFieldValues) => void | Promise<void>;
+    onError?: (errors: unknown) => void;
 };
 
 function Form<TFieldValues extends FieldValues>({
     form,
     onSubmit,
+    onError,
     className,
     children,
     ...props
@@ -71,7 +73,7 @@ function Form<TFieldValues extends FieldValues>({
             <form
                 data-slot="form"
                 className={cn('flex w-full flex-col gap-4', className)}
-                onSubmit={form.handleSubmit(onSubmit)}
+                onSubmit={form?.handleSubmit(onSubmit, onError)}
                 {...props}
             >
                 {children}

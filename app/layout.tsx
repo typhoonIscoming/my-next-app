@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import { ThemeProvider } from 'next-themes';
 import './globals.css';
-import { Geist } from "next/font/google";
-import { cn } from "@/lib/utils";
+import { Geist } from 'next/font/google';
+import { cn } from '@/lib/utils';
+import { Toaster } from '@/components/ui/sonner';
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
     title: 'Cinematic Space-Travel Landing Page',
@@ -18,7 +19,11 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en" className={cn("h-full antialiased", "font-sans", geist.variable)} suppressHydrationWarning>
+        <html
+            lang="en"
+            className={cn('h-full antialiased', 'font-sans', geist.variable)}
+            suppressHydrationWarning
+        >
             <head>
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link
@@ -39,6 +44,7 @@ export default function RootLayout({
                 >
                     {children}
                 </ThemeProvider>
+                <Toaster />
             </body>
         </html>
     );

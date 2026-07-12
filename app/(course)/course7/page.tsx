@@ -4,7 +4,8 @@ import ChartLazy from './components/ChartLazy';
 import ServerComment from './components/serverComment';
 import ClientComment from './components/clientComment';
 
-export default function Course7Page() {
+export default function Course7Page(params: any) {
+    console.log('Course 7 params:', params);
     return (
         <main className="p-4">
             <h1 className="text-2xl font-bold mb-4">课程 7</h1>

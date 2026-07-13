@@ -10,4 +10,5 @@ const nextConfig: NextConfig = {
     cacheComponents: true,
 };
 
-export default withNextIntl(nextConfig);
+// export default withNextIntl(nextConfig);
+export default nextConfig;

@@ -1,47 +1,54 @@
 import { NextRequest, NextResponse } from 'next/server';
+import createMiddleware from 'next-intl/middleware';
+import { routing } from './i18n/routing';
 
-const protectedRoutes = [
-    { path: '/admin', role: 'admin' },
-    { path: '/dashboard', role: 'user' },
-];
+export const config = {
+    matcher: ['/((?!api|_next|.*\\..*).*)'],
+};
+export default createMiddleware(routing);
 
-const PUBLIC_FILE = /\.(.*)$/;
+// const protectedRoutes = [
+//     { path: '/admin', role: 'admin' },
+//     { path: '/dashboard', role: 'user' },
+// ];
 
-export function middleware(request: NextRequest) {
-    const { pathname } = request.nextUrl;
+// const PUBLIC_FILE = /\.(.*)$/;
 
-    if (
-        pathname.startsWith('/_next') ||
-        pathname.startsWith('/api') ||
-        PUBLIC_FILE.test(pathname)
-    ) {
-        return NextResponse.next();
-    }
+// export function middleware(request: NextRequest) {
+//     const { pathname } = request.nextUrl;
 
-    const auth = request.cookies.get('auth')?.value;
-    const role = request.cookies.get('role')?.value;
+//     if (
+//         pathname.startsWith('/_next') ||
+//         pathname.startsWith('/api') ||
+//         PUBLIC_FILE.test(pathname)
+//     ) {
+//         return NextResponse.next();
+//     }
 
-    const protectedRoute = protectedRoutes.find(
-        (route) =>
-            pathname === route.path || pathname.startsWith(`${route.path}/`)
-    );
+//     const auth = request.cookies.get('auth')?.value;
+//     const role = request.cookies.get('role')?.value;
 
-    if (!protectedRoute) {
-        return NextResponse.next();
-    }
+//     const protectedRoute = protectedRoutes.find(
+//         (route) =>
+//             pathname === route.path || pathname.startsWith(`${route.path}/`)
+//     );
 
-    if (auth !== 'true') {
-        const loginUrl = new URL('/login', request.url);
-        loginUrl.searchParams.set('from', pathname);
-        return NextResponse.redirect(loginUrl);
-    }
+//     if (!protectedRoute) {
+//         return NextResponse.next();
+//     }
 
-    if (protectedRoute.role === 'admin' && role !== 'admin') {
-        const loginUrl = new URL('/login', request.url);
-        loginUrl.searchParams.set('from', pathname);
-        loginUrl.searchParams.set('error', 'permission');
-        return NextResponse.redirect(loginUrl);
-    }
+//     if (auth !== 'true') {
+//         const loginUrl = new URL('/login', request.url);
+//         loginUrl.searchParams.set('from', pathname);
+//         return NextResponse.redirect(loginUrl);
+//     }
 
-    return NextResponse.next();
-}
+//     if (protectedRoute.role === 'admin' && role !== 'admin') {
+//         const loginUrl = new URL('/login', request.url);
+//         loginUrl.searchParams.set('from', pathname);
+//         loginUrl.searchParams.set('error', 'permission');
+//         return NextResponse.redirect(loginUrl);
+//     }
+
+//     return NextResponse.next();
+// }

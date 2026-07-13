@@ -5,6 +5,9 @@ import { Geist } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/sonner';
 
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages } from 'next-intl/server';
+
 const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
@@ -13,14 +16,18 @@ export const metadata: Metadata = {
         'A cinematic space travel landing page with liquid glass and motion.',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
     children,
+    params,
 }: Readonly<{
     children: React.ReactNode;
+    params: { locale: string };
 }>) {
+    const { locale } = params;
+    const messages = await getMessages();
     return (
         <html
-            lang="en"
+            lang={locale}
             className={cn('h-full antialiased', 'font-sans', geist.variable)}
             suppressHydrationWarning
         >
@@ -42,7 +49,9 @@ export default function RootLayout({
                     defaultTheme="system"
                     enableSystem
                 >
-                    {children}
+                    <NextIntlClientProvider messages={messages}>
+                        {children}
+                    </NextIntlClientProvider>
                 </ThemeProvider>
                 <Toaster />
             </body>

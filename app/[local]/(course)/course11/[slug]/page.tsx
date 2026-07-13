@@ -1,5 +1,4 @@
 // 📄 文件路径：app/docs/[slug]/page.tsx
-
 type Props = {
     params: Promise<{ slug: string }>;
 };

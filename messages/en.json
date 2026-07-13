@@ -1,0 +1,15 @@
+{
+    "HomePage": {
+        "title": "Welcome to my Blog",
+        "subtitle": "Sharing tech, recording life"
+    },
+    "Navigation": {
+        "home": "Home",
+        "about": "About"
+    },
+    "LanguageSwitcher": {
+        "label": "Language",
+        "zh": "中文",
+        "en": "English"
+    }
+}

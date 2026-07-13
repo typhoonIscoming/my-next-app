@@ -1,0 +1,15 @@
+{
+    "HomePage": {
+        "title": "欢迎来到我的博客",
+        "subtitle": "分享技术，记录生活"
+    },
+    "Navigation": {
+        "home": "首页",
+        "about": "关于"
+    },
+    "LanguageSwitcher": {
+        "label": "语言",
+        "zh": "中文",
+        "en": "English"
+    }
+}

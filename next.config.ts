@@ -1,4 +1,7 @@
 import type { NextConfig } from 'next';
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin();
 
 // Next.js 16 引入了 use cache，允许我们对耗时的组件或函数进行独立的缓存，即使它们被用在动态页面中。
 const nextConfig: NextConfig = {
@@ -7,4 +10,4 @@ const nextConfig: NextConfig = {
     cacheComponents: true,
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

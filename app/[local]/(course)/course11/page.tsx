@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import LayoutComp from './components/layoutComp';
 
@@ -9,10 +10,25 @@ export async function generateStaticParams() {
     return [{ local: 'zh' }];
 }
 
-export default async function DocPage({ params }: Props) {
+export default function DocPage({ params }: Props) {
+    return (
+        <Suspense
+            fallback={
+                <div className="p-6 text-sm text-muted-foreground">
+                    正在加载文档...
+                </div>
+            }
+        >
+            <DocContent params={params} />
+        </Suspense>
+    );
+}
+
+async function DocContent({ params }: Props) {
     const { local } = await params;
     setRequestLocale(local);
     const t = await getTranslations({ locale: local, namespace: 'HomePage' });
+
     return (
         <div className="prose mx-auto mt-10 p-6 border rounded-lg shadow-sm">
             <div className="mb-4 text-blue-600 font-bold uppercase tracking-wider">

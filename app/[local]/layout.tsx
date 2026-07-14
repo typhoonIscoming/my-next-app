@@ -21,13 +21,13 @@ export default async function RootLayout({
     params,
 }: Readonly<{
     children: React.ReactNode;
-    params: { locale: string };
+    params: Promise<{ local: string }>;
 }>) {
-    const { locale } = params;
-    const messages = await getMessages();
+    const { local } = await params;
+    const messages = await getMessages({ locale: local });
     return (
         <html
-            lang={locale}
+            lang={local}
             className={cn('h-full antialiased', 'font-sans', geist.variable)}
             suppressHydrationWarning
         >

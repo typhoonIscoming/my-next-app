@@ -3,7 +3,7 @@ import ClientTime from '@/components/clientTime';
 import GlobalStats from './components/GlobalStats';
 
 type Props = {
-    params: Promise<{ sku: string }>;
+    params: Promise<{ sku: string; local: string }>;
 };
 
 export async function generateStaticParams() {
@@ -12,6 +12,7 @@ export async function generateStaticParams() {
     ).then((res) => res.json());
     return newsItems.slice(0, 10).map((item: any) => ({
         sku: item.id.toString(),
+        local: 'zh', // 或者根据需要设置其他默认语言
     }));
 }
 
@@ -29,7 +30,7 @@ async function getProduct(sku: string) {
 
 export default async function ProductPage({ params }: Props) {
     const { sku } = await params;
-    // const product = await getProduct(sku);
+    const product = await getProduct(sku);
 
     return (
         <div className="p-6 border rounded-lg shadow-lg bg-white mx-auto mt-10">

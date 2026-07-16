@@ -28,7 +28,21 @@ async function getProduct(sku: string) {
     return res.json();
 }
 
-export default async function ProductPage({ params }: Props) {
+export default function ProductPage({ params }: Props) {
+    return (
+        <Suspense
+            fallback={
+                <div className="p-6 border rounded-lg shadow-lg bg-white mx-auto mt-10 text-gray-400">
+                    Loading product...
+                </div>
+            }
+        >
+            <ProductContent params={params} />
+        </Suspense>
+    );
+}
+
+async function ProductContent({ params }: Props) {
     const { sku } = await params;
     const product = await getProduct(sku);
 

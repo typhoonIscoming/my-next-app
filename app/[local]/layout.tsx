@@ -7,11 +7,12 @@ import { Toaster } from '@/components/ui/sonner'
 
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 // const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
-	title: 'Cinematic Space-Travel Landing Page',
+	title: "Typhoon's Space",
 	description:
 		'A cinematic space travel landing page with liquid glass and motion.',
 }
@@ -44,6 +45,7 @@ export default async function RootLayout({
 				/>
 			</head>
 			<body className="min-h-full">
+				<SpeedInsights />
 				<ThemeProvider
 					attribute="class"
 					defaultTheme="system"

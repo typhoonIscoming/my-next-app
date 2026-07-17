@@ -12,8 +12,9 @@ export async function generateStaticParams() {
 	return [{ local: 'zh' }]
 }
 
-export default function Course7Page({ params }: Props) {
-	console.log('Course 7 params:', params)
+export default async function Course7Page({ params }: Props) {
+	const { local } = await params
+	console.log('Course 7 params:', local)
 	return (
 		<main className="p-4">
 			<h1 className="text-2xl font-bold mb-4">课程 7</h1>

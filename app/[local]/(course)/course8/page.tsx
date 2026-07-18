@@ -1,3 +1,4 @@
+'use cache'
 import SearchBar from '@/components/SearchBar'
 import ChangeTheme from './components/changeTheme'
 import { FormDemo } from './components/FormDemo'

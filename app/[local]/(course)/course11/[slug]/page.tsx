@@ -1,3 +1,4 @@
+import { cacheLife } from 'next/cache'
 type ListItem = {
 	slug: string
 }
@@ -6,11 +7,19 @@ type Props = {
 }
 
 async function getDoc(slug: string) {
+	'use cache'
+
+	cacheLife('minutes')
 	const res = await fetch(
 		`https://jsonplaceholder.typicode.com/posts/${slug}`
 	)
 	if (!res.ok) throw new Error('Doc not found')
-	return res.json()
+	const doc = await res.json()
+	console.log('doc', doc)
+	return {
+		...doc,
+		generatedAt: new Date().toLocaleTimeString(),
+	}
 }
 
 // 告诉 Next.js 在构建时预生成哪些 slug
@@ -27,7 +36,7 @@ export async function generateStaticParams() {
 	// }).then((res) => res.json())
 
 	// 必须返回一个对象数组，每个对象包含参数 (slug)
-	return [{ local: 'zh' }, { slug: '1' }]
+	return [{ local: 'zh', slug: '1' }]
 }
 
 export default async function DocPage({ params }: Props) {
@@ -42,7 +51,7 @@ export default async function DocPage({ params }: Props) {
 			<h1 className="capitalize">{doc.title}</h1>
 			<p>{doc.body}</p>
 			<div className="text-xs text-gray-400 mt-8">
-				Static Generated at: {new Date().toLocaleTimeString()}
+				Static Generated at: {doc.generatedAt}
 			</div>
 		</div>
 	)

@@ -1,16 +1,21 @@
+// 直接在文件顶部导入配置(加载本地环境变量，这种方式更简洁)
+import 'dotenv/config'
 import { ethers } from 'ethers'
+// import dotenv from 'dotenv'
+// dotenv.config()
 
 // Sepolia 测试网（当前最常用）
 // const SEPOLIA_RPC = "https://sepolia.infura.io/v3/YOUR_INFURA_KEY";
 // 或使用公共端点
-const SEPOLIA_RPC = 'https://eth-mainnet.g.alchemy.com/v2/0sfrJt9MvN2j7sEKuhdr7'
+const SEPOLIA_RPC = process.env.ALCHEMY_NETWORK_ADDERSS
 
 const provider = new ethers.JsonRpcProvider(SEPOLIA_RPC)
 
 // 使用测试网钱包（需要有 Sepolia ETH）
-const privateKey =
-	'0x70b8af99da4bbcbf13e779d2cab863102425517ba7fcd165698b1e98466af7ba'
+const privateKey = process.env.PRIVATE_KEY
 const wallet = new ethers.Wallet(privateKey, provider)
+
+console.log(process.env.ALCHEMY_NETWORK_ADDERSS)
 
 const main = async () => {
 	const network = await provider.getNetwork()

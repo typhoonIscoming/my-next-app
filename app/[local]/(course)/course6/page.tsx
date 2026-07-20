@@ -22,11 +22,7 @@ export default async function PostsPage({ params }: Props) {
 	const posts = await res.json()
 
 	const secretValue = await getSecret()
-	console.log(
-		'PostsPage 渲染了，当前时间：',
-		new Date().toLocaleTimeString(),
-		secretValue
-	)
+	console.log('PostsPage 渲染了，当前时间：', secretValue)
 
 	return (
 		<main className="p-8">

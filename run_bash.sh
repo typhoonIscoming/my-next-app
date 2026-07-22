@@ -98,7 +98,8 @@ run_daily_task() {
     echo "[$CURRENT_TIME] $WEEKDAY - 每日自动打卡 ✓" >> "$TARGET_FILE"
     
     # Git 提交
-    git add "$TARGET_FILE"
+    # git add "$TARGET_FILE"
+    git add .
     COMMIT_MSG="每日记录更新: $CURRENT_TIME"
     
     if git commit -m "$COMMIT_MSG"; then

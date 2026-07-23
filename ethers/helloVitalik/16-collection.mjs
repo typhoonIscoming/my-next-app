@@ -15,7 +15,7 @@ const abiWETH = [
 	'function transfer(address, uint) public returns (bool)',
 ]
 // WETH合约地址（sepolia测试网）
-const addressWETH = '0x7b79995e5f793a07bc00c21412e50ecae098e7f9'
+const addressWETH = process.env.SOPOLIA_ADDRESS_WETH
 // 声明WETH合约
 const contractWETH = new ethers.Contract(addressWETH, abiWETH, wallet)
 

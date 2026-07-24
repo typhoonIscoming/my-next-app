@@ -97,7 +97,7 @@ export function useTokenTransferEvents({
 	tokenAddress: Address;
 	onTransfer?: (from: Address, to: Address, value: bigint) => void;
 }) {
-	const res = useWatchContractEvent({
+	useWatchContractEvent({
 		address: tokenAddress,
 		abi: erc20Abi,
 		eventName: 'Transfer',
@@ -110,8 +110,4 @@ export function useTokenTransferEvents({
 			});
 		},
 	});
-
-	return {
-		res,
-	};
 }

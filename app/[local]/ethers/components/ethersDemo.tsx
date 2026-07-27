@@ -34,6 +34,8 @@ export default function App() {
 
 	const [tokenAddress, setTokenAddress] = useState(
 		'0x4307f08b5857363d8c8e7d21d97ddc769f65990a'
+		// '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+		// process.env.SOPOLIA_ADDRESS_WETH as string
 	);
 
 	// 初始化合约（只读）

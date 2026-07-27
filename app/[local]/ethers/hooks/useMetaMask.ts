@@ -49,7 +49,7 @@ export function useMetaMask() {
 
 			const address = accounts[0];
 			const balance = await fetchBalance(address, provider);
-
+			console.log('refreshBalance', address, balance);
 			setState({
 				isConnected: true,
 				address,
@@ -83,6 +83,12 @@ export function useMetaMask() {
 			provider: undefined,
 			signer: undefined,
 		});
+		state.provider?.destroy();
+		// 移除监听器（防止内存泄漏）
+		if (window.ethereum) {
+			window.ethereum.removeAllListeners?.('accountsChanged');
+			window.ethereum.removeAllListeners?.('chainChanged');
+		}
 		setError(null);
 	}, []);
 

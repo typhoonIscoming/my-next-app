@@ -1,5 +1,5 @@
 import LinkEthers from './components/linkEthers';
-import { getTranslations } from 'next-intl/server';
+import EthersDemo from './components/ethersDemo';
 
 type Props = {
 	params: Promise<{ local: string }>;
@@ -17,6 +17,7 @@ export default async function EthersPage({ params }: Props) {
 				本页展示ether.js用法
 			</div>
 			<LinkEthers local={local} />
+			<EthersDemo />
 		</div>
 	);
 }

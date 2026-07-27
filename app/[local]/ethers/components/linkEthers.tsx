@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { ethers } from 'ethers';
 import { Button } from '@/components/ui/button';
-import { useMetaMask } from '../hooks/useEthers';
+import { useMetaMask } from '../hooks/useMetaMask';
 import { useTranslations } from 'next-intl';
 
 import { auth, verify } from './mock';

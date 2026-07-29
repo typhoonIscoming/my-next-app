@@ -55,7 +55,7 @@ export function useSendEth() {
 		hash,
 		isLoading,
 		error,
-		isSuccess: !!hash,
+		isSuccess: !!hash, // 成功或失败都有hash，不能通过这些判断
 	};
 }
 

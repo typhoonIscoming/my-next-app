@@ -1,4 +1,4 @@
-import ViewDemo from './components/viewDemo';
+import TokenTransfer from './components/tokenTransfer';
 type Props = {
 	params: Promise<{ local: string }>;
 };
@@ -11,10 +11,8 @@ export default async function ViewPage({ params }: Props) {
 
 	return (
 		<div className="p-4">
-			<div className="p-4 border shadow rounded-2xl">
-				本页展示view用法
-			</div>
-			<ViewDemo />
+			<div className="p-4">本页展示view用法</div>
+			<TokenTransfer />
 		</div>
 	);
 }

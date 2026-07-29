@@ -15,6 +15,8 @@
 	"dependencies": {
 		"@hookform/resolvers": "^5.4.0",
 		"@rainbow-me/rainbowkit": "^2.2.11",
+		"@tanstack/query-core": "^5.101.4",
+		"@tanstack/react-query": "^5.101.4",
 		"@vercel/speed-insights": "^2.0.0",
 		"ahooks": "^3.9.7",
 		"chart.js": "^4.5.1",

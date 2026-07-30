@@ -64,27 +64,27 @@ export const useTransfer = () => {
 					} as any); // 临时绕过类型检查
 				} else {
 					// 原生 ETH 转账
-					hash = await walletClient.sendTransaction({
-						to: options.to,
-						value: parseEther(options.amount),
-						account: address,
-					});
+					// hash = await walletClient.sendTransaction({
+					// 	to: options.to,
+					// 	value: parseEther(options.amount),
+					// 	account: address,
+					// });
 				}
 
 				// 等待交易确认
-				const receipt = await publicClient.waitForTransactionReceipt({
-					hash,
-					confirmations: 1,
-				});
+				// const receipt = await publicClient.waitForTransactionReceipt({
+				// 	hash,
+				// 	confirmations: 1,
+				// });
 
-				setState((prev) => ({
-					...prev,
-					isPending: false,
-					isSuccess: receipt.status === 'success',
-					hash,
-				}));
+				// setState((prev) => ({
+				// 	...prev,
+				// 	isPending: false,
+				// 	isSuccess: receipt.status === 'success',
+				// 	hash,
+				// }));
 
-				return receipt;
+				// return receipt;
 			} catch (error) {
 				const err = error as Error;
 				setState((prev) => ({

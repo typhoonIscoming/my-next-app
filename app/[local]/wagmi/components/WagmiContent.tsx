@@ -5,6 +5,8 @@ import Skeleton from './Skeleton';
 import WagmiBaseInfo from './WagmiBaseInfo';
 // 自定义链接钱包按钮
 import CustomConnectButton from './CustomConnectButton';
+import WagmiContractBaseInfo from './WagmiContractBaseInfo';
+import WagmiTransfer from './WagmiTransfer';
 
 export default () => {
 	// 🔥 关键：使用 useIsMounted 防止水合错误
@@ -19,8 +21,10 @@ export default () => {
 				{/* <ConnectButton showBalance={false} /> */}
 				<CustomConnectButton />
 			</div>
-			<div className="pl-4 pr-4 min-h-[110vh]">
+			<div className="pl-4 pr-4 space-y-3 min-h-[110vh]">
 				<WagmiBaseInfo />
+				<WagmiContractBaseInfo />
+				<WagmiTransfer />
 			</div>
 		</div>
 	);

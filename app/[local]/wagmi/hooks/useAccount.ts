@@ -6,6 +6,7 @@ import { config } from './config';
 export default function useEthBalance(address?: Address) {
 	const { address: connectedAddress } = useAccount();
 	const targetAddress = address || connectedAddress;
+	// console.log('config', config);
 	const chainId = useChainId({
 		config,
 	});

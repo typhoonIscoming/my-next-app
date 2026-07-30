@@ -14,6 +14,7 @@ export default function WagmiListenContract() {
 	// console.log('currentBlock', currentBlock);
 	const fetchRecentEvents = async () => {
 		try {
+			if (!publicClient) return;
 			const currentBlock = await publicClient.getBlockNumber();
 			console.log('currentBlockcurrentBlock', currentBlock);
 			const logsRes = await getContractEvents(publicClient as PublicClient, {

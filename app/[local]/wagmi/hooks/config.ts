@@ -3,6 +3,7 @@ import { mainnet, sepolia, polygon, optimism, arbitrum, base } from 'wagmi/chain
 import { createConfig, http } from 'wagmi';
 import { metaMask, walletConnect, injected, safe } from 'wagmi/connectors';
 import { rainbowWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
+import { sepoliaNetUrl } from '@/lib/utils';
 
 // const initConfig = getDefaultConfig({
 // 	appName: 'my-next-dapp',

@@ -7,6 +7,7 @@ import WagmiBaseInfo from './WagmiBaseInfo';
 import CustomConnectButton from './CustomConnectButton';
 import WagmiContractBaseInfo from './WagmiContractBaseInfo';
 import WagmiTransfer from './WagmiTransfer';
+import WagmiListenContract from './WagmiListenContract';
 
 export default () => {
 	// 🔥 关键：使用 useIsMounted 防止水合错误
@@ -25,6 +26,7 @@ export default () => {
 				<WagmiBaseInfo />
 				<WagmiContractBaseInfo />
 				<WagmiTransfer />
+				<WagmiListenContract />
 			</div>
 		</div>
 	);

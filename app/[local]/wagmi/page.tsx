@@ -5,7 +5,7 @@ import WagmiContent from './components/WagmiContent';
 
 export default function ViewPage() {
 	return (
-		<div className="p-4">
+		<div className="p-4 min-h-full">
 			<WagmiProvider>
 				<WagmiContent />
 			</WagmiProvider>

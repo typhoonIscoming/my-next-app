@@ -1,14 +1,17 @@
-import { useAccount, useBalance } from 'wagmi';
+import { useAccount, useBalance, useChainId } from 'wagmi';
 import { type Address } from 'viem';
-import { mainnet } from 'viem/chains';
+import { mainnet, sepolia } from 'viem/chains';
+import { config } from './config';
 
 export default function useEthBalance(address?: Address) {
 	const { address: connectedAddress } = useAccount();
 	const targetAddress = address || connectedAddress;
-
+	const chainId = useChainId({
+		config,
+	});
 	const { data, isLoading, error, refetch } = useBalance({
 		address: targetAddress,
-		chainId: mainnet.id,
+		chainId: chainId,
 	});
 
 	return {

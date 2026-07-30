@@ -34,7 +34,7 @@ export default async function RootLayout({
 	setRequestLocale(local);
 	const messages = await getMessages({ locale: local });
 	return (
-		<html lang={local} className={cn('h-full antialiased', 'font-sans')} suppressHydrationWarning>
+		<html lang={local} className={cn('antialiased', 'font-sans')} suppressHydrationWarning>
 			<head>
 				<link rel="preconnect" href="https://fonts.googleapis.com" />
 				<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

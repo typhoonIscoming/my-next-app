@@ -27,7 +27,7 @@ export default function WagmiContractBaseInfo() {
 				<ErrorInfo text={new Error(failureReason?.shortMessage).message} />
 			) : (
 				<div>
-					<div>总供给量：{formatUnits(data as bigint, 18)} ETH</div>
+					<div>总供给量：{data ? formatUnits(data as bigint, 18) : '0'} ETH</div>
 					<div>余额：{balance ? formatUnits(balance as bigint, 18) : '0'} ETH</div>
 					<div>名称：{name}</div>
 					<div>代币符号：{symbol}</div>

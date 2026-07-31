@@ -19,7 +19,7 @@ export default () => {
 	return (
 		<div className="wagmi-content">
 			<div className="p-4 flex justify-end sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-				{/* <ConnectButton showBalance={false} /> */}
+				{/* <ConnectButton showBalance={true} /> */}
 				<CustomConnectButton />
 			</div>
 			<div className="pl-4 pr-4 space-y-3 min-h-[110vh]">

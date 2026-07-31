@@ -60,7 +60,7 @@ export function useEventFetcher() {
 					address: sepoliaContractAddress,
 					abi: erc20Abi,
 					eventName: 'Transfer',
-					fromBlock: currentBlock - 9999n,
+					fromBlock: currentBlock - 999n,
 					toBlock: 'latest',
 				});
 

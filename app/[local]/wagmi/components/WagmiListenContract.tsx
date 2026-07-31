@@ -6,13 +6,14 @@ import { getContractEvents } from 'viem/actions';
 import { sepoliaContractAddress } from '@/lib/utils';
 import { config } from '../hooks/config';
 import { useEventFetcher } from '../hooks/useContractEvents';
+import { Spinner } from '@/components/ui/spinner';
 
 export default function WagmiListenContract() {
 	const [logs, setLogs] = useState<any>([]);
 
 	const publicClient = usePublicClient();
 	const currentBlock = useBlockNumber();
-	console.log('currentBlock', currentBlock);
+	// console.log('currentBlock', currentBlock);
 	const fetchRecentEvents = async () => {
 		try {
 			if (!publicClient) return;
@@ -65,17 +66,23 @@ export default function WagmiListenContract() {
 	return (
 		<div className="border rounded-2xl p-4 space-y-3">
 			<div>监听部署在测试网的合约事件</div>
-			<div style={{ maxHeight: '300px', overflow: 'auto' }}>
-				{events.map((event: any, index: number) => {
-					const { from, to, value } = event.args;
-					const trans = formatUnits(value, decimals);
-					return (
-						<pre key={index}>
-							from:{from} {`>`} to: {to} 转账 {trans}
-						</pre>
-					);
-				})}
-			</div>
+			{loading ? (
+				<div>
+					<Spinner /> <span>正在获取合约事件</span>
+				</div>
+			) : (
+				<div style={{ maxHeight: '300px', overflow: 'auto' }}>
+					{events.map((event: any, index: number) => {
+						const { from, to, value } = event.args;
+						const trans = formatUnits(value, decimals);
+						return (
+							<pre key={index}>
+								from:{from} {`>`} to: {to} 转账 {trans}
+							</pre>
+						);
+					})}
+				</div>
+			)}
 		</div>
 	);
 }

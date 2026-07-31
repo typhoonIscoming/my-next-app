@@ -1,3 +1,4 @@
+import { formatUnits } from 'viem';
 import { Spinner } from '@/components/ui/spinner';
 import useAccount from '../hooks/useAccount';
 import { useBalanceOf } from '../hooks/useBalanceOf';
@@ -10,14 +11,17 @@ export default function WagmiInfo() {
 		<div className="wagmi-info border rounded-2xl p-4 space-y-3">
 			<div>钱包信息</div>
 			<div>钱包地址：{targetAddress}</div>
-			<div className="flex">钱包余额：{isLoading ? <Spinner /> : `${balance} ${symbol}`}</div>
+			<div className="flex">
+				钱包余额：
+				{isLoading ? <Spinner /> : `${formatUnits(balance as bigint, 18)} ${symbol}`}
+			</div>
 			<div>decimals: {decimals}</div>
 			<div>rawBalance: {rawBalance}</div>
 			{isSuccess ? (
 				<div>
 					<div>使用useBalance获取到钱包的数据</div>
 					<div>
-						钱包余额：{data.formatted} {data.symbol}
+						钱包余额：{formatUnits(data.value, 18)} {data.symbol}
 					</div>
 					<div>decimals: {data.decimals}</div>
 					<div>value: {data.value}</div>

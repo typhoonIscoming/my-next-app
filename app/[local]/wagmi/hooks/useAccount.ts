@@ -16,7 +16,7 @@ export default function useEthBalance(address?: Address) {
 	});
 
 	return {
-		balance: data?.formatted ?? '0',
+		balance: data?.value ?? '0',
 		symbol: data?.symbol ?? 'ETH',
 		decimals: data?.decimals ?? 18,
 		rawBalance: data?.value,

@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { ChangeEvent, FormEvent, KeyboardEvent, FocusEvent } from 'react';
-import { useSendTransaction, useWaitForTransactionReceipt, useAccount } from 'wagmi';
+import { useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
 import { useWriteContract } from 'wagmi';
 import { parseEther, erc20Abi, parseUnits } from 'viem';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,6 @@ import { sepoliaContractAddress } from '@/lib/utils';
 
 export default function WagmiTransfer() {
 	const [transferAddress, setAddress] = useState<`0x${string}` | ''>('');
-	const { address } = useAccount();
 	const { sendTransaction, data } = useSendTransaction();
 	const {
 		status,

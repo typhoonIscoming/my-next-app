@@ -22,10 +22,10 @@ export default function WagmiListenContract() {
 				abi: erc20Abi,
 				eventName: 'Transfer',
 				fromBlock: ((BigInt(currentBlock) as any) - BigInt(1000)) as any, // 或指定起始区块
-				toBlock: 'latest',
-				// toBlock: currentBlock.data as any,
-				retries: 3,
-				delay: 1000,
+				// toBlock: 'latest',
+				toBlock: currentBlock as any,
+				// retries: 3,
+				// delay: 1000,
 			});
 
 			// 获取最近 100 条，并反转顺序（最新在前）

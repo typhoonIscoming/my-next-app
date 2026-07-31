@@ -3,6 +3,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
 import type { WalletState } from './type';
 
+declare global {
+	interface Window {
+		ethereum?: any;
+	}
+}
+
 export function useMetaMask() {
 	const [state, setState] = useState<WalletState>({
 		isConnected: false,
@@ -17,22 +23,19 @@ export function useMetaMask() {
 	const [error, setError] = useState<Error | null>(null);
 
 	// 获取余额
-	const fetchBalance = useCallback(
-		async (address: string, provider: ethers.BrowserProvider) => {
-			try {
-				const balance = await provider.getBalance(address);
-				return ethers.formatEther(balance);
-			} catch (err) {
-				console.error('获取余额失败:', err);
-				return undefined;
-			}
-		},
-		[]
-	);
+	const fetchBalance = useCallback(async (address: string, provider: ethers.BrowserProvider) => {
+		try {
+			const balance = await provider.getBalance(address);
+			return ethers.formatEther(balance);
+		} catch (err) {
+			console.error('获取余额失败:', err);
+			return undefined;
+		}
+	}, []);
 
 	// 连接钱包
 	const connect = useCallback(async () => {
-		if (!window.ethereum) {
+		if (!window || !window?.ethereum) {
 			const err = new Error('请安装 MetaMask!');
 			setError(err);
 			throw err;
@@ -156,10 +159,7 @@ export function useMetaMask() {
 		window.ethereum.on('chainChanged', handleChainChanged);
 
 		return () => {
-			window.ethereum.removeListener(
-				'accountsChanged',
-				handleAccountsChanged
-			);
+			window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
 			window.ethereum.removeListener('chainChanged', handleChainChanged);
 		};
 	}, [disconnect, fetchBalance, state.provider]);

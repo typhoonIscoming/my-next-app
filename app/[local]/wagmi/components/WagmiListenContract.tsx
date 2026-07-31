@@ -1,29 +1,30 @@
 import { useState, useEffect } from 'react';
-import { useWatchContractEvent, usePublicClient, useBlockNumber } from 'wagmi';
+import { useWatchContractEvent, usePublicClient, useBlockNumber, useContractEvents } from 'wagmi';
 // import { watchContractEvent } from 'wagmi';
-import { erc20Abi, parseEther, PublicClient, formatUnits } from 'viem';
+import { erc20Abi, parseEther, PublicClient, formatUnits, concatBytes } from 'viem';
 import { getContractEvents } from 'viem/actions';
 import { sepoliaContractAddress } from '@/lib/utils';
 import { config } from '../hooks/config';
+import { useEventFetcher } from '../hooks/useContractEvents';
 
 export default function WagmiListenContract() {
 	const [logs, setLogs] = useState<any>([]);
 
 	const publicClient = usePublicClient();
-	// const currentBlock = useBlockNumber();
-	// console.log('currentBlock', currentBlock);
+	const currentBlock = useBlockNumber();
+	console.log('currentBlock', currentBlock);
 	const fetchRecentEvents = async () => {
 		try {
 			if (!publicClient) return;
-			const currentBlock = await publicClient.getBlockNumber();
-			console.log('currentBlockcurrentBlock', currentBlock);
+			const cb = await publicClient.getBlockNumber();
+			console.log('currentBlockcurrentBlock', cb);
 			const logsRes = await getContractEvents(publicClient as PublicClient, {
 				address: sepoliaContractAddress,
 				abi: erc20Abi,
 				eventName: 'Transfer',
-				fromBlock: ((BigInt(currentBlock) as any) - BigInt(1000)) as any, // 或指定起始区块
+				fromBlock: ((BigInt(cb) as any) - BigInt(1000)) as any, // 或指定起始区块
 				// toBlock: 'latest',
-				toBlock: currentBlock as any,
+				toBlock: cb as any,
 				// retries: 3,
 				// delay: 1000,
 			});
@@ -36,6 +37,8 @@ export default function WagmiListenContract() {
 			console.error('获取事件失败:', error);
 		}
 	};
+	const { events, loading } = useEventFetcher();
+	console.log('loading', loading, events);
 	// wagmi V1版本使用useContractEvents， V2已经没有了
 	// const result = useContractEvents({
 	// 	abi: erc20Abi,
@@ -54,16 +57,16 @@ export default function WagmiListenContract() {
 		},
 	});
 
-	useEffect(() => {
-		if (!publicClient) return;
-		fetchRecentEvents();
-	}, [publicClient]);
+	// useEffect(() => {
+	// 	if (!publicClient) return;
+	// 	fetchRecentEvents();
+	// }, [publicClient]);
 	const decimals = 18;
 	return (
 		<div className="border rounded-2xl p-4 space-y-3">
 			<div>监听部署在测试网的合约事件</div>
 			<div style={{ maxHeight: '300px', overflow: 'auto' }}>
-				{logs.map((event: any, index: number) => {
+				{events.map((event: any, index: number) => {
 					const { from, to, value } = event.args;
 					const trans = formatUnits(value, decimals);
 					return (

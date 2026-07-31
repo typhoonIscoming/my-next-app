@@ -47,7 +47,7 @@ export default () => {
 									</Button>
 								);
 							}
-							console.log('account', account);
+							// console.log('account', account);
 							return (
 								<div style={{ display: 'flex', gap: 12 }}>
 									<Button
@@ -79,9 +79,9 @@ export default () => {
 									</Button>
 									<Button onClick={openAccountModal} type="button">
 										{account.displayName}
-										{/* {account.displayBalance
+										{account.displayBalance
 											? ` (${account.displayBalance})`
-											: ''} */}
+											: ''}
 									</Button>
 								</div>
 							);

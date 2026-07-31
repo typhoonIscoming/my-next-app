@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useWatchContractEvent, usePublicClient, useBlockNumber, useContractEvents } from 'wagmi';
+import { useWatchContractEvent, usePublicClient, useBlockNumber } from 'wagmi';
 // import { watchContractEvent } from 'wagmi';
 import { erc20Abi, parseEther, PublicClient, formatUnits, concatBytes } from 'viem';
 import { getContractEvents } from 'viem/actions';
@@ -67,7 +67,7 @@ export default function WagmiListenContract() {
 		<div className="border rounded-2xl p-4 space-y-3">
 			<div>监听部署在测试网的合约事件</div>
 			{loading ? (
-				<div>
+				<div className="flex items-center">
 					<Spinner /> <span>正在获取合约事件</span>
 				</div>
 			) : (

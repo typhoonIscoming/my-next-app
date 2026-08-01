@@ -8,6 +8,7 @@ import CustomConnectButton from './CustomConnectButton';
 import WagmiContractBaseInfo from './WagmiContractBaseInfo';
 import WagmiTransfer from './WagmiTransfer';
 import WagmiListenContract from './WagmiListenContract';
+import WagmiConnection from './WagmiConnection';
 
 export default () => {
 	// 🔥 关键：使用 useIsMounted 防止水合错误
@@ -23,6 +24,7 @@ export default () => {
 				<CustomConnectButton />
 			</div>
 			<div className="pl-4 pr-4 space-y-3 min-h-[110vh]">
+				<WagmiConnection />
 				<WagmiBaseInfo />
 				<WagmiContractBaseInfo />
 				<WagmiTransfer />

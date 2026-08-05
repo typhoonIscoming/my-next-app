@@ -35,23 +35,4 @@ export default async function RootLayout({
 	const messages = await getMessages({ locale: local });
 
 	return <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>;
-	// return (
-	// 	<html lang={local} className={cn('antialiased', 'font-sans')} suppressHydrationWarning>
-	// 		<head>
-	// 			<link rel="preconnect" href="https://fonts.googleapis.com" />
-	// 			<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-	// 			<link
-	// 				href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Barlow:wght@300;400;500;600&display=swap"
-	// 				rel="stylesheet"
-	// 			/>
-	// 		</head>
-	// 		<body className="m-0 p-0">
-	// 			<SpeedInsights />
-	// 			<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-	// 				<NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
-	// 			</ThemeProvider>
-	// 			<Toaster />
-	// 		</body>
-	// 	</html>
-	// );
 }

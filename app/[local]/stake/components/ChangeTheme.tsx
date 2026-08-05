@@ -1,28 +1,25 @@
 'use client';
 import { useTheme } from 'next-themes';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import { AntSwitch } from './AntSwitch';
 
 export default function ChangeTheme() {
 	const t = useTranslations('changeTheme');
 	const { theme, setTheme } = useTheme();
-	const [mounted, setMounted] = useState(false);
-
-	useEffect(() => {
-		setMounted(true);
-	}, []);
-
-	if (!mounted) return null;
-
+	const handleChange = () => {
+		setTheme(theme === 'dark' ? 'light' : 'dark');
+	};
 	return (
-		<Button
-			variant="destructive"
-			onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-			className="px-3 py-1 text-sm rounded-md bg-foreground text-background font-medium"
-		>
-			{t(theme === 'dark' ? 'dark' : 'light')}
-		</Button>
+		<Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+			<Typography>{t('light')}</Typography>
+			<AntSwitch
+				checked={theme === 'dark'}
+				onChange={handleChange}
+				slotProps={{ input: { 'aria-label': 'ant design' } }}
+			/>
+			<Typography>{t('dark')}</Typography>
+		</Stack>
 	);
 }

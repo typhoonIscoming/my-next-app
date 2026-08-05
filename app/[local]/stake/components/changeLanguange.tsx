@@ -4,6 +4,7 @@ import Typography from '@mui/material/Typography';
 import { AntSwitch } from './AntSwitch';
 import useChangeLanguage from '@/hooks/useChangeLang';
 import { ChangeEvent } from 'react';
+import ThreeDRotation from '@mui/icons-material/ThreeDRotation';
 
 export default function ChangeLanguage({ local }: { local: 'zh' | 'en' }) {
 	const { currentLanguage, toggleLanguage } = useChangeLanguage({ local });
@@ -14,6 +15,7 @@ export default function ChangeLanguage({ local }: { local: 'zh' | 'en' }) {
 	return (
 		<Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
 			<Typography>中文</Typography>
+			<ThreeDRotation />
 			<AntSwitch
 				checked={currentLanguage === 'en'}
 				onChange={handleChange}

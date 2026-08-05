@@ -1,7 +1,5 @@
-import { Suspense } from 'react';
 import Box from '@mui/material/Box';
-import ChangeLanguage from './components/changeLanguange';
-import ChangeTheme from './components/ChangeTheme';
+import LayoutSetting from './components/LayoutSetting';
 
 type Props = {
 	params: Promise<{ local: Lang }>;
@@ -15,8 +13,7 @@ export default async function Layout({ children, params }: Props) {
 			<Box className="p-4 flex justify-center sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
 				<Box className="flex flex-1 justify-end"></Box>
 				<Box className="flex items-center gap-4">
-					<ChangeTheme />
-					<ChangeLanguage local={local}></ChangeLanguage>
+					<LayoutSetting local={local} />
 				</Box>
 			</Box>
 			{children}

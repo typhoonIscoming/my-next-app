@@ -15,5 +15,9 @@
 	"wallet": {
 		"loginWallet": "link wallet",
 		"logoutWallet": "logout wallet"
+	},
+	"changeTheme": {
+		"light": "Light",
+		"dark": "Dark"
 	}
 }

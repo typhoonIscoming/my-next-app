@@ -15,5 +15,9 @@
 	"wallet": {
 		"loginWallet": "连接钱包",
 		"logoutWallet": "断开钱包连接"
+	},
+	"changeTheme": {
+		"light": "浅色",
+		"dark": "深色"
 	}
 }

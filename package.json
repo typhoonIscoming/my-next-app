@@ -14,7 +14,10 @@
 	},
 	"dependencies": {
 		"@coinbase/cdp-sdk": "^1.54.0",
+		"@emotion/react": "^11.14.0",
+		"@emotion/styled": "^11.14.1",
 		"@hookform/resolvers": "^5.4.0",
+		"@mui/material": "^9.2.0",
 		"@rainbow-me/rainbowkit": "^2.2.11",
 		"@solana/kit": "^5.5.1",
 		"@tanstack/query-core": "^5.101.4",

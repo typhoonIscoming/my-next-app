@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import LayoutSetting from './components/LayoutSetting';
 
 type Props = {
-	params: Promise<{ local: Lang }>;
+	params: Promise<{ local: string }>;
 	children: React.ReactNode;
 };
 
@@ -17,7 +17,7 @@ export default async function Layout({ children, params }: Props) {
 						<span>Stake</span>
 					</Box>
 					<Box className="flex items-center gap-3">
-						<LayoutSetting local={local} />
+						<LayoutSetting local={local as Lang} />
 					</Box>
 				</Box>
 			</Box>

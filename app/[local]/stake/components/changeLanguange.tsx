@@ -5,11 +5,15 @@ import { MouseEvent } from 'react';
 import Translate from '@mui/icons-material/Translate';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
-import { useTranslations } from 'next-intl';
 import { useTheme } from '@mui/material/styles';
 
-export default function ChangeLanguage({ local }: { local: 'zh' | 'en' }) {
-	const t = useTranslations('LanguageSwitcher');
+type Props = {
+	local: 'zh' | 'en';
+	zhLabel: string;
+	enLabel: string;
+};
+
+export default function ChangeLanguage({ local, zhLabel, enLabel }: Props) {
 	const theme = useTheme();
 	const { currentLanguage, toggleLanguage } = useChangeLanguage({ local });
 	const handleChange = (event: MouseEvent<HTMLButtonElement>) => {
@@ -18,7 +22,7 @@ export default function ChangeLanguage({ local }: { local: 'zh' | 'en' }) {
 	};
 	return (
 		<Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-			<Tooltip arrow placement="bottom" title={t(currentLanguage === 'zh' ? 'zh' : 'en')}>
+			<Tooltip arrow placement="bottom" title={currentLanguage === 'zh' ? zhLabel : enLabel}>
 				<IconButton
 					onClick={handleChange}
 					sx={{

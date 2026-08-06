@@ -1,9 +1,15 @@
 import Box from '@mui/material/Box';
+import ContentTitle from './components/ContentTitle';
 
-export default function Stake() {
+type Props = {
+	params: Promise<{ local: Lang }>;
+};
+
+export default async function Stake({ params }: Props) {
+	const { local } = await params;
 	return (
-		<Box className="p-4 min-h-[120vh]">
-			<div>stake</div>
+		<Box className="sm:px-4 lg:px-6 min-h-[120vh]">
+			<ContentTitle local={local} />
 		</Box>
 	);
 }

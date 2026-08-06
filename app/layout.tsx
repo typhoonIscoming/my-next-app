@@ -8,8 +8,15 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+	// Detected `scroll-behavior: smooth` on the `<html>` element.
+	// To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"`
 	return (
-		<html lang="en" className={cn('antialiased', 'font-sans')} suppressHydrationWarning>
+		<html
+			lang="en"
+			data-scroll-behavior="smooth"
+			className={cn('antialiased', 'font-sans')}
+			suppressHydrationWarning
+		>
 			<head>
 				<link rel="preconnect" href="https://fonts.googleapis.com" />
 				<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

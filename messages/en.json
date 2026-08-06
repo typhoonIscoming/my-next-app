@@ -19,5 +19,9 @@
 	"changeTheme": {
 		"light": "Light",
 		"dark": "Dark"
+	},
+	"stake": {
+		"title": "MetaNode Stake",
+		"subtitle": "Stake ETH to earn tokens"
 	}
 }

@@ -19,5 +19,9 @@
 	"changeTheme": {
 		"light": "浅色",
 		"dark": "深色"
+	},
+	"stake": {
+		"title": "MetaNode Stake",
+		"subtitle": "质押ETH赚取代币"
 	}
 }

@@ -2,13 +2,12 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 
-/**
- 让 Tailwind 认识一个叫 dark 的变体，等价于“只要元素或其子节点处于 
- .dark 这个类下，就启用 dark 相关样式
+/* 
+让 Tailwind 认识一个叫 dark 的变体，等价于“只要元素或其子节点处于 
+.dark 这个类下，就启用 dark 相关样式
 */
 @custom-variant dark (&:is(.dark *));
 
-/* 作用是把你自己定义的 CSS 变量映射成 Tailwind 可以直接使用的主题 token */
 @theme inline {
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
@@ -87,9 +86,6 @@
 	--sidebar-accent-foreground: oklch(0.2 0.01 248);
 	--sidebar-border: oklch(0.9 0.008 248);
 	--sidebar-ring: oklch(0.64 0.15 180 / 0.5);
-
-	--from-primary: oklch(0.77 0.16 201);
-	--to-primary: oklch(0.62 0.16 220);
 }
 
 .dark {
@@ -127,11 +123,8 @@
 	--sidebar-ring: oklch(0.74 0.16 180 / 0.6);
 }
 
-/*
-@apply 这是把 Tailwind 的工具类直接应用到普通 CSS 规则里
-
-@layer 是 Tailwind 的一种“分层”语法，用来把样式按不同优先级组织起来
-*/
+/* @apply
+这是把 Tailwind 的工具类直接应用到普通 CSS 规则里 */
 @layer base {
 	* {
 		@apply border-border outline-ring/50;

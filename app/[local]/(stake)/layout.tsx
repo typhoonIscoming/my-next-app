@@ -1,5 +1,7 @@
 import Box from '@mui/material/Box';
-import LayoutSetting from './components/LayoutSetting';
+import LayoutSetting from './stake/components/LayoutSetting';
+import { NavigationMenu, NavigationMenuItem } from '@/components/ui/navigation-menu';
+import Link from 'next/link';
 
 type Props = {
 	params: Promise<{ local: string }>;
@@ -15,6 +17,16 @@ export default async function Layout({ children, params }: Props) {
 					<Box className="flex items-center gap-2 text-sm font-medium dark:text-zinc-300">
 						<Box className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(74,222,128,0.7)]" />
 						<span>Stake</span>
+					</Box>
+					<Box className="flex-1 flex justify-center items-center">
+						<NavigationMenu className="gap-4">
+							<NavigationMenuItem>
+								<Link href="/stake">Stake</Link>
+							</NavigationMenuItem>
+							<NavigationMenuItem>
+								<Link href="/withdraw">Withdraw</Link>
+							</NavigationMenuItem>
+						</NavigationMenu>
 					</Box>
 					<Box className="flex items-center gap-3">
 						<LayoutSetting local={local as Lang} />

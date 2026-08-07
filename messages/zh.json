@@ -22,6 +22,28 @@
 	},
 	"stake": {
 		"title": "MetaNode Stake",
-		"subtitle": "质押ETH赚取代币"
+		"subtitle": "质押ETH赚取代币",
+		"stake": "质押",
+		"unstake": "解除质押",
+		"stakeAmount": "质押金额",
+		"unstakeAmount": "解除质押金额",
+		"stakeSuccess": "质押成功",
+		"unstakeSuccess": "解除质押成功",
+		"stakeError": "质押失败",
+		"unstakeError": "解除质押失败",
+		"withdraw": "提现",
+		"withdrawSuccess": "提现成功",
+		"withdrawError": "提现失败",
+		"withdrawAmount": "提现金额",
+		"withdrawableAmount": "可提现金额",
+		"withdrawable": "可提现",
+		"withdrawableBalance": "可提现余额",
+		"claim": "领取收益",
+		"claimSuccess": "领取成功",
+		"claimError": "领取失败",
+		"claimAmount": "领取金额",
+		"claimableAmount": "可领取金额",
+		"claimable": "可领取",
+		"claimableBalance": "可领取余额"
 	}
 }

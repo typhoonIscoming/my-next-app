@@ -22,6 +22,28 @@
 	},
 	"stake": {
 		"title": "MetaNode Stake",
-		"subtitle": "Stake ETH to earn tokens"
+		"subtitle": "Stake ETH to earn tokens",
+		"stake": "Stake",
+		"unstake": "Unstake",
+		"stakeAmount": "Stake Amount",
+		"unstakeAmount": "Unstake Amount",
+		"stakeSuccess": "Stake successful",
+		"unstakeSuccess": "Unstake successful",
+		"stakeError": "Stake failed",
+		"unstakeError": "Unstake failed",
+		"withdraw": "Withdraw",
+		"withdrawSuccess": "Withdraw successful",
+		"withdrawError": "Withdraw failed",
+		"withdrawAmount": "Withdraw Amount",
+		"withdrawableAmount": "Withdrawable Amount",
+		"withdrawable": "Withdrawable",
+		"withdrawableBalance": "Withdrawable Balance",
+		"claim": "Claim",
+		"claimSuccess": "Claim successful",
+		"claimError": "Claim failed",
+		"claimAmount": "Claim Amount",
+		"claimableAmount": "Claimable Amount",
+		"claimable": "Claimable",
+		"claimableBalance": "Claimable Balance"
 	}
 }

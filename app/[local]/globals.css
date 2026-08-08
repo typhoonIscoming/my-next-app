@@ -141,7 +141,7 @@
 		scroll-behavior: smooth;
 	}
 	body {
-		@apply min-h-screen bg-background text-foreground antialiased;
+		@apply min-h-screen text-foreground antialiased;
 		background-image:
 			radial-gradient(
 				circle at top left,

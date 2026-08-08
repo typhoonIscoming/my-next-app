@@ -25,7 +25,7 @@ export default async function Layout({ children, params }: Props) {
 					</Box>
 				</Box>
 			</Box>
-			{children}
+			<Box className="pb-10">{children}</Box>
 		</Box>
 	);
 }

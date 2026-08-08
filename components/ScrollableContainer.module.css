@@ -1,0 +1,24 @@
+/* ScrollableContainer.module.css */
+.container {
+	overflow-y: overlay;
+	padding-right: 10px; /* 可选：给滚动条留一点空间 */
+	scrollbar-width: thin; /* Firefox */
+}
+
+/* 美化滚动条 */
+.container::-webkit-scrollbar {
+	width: 6px;
+}
+
+.container::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.container::-webkit-scrollbar-thumb {
+	background: #c1c1c1;
+	border-radius: 4px;
+}
+
+.container::-webkit-scrollbar-thumb:hover {
+	background: #a8a8a8;
+}

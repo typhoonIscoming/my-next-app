@@ -14,11 +14,15 @@ export default async function ContentTitle({ local }: { local: Lang }) {
 
 			<Box className="form-wrapper mt-8">
 				<Box className="card group max-w-3xl min-h-[420px] mx-auto p-4 sm:p-8 md:p-12 bg-linear-to-br from-gray-800/80 to-gray-900/80 shadow-2xl border-primary-500/20 border-[1.5px] rounded-2xl sm:rounded-3xl">
-					<Box>
+					<Box className="flex items-center gap-5">
 						<StakeIcon />
+						<Box>
+							<Box className="form-label text-gray-400 text-xl">
+								{t('stakeAmount')}
+							</Box>
+							<Box className="form-input"></Box>
+						</Box>
 					</Box>
-					<Box className="form-label">{t('stakeAmount')}</Box>
-					<Box className="form-input"></Box>
 				</Box>
 			</Box>
 		</Box>

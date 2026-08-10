@@ -31,6 +31,7 @@
 		"unstakeSuccess": "Unstake successful",
 		"stakeError": "Stake failed",
 		"unstakeError": "Unstake failed",
+		"available_balance": "Available Balance",
 		"withdraw": "Withdraw",
 		"withdrawSuccess": "Withdraw successful",
 		"withdrawError": "Withdraw failed",

@@ -118,7 +118,7 @@ export default function ContentTitle({ local }: { local: Lang }) {
 										onClick={handleMax}
 										className="h-11 px-4 rounded-xl text-white border-primary-500/40 bg-primary-500/10 hover:bg-primary-500/20"
 									>
-										{labels.max}
+										{t('max')}
 									</Button>
 								</Box>
 								{error ? <Box className="text-xs text-red-300">{error}</Box> : null}
@@ -129,7 +129,7 @@ export default function ContentTitle({ local }: { local: Lang }) {
 								disabled={isSubmitDisabled}
 								className="w-full h-11 rounded-xl bg-linear-to-r from-primary-700 to-primary-500 text-white font-semibold tracking-wide hover:brightness-110 disabled:opacity-50"
 							>
-								{labels.button}
+								{t('stake')}
 							</Button>
 						</Box>
 					</Box>

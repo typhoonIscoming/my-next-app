@@ -50,11 +50,23 @@
 		"cooldownDesc": "After unstaking, you need to wait 20 minutes to withdraw.",
 		"withdrawEth": "Withdraw ETH",
 		"claim": "Claim",
+		"claimSubtitle": "Claim your accumulated staking rewards",
 		"claimSuccess": "Claim successful",
 		"claimError": "Claim failed",
 		"claimAmount": "Claim Amount",
 		"claimableAmount": "Claimable Amount",
 		"claimable": "Claimable",
-		"claimableBalance": "Claimable Balance"
+		"claimableBalance": "Claimable Balance",
+		"pendingClaim": "Pending Rewards",
+		"maxClaim": "Max claimable",
+		"claimEth": "Claim ETH",
+		"readyToClaim": "Ready to claim",
+		"claimCycleTitle": "Reward distribution cycle",
+		"claimCycleDesc": "Rewards accrue over each cycle and can be claimed once available.",
+		"claimInputPlaceholder": "Enter amount to claim",
+		"claimErrorInvalidNumber": "Numbers only",
+		"claimErrorExceedClaimable": "Amount cannot exceed claimable rewards",
+		"tokenEthSymbol": "ETH",
+		"connectedWallet": "Connected Wallet"
 	}
 }

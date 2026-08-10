@@ -50,11 +50,23 @@
 		"cooldownDesc": "解除质押后，你需要等待 20 分钟才能执行提现。",
 		"withdrawEth": "提取 ETH",
 		"claim": "领取收益",
+		"claimSubtitle": "领取你已累积的质押收益",
 		"claimSuccess": "领取成功",
 		"claimError": "领取失败",
 		"claimAmount": "领取金额",
 		"claimableAmount": "可领取金额",
 		"claimable": "可领取",
-		"claimableBalance": "可领取余额"
+		"claimableBalance": "可领取余额",
+		"pendingClaim": "待领取收益",
+		"maxClaim": "全部可领取",
+		"claimEth": "领取 ETH",
+		"readyToClaim": "可立即领取",
+		"claimCycleTitle": "收益发放周期",
+		"claimCycleDesc": "收益会按周期累积并发放，你可以在可领取后随时提取。",
+		"claimInputPlaceholder": "输入要领取的数量",
+		"claimErrorInvalidNumber": "只能输入数字",
+		"claimErrorExceedClaimable": "输入金额不能超过可领取数量",
+		"tokenEthSymbol": "ETH",
+		"connectedWallet": "已连接钱包"
 	}
 }

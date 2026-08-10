@@ -5,19 +5,29 @@ import Box from '@mui/material/Box';
 import { useTranslations } from 'next-intl';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import useIsMounted from '@/hooks/useIsMounted';
 import StakeIcon from '../../components/StakeIcon';
-
-const STAKE_BALANCE = 12.4837;
+import useStakeWallet from '../hook/useStakeWallet';
 
 export default function ContentTitle({ local }: { local: Lang }) {
 	const t = useTranslations('stake');
+	const walletT = useTranslations('wallet');
+	const isMounted = useIsMounted();
 	const [amount, setAmount] = useState('');
 	const [error, setError] = useState('');
+	const { isConnected, isConnectPending, connectMetaMask, address, formattedBalance } =
+		useStakeWallet();
 
 	const isZh = local === 'zh';
-	const balanceText = useMemo(() => STAKE_BALANCE.toFixed(4), []);
+	const isWalletConnected = isMounted && isConnected;
+	const balanceText = useMemo(() => formattedBalance, [formattedBalance]);
+	const balanceValue = useMemo(() => {
+		const parsedBalance = Number(balanceText);
+		return Number.isFinite(parsedBalance) ? parsedBalance : 0;
+	}, [balanceText]);
 	const parsedAmount = Number(amount || 0);
 	const isSubmitDisabled = !amount || Number.isNaN(parsedAmount) || parsedAmount <= 0 || !!error;
+	const isActionDisabled = isWalletConnected ? isSubmitDisabled : isConnectPending;
 
 	const labels = {
 		balance: isZh ? '可用余额' : 'Available balance',
@@ -57,8 +67,8 @@ export default function ContentTitle({ local }: { local: Lang }) {
 		}
 
 		const numericValue = Number(nextValue);
-		if (!Number.isNaN(numericValue) && numericValue > STAKE_BALANCE) {
-			setAmount(balanceText);
+		if (isWalletConnected && !Number.isNaN(numericValue) && numericValue > balanceValue) {
+			setAmount(nextValue);
 			setError(labels.errorExceed);
 			return;
 		}
@@ -76,6 +86,19 @@ export default function ContentTitle({ local }: { local: Lang }) {
 		setError('');
 	};
 
+	const handlePrimaryAction = async () => {
+		if (isWalletConnected) {
+			return;
+		}
+
+		try {
+			await connectMetaMask();
+			setError('');
+		} catch {
+			setError(isZh ? '连接钱包失败，请重试' : 'Wallet connection failed. Please try again.');
+		}
+	};
+
 	return (
 		<Box className="mt-4 px-2">
 			<div className="text-4xl text-center font-bold bg-linear-to-r from-(--from-primary) to-(--to-primary) text-transparent bg-clip-text mb-2">
@@ -91,7 +114,11 @@ export default function ContentTitle({ local }: { local: Lang }) {
 							<Box className="form-label text-gray-300 text-lg sm:text-xl font-medium tracking-[0.01em]">
 								{t('stakeAmount')}
 							</Box>
-
+							{address && isWalletConnected ? (
+								<Box className="text-gray-400 text-sm sm:text-base">
+									{t('connectedWallet')}: {address}
+								</Box>
+							) : null}
 							<Box className="flex items-center justify-between gap-3 rounded-xl border border-primary-500/25 bg-black/20 px-3 py-2">
 								<Box className="text-gray-400 text-sm">
 									{t('available_balance')}
@@ -126,10 +153,11 @@ export default function ContentTitle({ local }: { local: Lang }) {
 
 							<Button
 								type="button"
-								disabled={isSubmitDisabled}
+								onClick={handlePrimaryAction}
+								disabled={isActionDisabled}
 								className="w-full h-11 rounded-xl bg-linear-to-r from-primary-700 to-primary-500 text-white font-semibold tracking-wide hover:brightness-110 disabled:opacity-50"
 							>
-								{t('stake')}
+								{isWalletConnected ? t('stake') : walletT('loginWallet')}
 							</Button>
 						</Box>
 					</Box>

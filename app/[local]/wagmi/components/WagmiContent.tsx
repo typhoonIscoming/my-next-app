@@ -4,7 +4,7 @@ import useIsMounted from '@/hooks/useIsMounted';
 import Skeleton from './Skeleton';
 import WagmiBaseInfo from './WagmiBaseInfo';
 // 自定义链接钱包按钮
-import CustomConnectButton from './CustomConnectButton';
+import CustomConnectButton from '@/app/components/CustomConnectButton';
 import WagmiContractBaseInfo from './WagmiContractBaseInfo';
 import WagmiTransfer from './WagmiTransfer';
 import WagmiListenContract from './WagmiListenContract';

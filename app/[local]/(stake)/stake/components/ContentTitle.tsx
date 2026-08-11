@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import useIsMounted from '@/hooks/useIsMounted';
 import StakeIcon from '../../components/StakeIcon';
 import useStakeWallet from '../hook/useStakeWallet';
+import CustomConnectButton from '@/app/components/CustomConnectButton';
 
 export default function ContentTitle({ local }: { local: Lang }) {
 	const t = useTranslations('stake');
@@ -15,8 +16,15 @@ export default function ContentTitle({ local }: { local: Lang }) {
 	const isMounted = useIsMounted();
 	const [amount, setAmount] = useState('');
 	const [error, setError] = useState('');
-	const { isConnected, isConnectPending, connectMetaMask, address, formattedBalance } =
-		useStakeWallet();
+	const {
+		isConnected,
+		isConnectPending,
+		connectMetaMask,
+		address,
+		formattedBalance,
+		balanceDecimals,
+		disconnect,
+	} = useStakeWallet();
 
 	const isZh = local === 'zh';
 	const isWalletConnected = isMounted && isConnected;
@@ -63,7 +71,7 @@ export default function ContentTitle({ local }: { local: Lang }) {
 
 		if (nextValue.includes('.')) {
 			const [intPart, decimalPart] = nextValue.split('.');
-			nextValue = `${intPart}.${decimalPart.slice(0, 6)}`;
+			nextValue = `${intPart}.${decimalPart.slice(0, balanceDecimals ?? 18)}`;
 		}
 
 		const numericValue = Number(nextValue);
@@ -151,14 +159,48 @@ export default function ContentTitle({ local }: { local: Lang }) {
 								{error ? <Box className="text-xs text-red-300">{error}</Box> : null}
 							</Box>
 
-							<Button
+							{/* <Button
 								type="button"
 								onClick={handlePrimaryAction}
 								disabled={isActionDisabled}
 								className="w-full h-11 rounded-xl bg-linear-to-r from-primary-700 to-primary-500 text-white font-semibold tracking-wide hover:brightness-110 disabled:opacity-50"
 							>
 								{isWalletConnected ? t('stake') : walletT('loginWallet')}
-							</Button>
+							</Button> */}
+							{!isWalletConnected ? (
+								<CustomConnectButton>
+									{({ openConnectModal }) => {
+										return (
+											<Button
+												type="button"
+												variant="outline"
+												onClick={() => openConnectModal()}
+												className="w-full h-11 px-4 rounded-xl text-white border-primary-500/40 bg-primary-500/10 hover:bg-primary-500/20"
+											>
+												{walletT('loginWallet')}
+											</Button>
+										);
+									}}
+								</CustomConnectButton>
+							) : (
+								<Box className="flex items-center gap-2">
+									<Button
+										type="button"
+										onClick={() => disconnect()}
+										className="w-auto h-11 rounded-xl bg-linear-to-r from-primary-700 to-primary-500 text-white font-semibold tracking-wide hover:brightness-110 disabled:opacity-50 mb-2"
+									>
+										{walletT('logoutWallet')}
+									</Button>
+									<Button
+										type="button"
+										onClick={handlePrimaryAction}
+										disabled={isActionDisabled}
+										className="flex-1 h-11 rounded-xl bg-linear-to-r from-primary-700 to-primary-500 text-white font-semibold tracking-wide hover:brightness-110 disabled:opacity-50"
+									>
+										{isWalletConnected ? t('stake') : walletT('loginWallet')}
+									</Button>
+								</Box>
+							)}
 						</Box>
 					</Box>
 				</Box>

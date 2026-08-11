@@ -10,6 +10,8 @@ export const sepoliaContractAddress = process.env.NEXT_PUBLIC_SOPOLIA_ADDRESS as
 // alc
 export const sepoliaNetUrl = process.env.NEXT_PUBLIC_RPC_URL;
 
+export const stakeContractAddress = process.env.NEXT_PUBLIC_STAKE_ADDRESS as `0x${string}`;
+
 // utils/menuMatch.ts
 export function isMenuActive(currentPath: string, menuPath: string): boolean {
 	// 精确匹配

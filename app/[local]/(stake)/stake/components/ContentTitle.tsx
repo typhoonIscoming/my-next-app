@@ -9,6 +9,10 @@ import useIsMounted from '@/hooks/useIsMounted';
 import StakeIcon from '../../components/StakeIcon';
 import useStakeWallet from '../hook/useStakeWallet';
 import CustomConnectButton from '@/app/components/CustomConnectButton';
+import { mainnet, sepolia } from 'viem/chains';
+import Tooltip from '@mui/material/Tooltip';
+import useTransfer from '../hook/useTransfer';
+import { stakeContractAddress } from '@/lib/utils';
 
 export default function ContentTitle({ local }: { local: Lang }) {
 	const t = useTranslations('stake');
@@ -16,26 +20,39 @@ export default function ContentTitle({ local }: { local: Lang }) {
 	const isMounted = useIsMounted();
 	const [amount, setAmount] = useState('');
 	const [error, setError] = useState('');
+	const [isSwitchingChain, setIsSwitchingChain] = useState(false);
+	const { transfer, isLoading, isSuccess } = useTransfer();
 	const {
 		isConnected,
 		isConnectPending,
-		connectMetaMask,
+		chainId,
+		connectorName,
 		address,
 		formattedBalance,
 		balanceDecimals,
+		isBalanceLoading,
 		disconnect,
+		refetchBalance,
+		switchChainAsync,
+		connectMetaMask,
 	} = useStakeWallet();
 
 	const isZh = local === 'zh';
 	const isWalletConnected = isMounted && isConnected;
+	const targetNetworkName = chainId === sepolia.id ? 'Mainnet' : 'Sepolia';
+	const targetNetworkButtonText = chainId === sepolia.id ? '切换到主网' : '切换到 Sepolia';
 	const balanceText = useMemo(() => formattedBalance, [formattedBalance]);
 	const balanceValue = useMemo(() => {
 		const parsedBalance = Number(balanceText);
 		return Number.isFinite(parsedBalance) ? parsedBalance : 0;
 	}, [balanceText]);
 	const parsedAmount = Number(amount || 0);
-	const isSubmitDisabled = !amount || Number.isNaN(parsedAmount) || parsedAmount <= 0 || !!error;
-	const isActionDisabled = isWalletConnected ? isSubmitDisabled : isConnectPending;
+	const isActionDisabled =
+		isLoading ||
+		!isWalletConnected ||
+		isConnectPending ||
+		Number.isNaN(parsedAmount) ||
+		parsedAmount <= 0;
 
 	const labels = {
 		balance: isZh ? '可用余额' : 'Available balance',
@@ -95,15 +112,34 @@ export default function ContentTitle({ local }: { local: Lang }) {
 	};
 
 	const handlePrimaryAction = async () => {
-		if (isWalletConnected) {
+		if (!isWalletConnected) {
 			return;
 		}
 
 		try {
-			await connectMetaMask();
+			await transfer({ to: stakeContractAddress, amount });
 			setError('');
+		} catch (e) {
+			console.log('转账失败', e);
+			setError(isZh ? '转账失败' : 'Transfer failed. Please try again.');
+		}
+	};
+
+	const handleSwitchToSepolia = async () => {
+		if (!switchChainAsync) {
+			setError(isZh ? '钱包不支持切换网络' : 'Wallet does not support switching chains.');
+			return;
+		}
+
+		try {
+			setIsSwitchingChain(true);
+			setError('');
+			const targetChainId = chainId === mainnet.id ? sepolia.id : mainnet.id;
+			await switchChainAsync({ chainId: targetChainId });
 		} catch {
-			setError(isZh ? '连接钱包失败，请重试' : 'Wallet connection failed. Please try again.');
+			setError(isZh ? '切换网络失败，请重试' : 'Failed to switch network. Please try again.');
+		} finally {
+			setIsSwitchingChain(false);
 		}
 	};
 
@@ -118,22 +154,49 @@ export default function ContentTitle({ local }: { local: Lang }) {
 				<Box className="card group max-w-2xl mx-auto p-4 sm:p-8 md:p-10 bg-linear-to-br from-[#0f1625]/95 via-[#101d30]/92 to-[#0c1322]/95 shadow-[0_24px_80px_rgba(7,16,28,0.55)] border-primary-500/25 border-[1.5px] rounded-2xl sm:rounded-3xl">
 					<Box className="relative overflow-hidden flex items-start gap-4 sm:gap-5 p-4 sm:p-5 border group-hover:border-primary-500/45 rounded-2xl bg-linear-to-br from-gray-800/60 to-gray-900/75 border-primary-700/50 before:pointer-events-none before:absolute before:-top-20 before:-right-16 before:h-40 before:w-40 before:rounded-full before:bg-primary-500/12 before:blur-2xl">
 						<StakeIcon />
-						<Box className="flex-1 space-y-4">
+						<Box className="flex-1 space-y-4 overflow-hidden">
 							<Box className="form-label text-gray-300 text-lg sm:text-xl font-medium tracking-[0.01em]">
 								{t('stakeAmount')}
 							</Box>
 							{address && isWalletConnected ? (
-								<Box className="text-gray-400 text-sm sm:text-base">
-									{t('connectedWallet')}: {address}
+								<Box className="w-full flex items-center gap-2">
+									<Box className="flex-1 truncate">
+										<Tooltip title={address} placement="top" arrow>
+											<Box className="truncate text-gray-400 text-sm sm:text-base min-w-0">
+												{t('connectedWallet')}: {address}
+											</Box>
+										</Tooltip>
+									</Box>
+									<Button
+										type="button"
+										onClick={handleSwitchToSepolia}
+										loading={isSwitchingChain}
+										disabled={isSwitchingChain}
+										className="text-white h-11 rounded-xl"
+									>
+										{targetNetworkButtonText}
+									</Button>
 								</Box>
 							) : null}
-							<Box className="flex items-center justify-between gap-3 rounded-xl border border-primary-500/25 bg-black/20 px-3 py-2">
-								<Box className="text-gray-400 text-sm">
-									{t('available_balance')}
+							<Box className="w-full flex gap-2">
+								<Box className="flex-1 flex items-center justify-between gap-3 rounded-xl border border-primary-500/25 bg-black/20 px-3 py-2">
+									<Box className="text-gray-400 text-sm">
+										{t('available_balance')}
+									</Box>
+									<Box className="font-mono [font-variant-numeric:tabular-nums] text-sm sm:text-base text-white">
+										{balanceText} ETH
+									</Box>
 								</Box>
-								<Box className="font-mono [font-variant-numeric:tabular-nums] text-sm sm:text-base text-white">
-									{balanceText} ETH
-								</Box>
+								{isWalletConnected && (
+									<Button
+										type="button"
+										loading={isBalanceLoading}
+										onClick={() => refetchBalance()}
+										className="w-auto h-11 rounded-xl bg-linear-to-r from-primary-700 to-primary-500 text-white font-semibold tracking-wide hover:brightness-110 disabled:opacity-50 mb-2"
+									>
+										重新获取余额
+									</Button>
+								)}
 							</Box>
 
 							<Box className="form-input space-y-2">
@@ -158,47 +221,48 @@ export default function ContentTitle({ local }: { local: Lang }) {
 								</Box>
 								{error ? <Box className="text-xs text-red-300">{error}</Box> : null}
 							</Box>
-
-							{/* <Button
-								type="button"
-								onClick={handlePrimaryAction}
-								disabled={isActionDisabled}
-								className="w-full h-11 rounded-xl bg-linear-to-r from-primary-700 to-primary-500 text-white font-semibold tracking-wide hover:brightness-110 disabled:opacity-50"
-							>
-								{isWalletConnected ? t('stake') : walletT('loginWallet')}
-							</Button> */}
 							{!isWalletConnected ? (
 								<CustomConnectButton>
-									{({ openConnectModal }) => {
+									{({ openConnectModal, openChainModal }) => {
 										return (
-											<Button
-												type="button"
-												variant="outline"
-												onClick={() => openConnectModal()}
-												className="w-full h-11 px-4 rounded-xl text-white border-primary-500/40 bg-primary-500/10 hover:bg-primary-500/20"
-											>
-												{walletT('loginWallet')}
-											</Button>
+											<>
+												<Button
+													type="button"
+													variant="outline"
+													onClick={() => openConnectModal()}
+													className="w-full h-11 px-4 rounded-xl text-white border-primary-500/40 bg-primary-500/10 hover:bg-primary-500/20"
+												>
+													{walletT('loginWallet')}
+												</Button>
+											</>
 										);
 									}}
 								</CustomConnectButton>
 							) : (
-								<Box className="flex items-center gap-2">
-									<Button
-										type="button"
-										onClick={() => disconnect()}
-										className="w-auto h-11 rounded-xl bg-linear-to-r from-primary-700 to-primary-500 text-white font-semibold tracking-wide hover:brightness-110 disabled:opacity-50 mb-2"
-									>
-										{walletT('logoutWallet')}
-									</Button>
-									<Button
-										type="button"
-										onClick={handlePrimaryAction}
-										disabled={isActionDisabled}
-										className="flex-1 h-11 rounded-xl bg-linear-to-r from-primary-700 to-primary-500 text-white font-semibold tracking-wide hover:brightness-110 disabled:opacity-50"
-									>
-										{isWalletConnected ? t('stake') : walletT('loginWallet')}
-									</Button>
+								<Box>
+									<Box className="flex items-center gap-2">
+										<Button
+											type="button"
+											onClick={() => disconnect()}
+											className="w-auto h-11 rounded-xl bg-linear-to-r from-primary-700 to-primary-500 text-white font-semibold tracking-wide hover:brightness-110 disabled:opacity-50 mb-2"
+										>
+											{walletT('logoutWallet')}
+										</Button>
+										<Button
+											type="button"
+											onClick={handlePrimaryAction}
+											loading={isLoading}
+											disabled={isActionDisabled}
+											className="flex-1 h-11 rounded-xl bg-linear-to-r from-primary-700 to-primary-500 text-white font-semibold tracking-wide hover:brightness-110 disabled:opacity-50"
+										>
+											{t('stake')}
+										</Button>
+									</Box>
+									{isSuccess && (
+										<Box className="text-green-400 text-sm mt-2">
+											{isZh ? '质押成功！' : 'Stake successful!'}
+										</Box>
+									)}
 								</Box>
 							)}
 						</Box>

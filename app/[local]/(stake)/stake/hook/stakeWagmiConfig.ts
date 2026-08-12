@@ -1,8 +1,8 @@
 import { createConfig, http } from 'wagmi';
 import { mainnet, sepolia } from 'wagmi/chains';
-import { injected, metaMask, safe } from 'wagmi/connectors';
 import { rainbowWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
-import { getDefaultConfig, connectorsForWallets } from '@rainbow-me/rainbowkit';
+import { connectorsForWallets } from '@rainbow-me/rainbowkit';
+import { mainnetNetUrl, sepoliaNetUrl } from '@/lib/utils';
 
 const connectors = connectorsForWallets(
 	[
@@ -16,12 +16,16 @@ const connectors = connectorsForWallets(
 		projectId: 'e7ae58a69fba1b98149541f9fb6751b2',
 	}
 );
+console.log('sepoliaNetUrl', sepoliaNetUrl);
+console.log('mainnetNetUrl', mainnetNetUrl);
 export const stakeWagmiConfig = createConfig({
 	chains: [mainnet, sepolia],
 	// connectors: [metaMask(), injected(), safe()],
 	connectors,
 	transports: {
+		// [mainnet.id]: http(mainnetNetUrl),
+		[sepolia.id]: http(sepoliaNetUrl),
 		[mainnet.id]: http(),
-		[sepolia.id]: http(),
+		// [sepolia.id]: http(),
 	},
 });

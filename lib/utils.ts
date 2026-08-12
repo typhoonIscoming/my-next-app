@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { type Address } from 'viem';
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -7,10 +8,14 @@ export function cn(...inputs: ClassValue[]) {
 
 export const sepoliaContractAddress = process.env.NEXT_PUBLIC_SOPOLIA_ADDRESS as `0x${string}`;
 
-// alc
-export const sepoliaNetUrl = process.env.NEXT_PUBLIC_RPC_URL;
+export const mainnetNetUrl =
+	process.env.NEXT_PUBLIC_MAINNET_RPC_URL ?? process.env.NEXT_PUBLIC_RPC_URL;
 
-export const stakeContractAddress = process.env.NEXT_PUBLIC_STAKE_ADDRESS as `0x${string}`;
+export const sepoliaNetUrl =
+	process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL ?? process.env.NEXT_PUBLIC_RPC_URL;
+
+export const stakeContractAddress = process.env
+	.NEXT_PUBLIC_STAKE_ADDRESS as `0x${string}` as Address;
 
 // utils/menuMatch.ts
 export function isMenuActive(currentPath: string, menuPath: string): boolean {

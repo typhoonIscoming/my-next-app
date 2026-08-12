@@ -23,6 +23,8 @@ export default function useStakeWallet() {
 	const chainId = useChainId();
 	const { switchChainAsync } = useSwitchChain();
 
+	const effectiveChainId = chainId ?? undefined;
+
 	const {
 		data: balanceData,
 		isLoading: isBalanceLoading,
@@ -31,19 +33,18 @@ export default function useStakeWallet() {
 		refetch: refetchBalance,
 	} = useBalance({
 		address,
-		chainId,
+		chainId: effectiveChainId,
 		query: {
-			enabled: Boolean(address),
+			enabled: Boolean(address) && Boolean(effectiveChainId),
 		},
 	});
-
 	const formattedBalance = useMemo(() => {
 		if (!balanceData) {
 			return '0';
 		}
 		return formatUnits(balanceData.value, balanceData.decimals);
 	}, [balanceData]);
-
+	// console.log('connectors', connectors);
 	const connectMetaMask = async () => {
 		const metaMaskConnector = connectors.find(
 			(item) => item.id === 'metaMask' || item.name.toLowerCase().includes('metamask')

@@ -5,6 +5,8 @@ import Box from '@mui/material/Box';
 import { useTranslations } from 'next-intl';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import useContract from '../../stake/hook/useContract';
+import useClaim from '../../stake/hook/useClaim';
 
 const CLAIMABLE_REWARDS = 0;
 const CLAIMABLE_BALANCE = 0;
@@ -15,10 +17,19 @@ export default function ClaimContent({ local }: { local: Lang }) {
 	const [claimAmount, setClaimAmount] = useState('');
 	const [error, setError] = useState('');
 
+	const { formatedStakingBalance } = useContract();
+	const { claimableRewards, claimableBalance, lastUpdateDate } = useClaim();
+
 	void local;
-	const claimableRewardsText = useMemo(() => CLAIMABLE_REWARDS.toFixed(4), []);
-	const claimableBalanceText = useMemo(() => CLAIMABLE_BALANCE.toFixed(4), []);
-	const pendingRewardsText = useMemo(() => PENDING_REWARDS.toFixed(4), []);
+	const claimableRewardsText = useMemo(
+		() => Number(claimableRewards).toFixed(4),
+		[claimableRewards]
+	);
+	const claimableBalanceText = useMemo(
+		() => Number(claimableBalance).toFixed(4),
+		[claimableBalance]
+	);
+	const pendingRewardsText = useMemo(() => Number(PENDING_REWARDS).toFixed(4), []);
 	const parsedAmount = Number(claimAmount || 0);
 	const isClaimDisabled =
 		!claimAmount || Number.isNaN(parsedAmount) || parsedAmount <= 0 || !!error;
@@ -93,18 +104,18 @@ export default function ClaimContent({ local }: { local: Lang }) {
 				<div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
 					<div className="rounded-xl border border-primary-500/25 bg-black/20 p-4">
 						<div className="text-xs sm:text-sm text-gray-400">
-							{tStake('claimableAmount')}
+							{tStake('claimAmount')}
 						</div>
 						<div className="mt-1 text-base sm:text-lg font-mono [font-variant-numeric:tabular-nums] text-white">
-							{claimableRewardsText} {labels.tokenSymbol}
+							{claimableRewardsText} MetaNode
 						</div>
 					</div>
 					<div className="rounded-xl border border-primary-500/25 bg-black/20 p-4">
 						<div className="text-xs sm:text-sm text-gray-400">
-							{tStake('claimableBalance')}
+							{tStake('stakedAmount')}
 						</div>
 						<div className="mt-1 text-base sm:text-lg font-mono [font-variant-numeric:tabular-nums] text-white">
-							{claimableBalanceText} {labels.tokenSymbol}
+							{formatedStakingBalance} {labels.tokenSymbol}
 						</div>
 					</div>
 					<div className="rounded-xl border border-primary-500/25 bg-black/20 p-4">
@@ -112,7 +123,7 @@ export default function ClaimContent({ local }: { local: Lang }) {
 							{tStake('pendingClaim')}
 						</div>
 						<div className="mt-1 text-base sm:text-lg font-mono [font-variant-numeric:tabular-nums] text-white">
-							{pendingRewardsText} {labels.tokenSymbol}
+							{lastUpdateDate}
 						</div>
 					</div>
 				</div>
@@ -154,7 +165,7 @@ export default function ClaimContent({ local }: { local: Lang }) {
 						<h2 className="text-lg font-semibold text-white">{tStake('claimable')}</h2>
 						<div className="mt-3 text-sm text-gray-300">{tStake('readyToClaim')}</div>
 						<div className="mt-1 text-base sm:text-lg font-mono [font-variant-numeric:tabular-nums] text-white">
-							{claimableRewardsText} {labels.tokenSymbol}
+							{claimableRewardsText} MetaNode
 						</div>
 
 						<div className="mt-4 rounded-xl border border-primary-500/25 bg-black/20 px-3 py-3">

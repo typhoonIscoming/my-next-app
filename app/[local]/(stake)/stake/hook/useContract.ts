@@ -25,14 +25,16 @@ export default function useContract() {
 			},
 		],
 	});
-	// console.log('result:', result);
+
 	const [stakingBalance, withdrawAmount] = result.data ?? [];
 
 	const stakingBalanceValue =
 		stakingBalance?.status === 'success' ? (stakingBalance.result as bigint) : 0n;
 	const withdrawAmountValue =
 		withdrawAmount?.status === 'success' ? withdrawAmount.result : [0n, 0n];
-
+	const ava = formatUnits(withdrawAmountValue[1], 18);
+	const total = Number(formatUnits(withdrawAmountValue[0], 18));
+	const pendingAmount = (total - Number(ava)).toFixed(4);
 	return {
 		address,
 		contractAddress: stakeContractAddress,
@@ -40,8 +42,8 @@ export default function useContract() {
 		stakingBalance: stakingBalanceValue,
 		withdrawAmount: withdrawAmountValue,
 		formatedStakingBalance: formatUnits(stakingBalanceValue, 18),
-		formatedWithdrawAmount: formatUnits(withdrawAmountValue[0], 18),
-		pendingWithdrawAmount: formatUnits(withdrawAmountValue[1], 18),
+		formatedWithdrawAmount: ava,
+		pendingWithdrawAmount: pendingAmount,
 		isLoading: result.isLoading,
 		isFetching: result.isFetching,
 		isError: result.isError,

@@ -25,6 +25,7 @@
 		"subtitle": "质押ETH赚取代币",
 		"stake": "质押",
 		"unstake": "解除质押",
+		"unstaking": "解除质押中",
 		"stakeAmount": "质押金额",
 		"unstakeAmount": "解除质押金额",
 		"stakeSuccess": "质押成功",

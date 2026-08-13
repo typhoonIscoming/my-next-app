@@ -1,10 +1,7 @@
-import { formatUnits } from 'viem';
-import { sepolia } from 'wagmi/chains';
-import { erc20Abi } from 'viem';
-import { useAccount, useReadContracts, useChainId } from 'wagmi';
+import { formatUnits, parseUnits, type Address } from 'viem';
+import { useAccount, useReadContracts, useChainId, useWriteContract } from 'wagmi';
 import { stakeContractAddress } from '@/lib/utils';
 import { stakeAbi } from './abi';
-import { format } from 'path';
 
 export default function useContract() {
 	const { address } = useAccount();
@@ -28,7 +25,7 @@ export default function useContract() {
 			},
 		],
 	});
-	console.log('result:', result);
+	// console.log('result:', result);
 	const [stakingBalance, withdrawAmount] = result.data ?? [];
 
 	const stakingBalanceValue =
@@ -50,5 +47,95 @@ export default function useContract() {
 		isError: result.isError,
 		error: result.error,
 		refetch: result.refetch,
+	};
+}
+
+export function useUnstake() {
+	const { address } = useAccount();
+	const chainId = useChainId();
+	const { writeContract, data: hash, isPending, error, reset, status } = useWriteContract();
+
+	const unstake = async (amount: string, pid = 0n) => {
+		if (!stakeContractAddress) {
+			throw new Error('Stake contract address is not configured.');
+		}
+		if (!address) {
+			throw new Error('Wallet not connected.');
+		}
+		const normalizedAmount = amount.trim();
+		if (!normalizedAmount || Number.isNaN(Number(normalizedAmount))) {
+			throw new Error('Unstake amount is invalid.');
+		}
+
+		const value = parseUnits(normalizedAmount, 18);
+		if (value <= 0n) {
+			throw new Error('Unstake amount must be greater than zero.');
+		}
+
+		return await new Promise<`0x${string}`>((resolve, reject) => {
+			writeContract(
+				{
+					address: stakeContractAddress,
+					abi: stakeAbi,
+					functionName: 'unstake',
+					chainId,
+					args: [pid, value],
+				},
+				{
+					onSuccess: resolve,
+					onError: reject,
+				}
+			);
+		});
+	};
+
+	return {
+		address,
+		unstake,
+		hash,
+		isPending,
+		status,
+		error,
+		reset,
+	};
+}
+
+export function useWithdraw() {
+	const { address } = useAccount();
+	const chainId = useChainId();
+	const { writeContract, data: hash, isPending, error, reset, status } = useWriteContract();
+	const withdraw = async (pid = 0n) => {
+		if (!stakeContractAddress) {
+			throw new Error('Stake contract address is not configured.');
+		}
+		if (!address) {
+			throw new Error('Wallet not connected.');
+		}
+
+		return await new Promise<`0x${string}`>((resolve, reject) => {
+			writeContract(
+				{
+					address: stakeContractAddress,
+					abi: stakeAbi,
+					functionName: 'withdraw',
+					chainId,
+					args: [pid],
+				},
+				{
+					onSuccess: resolve,
+					onError: reject,
+				}
+			);
+		});
+	};
+
+	return {
+		address,
+		withdraw,
+		hash,
+		isPending,
+		status,
+		error,
+		reset,
 	};
 }

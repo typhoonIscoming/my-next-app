@@ -25,6 +25,7 @@
 		"subtitle": "Stake ETH to earn tokens",
 		"stake": "Stake",
 		"unstake": "Unstake",
+		"unstaking": "Unstaking",
 		"stakeAmount": "Stake Amount",
 		"unstakeAmount": "Unstake Amount",
 		"stakeSuccess": "Stake successful",

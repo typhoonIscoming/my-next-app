@@ -5,7 +5,9 @@ import Box from '@mui/material/Box';
 import { useTranslations } from 'next-intl';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import useContract from '../../stake/hook/useContract';
+import CustomConnectButton from '@/app/components/CustomConnectButton';
+import useContract, { useUnstake, useWithdraw } from '../../stake/hook/useContract';
+import useStakeWallet from '../../stake/hook/useStakeWallet';
 
 const STAKED_AMOUNT: string = '0';
 const AVAILABLE_TO_WITHDRAW: string = '0';
@@ -24,9 +26,16 @@ export default function WithdrawContent({ local }: { local: Lang }) {
 		pendingWithdraw: PENDING_WITHDRAW,
 	});
 
-	const { formatedStakingBalance, formatedWithdrawAmount, pendingWithdrawAmount } = useContract();
-	console.log('formatedStakingBalance:', formatedStakingBalance);
-	console.log('formatedWithdrawAmount:', formatedWithdrawAmount);
+	const { isConnected } = useStakeWallet();
+	const { unstake, isPending: isUnstaking, status } = useUnstake();
+
+	// 提现的hook
+	const { withdraw, isPending: isWithdrawing } = useWithdraw();
+
+	const { formatedStakingBalance, formatedWithdrawAmount, pendingWithdrawAmount, refetch } =
+		useContract();
+	// console.log('formatedStakingBalance:', formatedStakingBalance);
+	// console.log('formatedWithdrawAmount:', formatedWithdrawAmount);
 	useEffect(() => {
 		setStakeInfo({
 			stakedAmount: formatedStakingBalance,
@@ -50,8 +59,29 @@ export default function WithdrawContent({ local }: { local: Lang }) {
 	);
 	const parsedAmount = Number(unstakeAmount || 0);
 	const isUnstakeDisabled =
-		!unstakeAmount || Number.isNaN(parsedAmount) || parsedAmount <= 0 || !!error;
+		!unstakeAmount || Number.isNaN(parsedAmount) || parsedAmount <= 0 || !!error || isUnstaking;
 
+	const handleUnstake = async () => {
+		if (isUnstakeDisabled) {
+			return;
+		}
+		try {
+			await unstake(unstakeAmount);
+			await refetch();
+			setUnstakeAmount('');
+			setError('');
+		} catch (err) {
+			console.error('Unstake failed:', err);
+		}
+	};
+	// console.log(
+	// 	'status:',
+	// 	status,
+	// 	'isUnstaking:',
+	// 	isUnstaking,
+	// 	'isUnstakeDisabled:',
+	// 	isUnstakeDisabled
+	// );
 	const labels = {
 		unstakePlaceholder: isZh ? '输入要解除质押的数量' : 'Enter amount to unstake',
 		errorInvalid: isZh ? '只能输入数字' : 'Numbers only',
@@ -101,6 +131,15 @@ export default function WithdrawContent({ local }: { local: Lang }) {
 		}
 	};
 
+	// 提现的事件
+	const handleWithdraw = async () => {
+		try {
+			await withdraw();
+			await refetch();
+		} catch (err) {
+			console.error('Withdraw failed:', err);
+		}
+	};
 	return (
 		<main className="mt-4 px-2 pb-8">
 			<header className="text-center">
@@ -159,13 +198,33 @@ export default function WithdrawContent({ local }: { local: Lang }) {
 							<span className="text-sm text-gray-300">ETH</span>
 						</div>
 						{error ? <p className="mt-2 text-xs text-red-300">{error}</p> : null}
-						<Button
-							type="button"
-							disabled={isUnstakeDisabled}
-							className="mt-4 w-full h-11 rounded-xl bg-linear-to-r from-primary-700 to-primary-500 text-white font-semibold tracking-wide hover:brightness-110 disabled:opacity-50"
-						>
-							{tWallet('loginWallet')}
-						</Button>
+						{!isConnected ? (
+							<CustomConnectButton>
+								{({ openConnectModal, openChainModal }) => {
+									return (
+										<>
+											<Button
+												type="button"
+												variant="outline"
+												onClick={() => openConnectModal()}
+												className="w-full h-11 px-4 rounded-xl text-white border-primary-500/40 bg-primary-500/10 hover:bg-primary-500/20"
+											>
+												{tWallet('loginWallet')}
+											</Button>
+										</>
+									);
+								}}
+							</CustomConnectButton>
+						) : (
+							<Button
+								type="button"
+								onClick={handleUnstake}
+								disabled={isUnstakeDisabled}
+								className="mt-4 w-full h-11 rounded-xl bg-linear-to-r from-primary-700 to-primary-500 text-white font-semibold tracking-wide hover:brightness-110 disabled:opacity-50"
+							>
+								{isUnstaking ? tStake('unstaking') : tStake('unstakeAmount')}
+							</Button>
+						)}
 					</section>
 
 					<section className="rounded-2xl border border-primary-700/50 bg-linear-to-br from-gray-800/60 to-gray-900/75 p-4 sm:p-5">
@@ -189,6 +248,9 @@ export default function WithdrawContent({ local }: { local: Lang }) {
 
 						<Button
 							type="button"
+							onClick={handleWithdraw}
+							loading={isWithdrawing}
+							disabled={isWithdrawing || Number(stakeInfo.availableToWithdraw) <= 0}
 							className="mt-4 w-full h-11 rounded-xl bg-linear-to-r from-primary-700 to-primary-500 text-white font-semibold tracking-wide hover:brightness-110"
 						>
 							{tStake('withdrawEth')}

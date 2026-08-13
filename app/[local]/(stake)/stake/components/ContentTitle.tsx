@@ -39,7 +39,6 @@ export default function ContentTitle({ local }: { local: Lang }) {
 
 	const isZh = local === 'zh';
 	const isWalletConnected = isMounted && isConnected;
-	const targetNetworkName = chainId === sepolia.id ? 'Mainnet' : 'Sepolia';
 	const targetNetworkButtonText = chainId === sepolia.id ? '切换到主网' : '切换到 Sepolia';
 	const balanceText = useMemo(() => formattedBalance, [formattedBalance]);
 	const balanceValue = useMemo(() => {

@@ -1,14 +1,15 @@
 'use client';
 
-import { useMemo, useState, type ChangeEvent } from 'react';
+import { useMemo, useState, useEffect, type ChangeEvent, use } from 'react';
 import Box from '@mui/material/Box';
 import { useTranslations } from 'next-intl';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import useContract from '../../stake/hook/useContract';
 
-const STAKED_AMOUNT = 0;
-const AVAILABLE_TO_WITHDRAW = 0;
-const PENDING_WITHDRAW = 0;
+const STAKED_AMOUNT: string = '0';
+const AVAILABLE_TO_WITHDRAW: string = '0';
+const PENDING_WITHDRAW: string = '0';
 
 export default function WithdrawContent({ local }: { local: Lang }) {
 	const tStake = useTranslations('stake');
@@ -16,10 +17,37 @@ export default function WithdrawContent({ local }: { local: Lang }) {
 	const [unstakeAmount, setUnstakeAmount] = useState('');
 	const [error, setError] = useState('');
 
+	// 保存质押书可解压数、可提取数
+	const [stakeInfo, setStakeInfo] = useState({
+		stakedAmount: STAKED_AMOUNT,
+		availableToWithdraw: AVAILABLE_TO_WITHDRAW,
+		pendingWithdraw: PENDING_WITHDRAW,
+	});
+
+	const { formatedStakingBalance, formatedWithdrawAmount, pendingWithdrawAmount } = useContract();
+	console.log('formatedStakingBalance:', formatedStakingBalance);
+	console.log('formatedWithdrawAmount:', formatedWithdrawAmount);
+	useEffect(() => {
+		setStakeInfo({
+			stakedAmount: formatedStakingBalance,
+			availableToWithdraw: formatedWithdrawAmount,
+			pendingWithdraw: pendingWithdrawAmount,
+		});
+	}, [formatedStakingBalance, formatedWithdrawAmount, pendingWithdrawAmount]);
+
 	const isZh = local === 'zh';
-	const stakedText = useMemo(() => STAKED_AMOUNT.toFixed(4), []);
-	const availableText = useMemo(() => AVAILABLE_TO_WITHDRAW.toFixed(4), []);
-	const pendingText = useMemo(() => PENDING_WITHDRAW.toFixed(4), []);
+	const stakedText = useMemo(
+		() => Number(stakeInfo.stakedAmount).toFixed(4),
+		[stakeInfo.stakedAmount]
+	);
+	const availableText = useMemo(
+		() => Number(stakeInfo.availableToWithdraw).toFixed(4),
+		[stakeInfo.availableToWithdraw]
+	);
+	const pendingText = useMemo(
+		() => Number(stakeInfo.pendingWithdraw).toFixed(4),
+		[stakeInfo.pendingWithdraw]
+	);
 	const parsedAmount = Number(unstakeAmount || 0);
 	const isUnstakeDisabled =
 		!unstakeAmount || Number.isNaN(parsedAmount) || parsedAmount <= 0 || !!error;
@@ -59,7 +87,7 @@ export default function WithdrawContent({ local }: { local: Lang }) {
 		}
 
 		const numericValue = Number(nextValue);
-		if (!Number.isNaN(numericValue) && numericValue > STAKED_AMOUNT) {
+		if (!Number.isNaN(numericValue) && numericValue > Number(stakeInfo.stakedAmount)) {
 			setUnstakeAmount(stakedText);
 			setError(labels.errorExceed);
 			return;

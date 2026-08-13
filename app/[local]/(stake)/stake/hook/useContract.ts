@@ -1,73 +1,50 @@
 import { formatUnits } from 'viem';
 import { sepolia } from 'wagmi/chains';
 import { erc20Abi } from 'viem';
-import { useAccount, useReadContracts } from 'wagmi';
+import { useAccount, useReadContracts, useChainId } from 'wagmi';
 import { stakeContractAddress } from '@/lib/utils';
+import { stakeAbi } from './abi';
+import { format } from 'path';
 
 export default function useContract() {
 	const { address } = useAccount();
-
+	const chainId = useChainId();
 	const result = useReadContracts({
 		allowFailure: true,
 		contracts: [
 			{
 				address: stakeContractAddress,
-				abi: erc20Abi,
-				functionName: 'name',
-				chainId: sepolia.id,
+				abi: stakeAbi,
+				functionName: 'stakingBalance',
+				chainId: chainId,
+				args: [0n, address as `0x${string}`],
 			},
 			{
 				address: stakeContractAddress,
-				abi: erc20Abi,
-				functionName: 'symbol',
-				chainId: sepolia.id,
+				abi: stakeAbi,
+				functionName: 'withdrawAmount',
+				chainId: chainId,
+				args: [0n, address as `0x${string}`],
 			},
-			{
-				address: stakeContractAddress,
-				abi: erc20Abi,
-				functionName: 'decimals',
-				chainId: sepolia.id,
-			},
-			{
-				address: stakeContractAddress,
-				abi: erc20Abi,
-				functionName: 'totalSupply',
-				chainId: sepolia.id,
-			},
-			...(address
-				? [
-						{
-							address: stakeContractAddress,
-							abi: erc20Abi,
-							functionName: 'balanceOf',
-							args: [address],
-							chainId: sepolia.id,
-						},
-					]
-				: []),
 		],
 	});
+	console.log('result:', result);
+	const [stakingBalance, withdrawAmount] = result.data ?? [];
 
-	const [nameCall, symbolCall, decimalsCall, totalSupplyCall, balanceCall] = result.data ?? [];
-
-	const name = nameCall?.status === 'success' ? (nameCall.result as string) : '';
-	const symbol = symbolCall?.status === 'success' ? (symbolCall.result as string) : 'ETH';
-	const decimals = decimalsCall?.status === 'success' ? Number(decimalsCall.result) : 18;
-	const totalSupply =
-		totalSupplyCall?.status === 'success' ? (totalSupplyCall.result as bigint) : 0n;
-	const balance = balanceCall?.status === 'success' ? (balanceCall.result as bigint) : 0n;
+	const stakingBalanceValue =
+		stakingBalance?.status === 'success' ? (stakingBalance.result as bigint) : 0n;
+	const withdrawAmountValue =
+		withdrawAmount?.status === 'success' ? withdrawAmount.result : [0n, 0n];
 
 	return {
 		address,
 		contractAddress: stakeContractAddress,
-		chainId: sepolia.id,
-		name,
-		symbol,
-		decimals,
-		totalSupply,
-		formattedTotalSupply: formatUnits(totalSupply, decimals),
-		balance,
-		formattedBalance: formatUnits(balance, decimals),
+		chainId: chainId,
+		stakingBalance: stakingBalanceValue,
+		withdrawAmount: withdrawAmountValue,
+		formatedStakingBalance: formatUnits(stakingBalanceValue, 18),
+		formatedWithdrawAmount: formatUnits(withdrawAmountValue[0], 18),
+		pendingWithdrawAmount: formatUnits(withdrawAmountValue[1], 18),
 		isLoading: result.isLoading,
 		isFetching: result.isFetching,
 		isError: result.isError,

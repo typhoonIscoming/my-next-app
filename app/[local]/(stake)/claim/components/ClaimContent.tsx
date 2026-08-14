@@ -5,6 +5,7 @@ import Box from '@mui/material/Box';
 import { useTranslations } from 'next-intl';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import useContract from '../../stake/hook/useContract';
 import useClaim from '../../stake/hook/useClaim';
 
@@ -18,7 +19,7 @@ export default function ClaimContent({ local }: { local: Lang }) {
 	const [error, setError] = useState('');
 
 	const { formatedStakingBalance } = useContract();
-	const { claimableRewards, claimableBalance, lastUpdateDate } = useClaim();
+	const { claimableRewards, claimableBalance, lastUpdateDate, isLoading } = useClaim();
 
 	void local;
 	const claimableRewardsText = useMemo(
@@ -101,32 +102,46 @@ export default function ClaimContent({ local }: { local: Lang }) {
 			</header>
 
 			<section className="mt-8 max-w-4xl mx-auto rounded-2xl border border-primary-500/25 bg-linear-to-br from-[#0f1625]/95 via-[#101d30]/92 to-[#0c1322]/95 p-4 sm:p-6 shadow-[0_24px_80px_rgba(7,16,28,0.55)]">
-				<div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-					<div className="rounded-xl border border-primary-500/25 bg-black/20 p-4">
-						<div className="text-xs sm:text-sm text-gray-400">
-							{tStake('claimAmount')}
+				{isLoading ? (
+					<div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+						{Array.from({ length: 3 }).map((_, index) => (
+							<div
+								key={index}
+								className="rounded-xl border border-primary-500/25 bg-black/20 p-4"
+							>
+								<Skeleton className="h-3 w-20 rounded bg-primary-500/20" />
+								<Skeleton className="mt-3 h-6 w-28 rounded bg-primary-500/20" />
+							</div>
+						))}
+					</div>
+				) : (
+					<div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+						<div className="rounded-xl border border-primary-500/25 bg-black/20 p-4">
+							<div className="text-xs sm:text-sm text-gray-400">
+								{tStake('claimAmount')}
+							</div>
+							<div className="mt-1 text-base sm:text-lg font-mono [font-variant-numeric:tabular-nums] text-white">
+								{claimableRewardsText} MetaNode
+							</div>
 						</div>
-						<div className="mt-1 text-base sm:text-lg font-mono [font-variant-numeric:tabular-nums] text-white">
-							{claimableRewardsText} MetaNode
+						<div className="rounded-xl border border-primary-500/25 bg-black/20 p-4">
+							<div className="text-xs sm:text-sm text-gray-400">
+								{tStake('stakedAmount')}
+							</div>
+							<div className="mt-1 text-base sm:text-lg font-mono [font-variant-numeric:tabular-nums] text-white">
+								{formatedStakingBalance} {labels.tokenSymbol}
+							</div>
+						</div>
+						<div className="rounded-xl border border-primary-500/25 bg-black/20 p-4">
+							<div className="text-xs sm:text-sm text-gray-400">
+								{tStake('lastUpdateDate')}
+							</div>
+							<div className="mt-1 text-base sm:text-lg font-mono [font-variant-numeric:tabular-nums] text-white">
+								{new Date(lastUpdateDate).toLocaleString() ?? 'Never'}
+							</div>
 						</div>
 					</div>
-					<div className="rounded-xl border border-primary-500/25 bg-black/20 p-4">
-						<div className="text-xs sm:text-sm text-gray-400">
-							{tStake('stakedAmount')}
-						</div>
-						<div className="mt-1 text-base sm:text-lg font-mono [font-variant-numeric:tabular-nums] text-white">
-							{formatedStakingBalance} {labels.tokenSymbol}
-						</div>
-					</div>
-					<div className="rounded-xl border border-primary-500/25 bg-black/20 p-4">
-						<div className="text-xs sm:text-sm text-gray-400">
-							{tStake('pendingClaim')}
-						</div>
-						<div className="mt-1 text-base sm:text-lg font-mono [font-variant-numeric:tabular-nums] text-white">
-							{lastUpdateDate}
-						</div>
-					</div>
-				</div>
+				)}
 
 				<div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-4">
 					<section className="rounded-2xl border border-primary-700/50 bg-linear-to-br from-gray-800/60 to-gray-900/75 p-4 sm:p-5">

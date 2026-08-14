@@ -59,6 +59,7 @@
 		"claimable": "Claimable",
 		"claimableBalance": "Claimable Balance",
 		"pendingClaim": "Pending Rewards",
+		"lastUpdateDate": "Last Update Date",
 		"maxClaim": "Max claimable",
 		"claimEth": "Claim ETH",
 		"readyToClaim": "Ready to claim",

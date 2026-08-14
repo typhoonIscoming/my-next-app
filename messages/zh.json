@@ -59,6 +59,7 @@
 		"claimable": "可领取",
 		"claimableBalance": "可领取余额",
 		"pendingClaim": "待领取收益",
+		"lastUpdateDate": "最后更新时间",
 		"maxClaim": "全部可领取",
 		"claimEth": "领取 ETH",
 		"readyToClaim": "可立即领取",

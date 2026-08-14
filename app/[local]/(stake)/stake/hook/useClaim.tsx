@@ -25,6 +25,11 @@ export default function useClaim() {
 	return {
 		claimableRewards: rewards,
 		claimableBalance: balance,
-		lastUpdateDate: new Date().toLocaleString(),
+		isLoading: result.isLoading,
+		isFetching: result.isFetching,
+		isError: result.isError,
+		error: result.error,
+		refetch: result.refetch,
+		lastUpdateDate: result.dataUpdatedAt,
 	};
 }

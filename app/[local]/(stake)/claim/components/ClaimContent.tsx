@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import useContract from '../../stake/hook/useContract';
-import useClaim from '../../stake/hook/useClaim';
+import useClaim, { useClaimRewards } from '../../stake/hook/useClaim';
 
 const CLAIMABLE_REWARDS = 0;
 const CLAIMABLE_BALANCE = 0;
@@ -19,7 +19,8 @@ export default function ClaimContent({ local }: { local: Lang }) {
 	const [error, setError] = useState('');
 
 	const { formatedStakingBalance } = useContract();
-	const { claimableRewards, claimableBalance, lastUpdateDate, isLoading } = useClaim();
+	const { claimableRewards, claimableBalance, lastUpdateDate, isLoading, refetch } = useClaim();
+	const { claimRewards, isPending, error: claimError, status } = useClaimRewards();
 
 	void local;
 	const claimableRewardsText = useMemo(
@@ -33,7 +34,7 @@ export default function ClaimContent({ local }: { local: Lang }) {
 	const pendingRewardsText = useMemo(() => Number(PENDING_REWARDS).toFixed(4), []);
 	const parsedAmount = Number(claimAmount || 0);
 	const isClaimDisabled =
-		!claimAmount || Number.isNaN(parsedAmount) || parsedAmount <= 0 || !!error;
+		!claimAmount || Number.isNaN(parsedAmount) || parsedAmount <= 0 || !!error || isPending;
 
 	const labels = {
 		placeholder: tStake('claimInputPlaceholder'),
@@ -88,6 +89,21 @@ export default function ClaimContent({ local }: { local: Lang }) {
 	const handleMaxClaim = () => {
 		setClaimAmount(claimableRewardsText);
 		setError('');
+	};
+
+	// 提现操作
+	const handleClaim = async () => {
+		if (isClaimDisabled) {
+			return;
+		}
+		try {
+			await claimRewards();
+			setClaimAmount('');
+			setError('');
+			refetch();
+		} catch (err) {
+			console.error('Claim failed:', err);
+		}
 	};
 
 	return (
@@ -169,6 +185,8 @@ export default function ClaimContent({ local }: { local: Lang }) {
 						{error ? <p className="mt-2 text-xs text-red-300">{error}</p> : null}
 						<Button
 							type="button"
+							onClick={handleClaim}
+							loading={isPending}
 							disabled={isClaimDisabled}
 							className="mt-4 w-full h-11 rounded-xl bg-linear-to-r from-primary-700 to-primary-500 text-white font-semibold tracking-wide hover:brightness-110 disabled:opacity-50"
 						>

@@ -33,3 +33,41 @@ export default function useClaim() {
 		lastUpdateDate: result.dataUpdatedAt,
 	};
 }
+
+export function useClaimRewards() {
+	const { address } = useAccount();
+	const chainId = useChainId();
+	const { writeContract, data: hash, isPending, error, reset, status } = useWriteContract();
+
+	const claimRewards = async (pid = 0n) => {
+		if (!stakeContractAddress) {
+			throw new Error('Stake contract address is not configured.');
+		}
+		if (!address) {
+			throw new Error('Wallet not connected.');
+		}
+
+		const txHash = await new Promise<`0x${string}`>((resolve, reject) => {
+			writeContract(
+				{
+					address: stakeContractAddress,
+					abi: stakeAbi,
+					functionName: 'claim',
+					chainId: chainId,
+					args: [pid],
+				},
+				{
+					onSuccess: (hash) => {
+						resolve(hash);
+					},
+					onError: (error) => {
+						reject(error);
+					},
+				}
+			);
+		});
+
+		return txHash;
+	};
+	return { claimRewards, hash, isPending, error, reset, status };
+}

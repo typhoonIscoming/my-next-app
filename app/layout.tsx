@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { ThemeProvider } from 'next-themes';
 import { cn } from '@/lib/utils';
+import wrapper from './wrapper.module.css';
 
 export const metadata: Metadata = {
 	title: "Typhoon's Space",
@@ -25,7 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 					rel="stylesheet"
 				/>
 			</head>
-			<body className="m-0 p-0">
+			<body className={wrapper.body}>
 				<ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
 					{children}
 				</ThemeProvider>

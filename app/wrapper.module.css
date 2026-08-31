@@ -1,0 +1,17 @@
+.body {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+.notFound {
+	text-align: center;
+	height: 100vh;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+.buttonContainer {
+	margin-top: 16px;
+}

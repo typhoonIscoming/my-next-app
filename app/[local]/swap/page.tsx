@@ -9,7 +9,7 @@ export default async function SwapPage() {
 	await waitForSwapPage();
 
 	return (
-		<Suspense fallback={<SwapLoading />}>
+		<Suspense fallback={<span />}>
 			<div>Swap Page</div>
 		</Suspense>
 	);

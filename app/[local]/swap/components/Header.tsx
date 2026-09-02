@@ -2,6 +2,7 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
+import CustomConnectButton from '@/app/components/CustomConnectButton';
 
 export default function Header() {
 	const pathname = usePathname() || '/';
@@ -32,7 +33,7 @@ export default function Header() {
 	};
 
 	return (
-		<header className="flex items-center justify-between rounded-[28px] border border-white/10 bg-white/2 px-4 py-3 shadow-[0_20px_80px_rgba(19,41,84,0.35)] backdrop-blur-xl sm:px-6">
+		<header className="sticky top-0 bg-[#050816] flex items-center justify-between border border-white/10  px-4 py-3 shadow-[0_20px_80px_rgba(19,41,84,0.35)] backdrop-blur-xl sm:px-6">
 			<div className="flex items-center gap-3">
 				<div className="flex h-9 w-9 items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_30%,#b0a3ff,#5a5cff_40%,#1e1f5e_70%,#110d2c)] shadow-[0_0_30px_rgba(138,109,255,0.6)]">
 					<span className="text-sm font-black tracking-[-0.08em]">M</span>
@@ -73,9 +74,7 @@ export default function Header() {
 				<button className="hidden rounded-full border border-white/10 bg-white/3 px-3 py-2 text-sm text-zinc-200 md:inline-flex">
 					{t('network')}
 				</button>
-				<button className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#0a0d17] shadow-[0_10px_30px_rgba(255,255,255,0.15)] transition hover:scale-[1.01]">
-					{t('connectWallet')}
-				</button>
+				<CustomConnectButton />
 			</div>
 		</header>
 	);

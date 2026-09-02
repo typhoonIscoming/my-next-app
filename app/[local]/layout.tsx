@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { ThemeProvider } from 'next-themes';
 import './globals.css';
 // import { Geist } from 'next/font/google';
@@ -21,16 +22,28 @@ export function generateStaticParams() {
 	return routing.locales.map((local) => ({ local }));
 }
 
-export default async function RootLayout({
+export default function RootLayout({
 	children,
 	params,
 }: Readonly<{
 	children: React.ReactNode;
 	params: Promise<{ local: string }>;
 }>) {
+	return (
+		<Suspense fallback={null}>
+			<LocaleProvider params={params}>{children}</LocaleProvider>
+		</Suspense>
+	);
+}
+
+async function LocaleProvider({
+	children,
+	params,
+}: {
+	children: React.ReactNode;
+	params: Promise<{ local: string }>;
+}) {
 	const { local } = await params;
-	// 关键：让 next-intl 使用 URL 中已经解析出的语言，
-	// 避免它再次从 requestLocale 获取运行时数据。
 	setRequestLocale(local);
 	const messages = await getMessages({ locale: local });
 

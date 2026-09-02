@@ -53,6 +53,7 @@
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.61.1",
+		"@svgr/webpack": "^8.1.0",
 		"@tailwindcss/postcss": "^4",
 		"@testing-library/dom": "^10.4.1",
 		"@testing-library/jest-dom": "^6.9.1",
@@ -69,7 +70,8 @@
 		"prettier": "^3.9.4",
 		"tailwindcss": "^4",
 		"ts-node": "^10.9.2",
-		"typescript": "^5"
+		"typescript": "^5",
+		"url-loader": "^4.1.1"
 	},
 	"prettierIgnore": [
 		"node_modules/**",

@@ -40,6 +40,7 @@ export default function CustomConnectButton({ children }: GenericChildFunctionPr
 							? children({
 									account,
 									chain,
+									connected,
 									openAccountModal,
 									openChainModal,
 									openConnectModal,

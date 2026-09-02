@@ -94,6 +94,8 @@
 
 	--from-primary: oklch(0.77 0.16 201);
 	--to-primary: oklch(0.62 0.16 220);
+	--swap-background: #ff37c7;
+	--swap-hovered-background: #e500a5;
 }
 
 .dark {

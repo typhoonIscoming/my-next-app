@@ -53,9 +53,8 @@ export default function SwapContent() {
 
 				<div className="flex flex-col gap-1">
 					<div className="rounded-[24px] border border-white/8 bg-[#161f33] p-4">
-						<div className="mb-3 flex items-center justify-between text-[11px] uppercase tracking-[0.2em] text-zinc-400">
-							<span>{t('swap.from')}</span>
-							<span>{t('swap.balance')} 5.21</span>
+						<div className="mb-3 flex items-center justify-between text-[16px] font-bold uppercase tracking-[0.2em] text-[#ffffffa6]">
+							<span>{t('swap.sell')}</span>
 						</div>
 						<div className="flex items-center justify-between gap-4">
 							<div className="text-[2.2rem] font-medium tracking-[-0.07em] text-white">
@@ -78,9 +77,8 @@ export default function SwapContent() {
 					</div>
 
 					<div className="rounded-[24px] border border-white/8 bg-[#161f33] p-4">
-						<div className="mb-3 flex items-center justify-between text-[11px] uppercase tracking-[0.2em] text-zinc-400">
-							<span>{t('swap.to')}</span>
-							<span>{t('swap.balance')} 2,174.91</span>
+						<div className="mb-3 flex items-center justify-between text-[16px] font-bold uppercase tracking-[0.2em] text-[#ffffffa6]">
+							<span>{t('swap.buy')}</span>
 						</div>
 						<div className="flex items-center justify-between gap-4">
 							<div className="text-[2.2rem] font-medium tracking-[-0.07em] text-white">

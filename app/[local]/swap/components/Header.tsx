@@ -55,70 +55,76 @@ export default function Header() {
 
 	return (
 		<>
-			<header className="sticky top-0 z-999 bg-[#131313] flex items-center justify-between px-4 py-3 backdrop-blur-xl sm:px-6">
-				<div className="flex items-center gap-3">
-					<div className="flex h-9 w-9 items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_30%,#b0a3ff,#5a5cff_40%,#1e1f5e_70%,#110d2c)] shadow-[0_0_30px_rgba(138,109,255,0.6)]">
-						<span className="text-sm font-black tracking-[-0.08em]">M</span>
-					</div>
-					<div className="hidden md:block text-xl font-semibold tracking-[-0.06em]">
-						MetaNodeSwap
-					</div>
-					<div className="md:hidden" onClick={() => setState(true)}>
-						<MenuIcon className="text-white" />
-					</div>
-				</div>
-
-				<nav className="hidden items-center gap-8 text-sm font-medium text-zinc-300 md:flex">
-					<Link href="/swap" className={navItemClass(isSwap)}>
-						{t('swap.navSwap')}
-					</Link>
-					<Link href="/swap/pool" className={navItemClass(isPool)}>
-						{t('swap.navPool')}
-					</Link>
-					<Link href="/swap/position" className={navItemClass(isPosition)}>
-						{t('swap.navPosition')}
-					</Link>
-				</nav>
-
-				<div className="flex items-center gap-3">
-					<div className="flex items-center rounded-full border border-white/10 bg-white/3 p-1 text-xs font-medium text-zinc-200">
-						<button
-							type="button"
-							onClick={() => handleLocaleChange('zh')}
-							className={`rounded-full cursor-pointer px-2.5 py-1.5 transition ${locale === 'zh' ? 'bg-white text-[#0a0d17]' : 'text-zinc-300'}`}
-						>
-							{t('LanguageSwitcher.zh')}
-						</button>
-						<button
-							type="button"
-							onClick={() => handleLocaleChange('en')}
-							className={`rounded-full cursor-pointer px-2.5 py-1.5 transition ${locale === 'en' ? 'bg-white text-[#0a0d17]' : 'text-zinc-300'}`}
-						>
-							{t('LanguageSwitcher.en')}
-						</button>
+			<header className="sticky top-0 z-999 border-b border-white/10 bg-[#131313]/70 shadow-[0_8px_30px_rgba(0,0,0,0.25)] backdrop-blur-xl supports-[backdrop-filter]:bg-[#131313]/60">
+				<div className="mx-auto flex max-w-[1440px] items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+					<div className="flex items-center gap-3">
+						<div className="flex h-9 w-9 items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_30%,#b0a3ff,#5a5cff_40%,#1e1f5e_70%,#110d2c)] shadow-[0_0_30px_rgba(138,109,255,0.6)]">
+							<span className="text-sm font-black tracking-[-0.08em]">M</span>
+						</div>
+						<div className="hidden md:block text-xl font-semibold tracking-[-0.06em]">
+							MetaNodeSwap
+						</div>
+						<div className="md:hidden" onClick={() => setState(true)}>
+							<MenuIcon className="text-white" />
+						</div>
 					</div>
 
-					<CustomConnectButton>
-						{({ connected, chain, account, openAccountModal, openConnectModal }) => {
-							// console.log('chain', chain, account);
-							// address只显示前后共4位
-							const shortAddress = account
-								? `${account.address.slice(0, 4)}...${account.address.slice(-4)}`
-								: '';
-							return !connected ? (
-								<Button
-									onClick={openConnectModal}
-									className="rounded-2xl! text-white! hover:text-(--swap-hover-background)! bg-(--swap-background)!"
-								>
-									{t('swap.connectWallet')}
-								</Button>
-							) : (
-								<Button onClick={openAccountModal} className="text-white!">
-									{shortAddress}
-								</Button>
-							);
-						}}
-					</CustomConnectButton>
+					<nav className="hidden items-center gap-8 text-sm font-medium text-zinc-300 md:flex">
+						<Link href="/swap" className={navItemClass(isSwap)}>
+							{t('swap.navSwap')}
+						</Link>
+						<Link href="/swap/pool" className={navItemClass(isPool)}>
+							{t('swap.navPool')}
+						</Link>
+						<Link href="/swap/position" className={navItemClass(isPosition)}>
+							{t('swap.navPosition')}
+						</Link>
+					</nav>
+
+					<div className="flex items-center gap-3">
+						<div className="flex items-center rounded-full border border-white/10 bg-white/3 p-1 text-xs font-medium text-zinc-200">
+							<button
+								type="button"
+								onClick={() => handleLocaleChange('zh')}
+								className={`rounded-full cursor-pointer px-2.5 py-1.5 transition ${locale === 'zh' ? 'bg-white text-[#0a0d17]' : 'text-zinc-300'}`}
+							>
+								{t('LanguageSwitcher.zh')}
+							</button>
+							<button
+								type="button"
+								onClick={() => handleLocaleChange('en')}
+								className={`rounded-full cursor-pointer px-2.5 py-1.5 transition ${locale === 'en' ? 'bg-white text-[#0a0d17]' : 'text-zinc-300'}`}
+							>
+								{t('LanguageSwitcher.en')}
+							</button>
+						</div>
+
+						<CustomConnectButton>
+							{({
+								connected,
+								chain,
+								account,
+								openAccountModal,
+								openConnectModal,
+							}) => {
+								const shortAddress = account
+									? `${account.address.slice(0, 4)}...${account.address.slice(-4)}`
+									: '';
+								return !connected ? (
+									<Button
+										onClick={openConnectModal}
+										className="rounded-2xl! text-white! hover:text-(--swap-hover-background)! bg-(--swap-background)!"
+									>
+										{t('swap.connectWallet')}
+									</Button>
+								) : (
+									<Button onClick={openAccountModal} className="text-white!">
+										{shortAddress}
+									</Button>
+								);
+							}}
+						</CustomConnectButton>
+					</div>
 				</div>
 			</header>
 			<StyledDrawer anchor={'bottom'} open={state} onClose={() => toggleDrawer(false)}>

@@ -11,7 +11,29 @@ const nextConfig: NextConfig = {
 	turbopack: {
 		rules: {
 			'*.svg': {
-				loaders: ['@svgr/webpack'],
+				loaders: [
+					{
+						loader: '@svgr/webpack',
+						options: {
+							svgoConfig: {
+								plugins: [
+									{
+										name: 'removeAttrs',
+										params: {
+											attrs: '(fill|stroke|style)', // 移除这些属性
+										},
+									},
+									{
+										name: 'addAttributesToSVGElement',
+										params: {
+											attributes: [{ fill: 'currentColor' }], // 统一添加可继承颜色
+										},
+									},
+								],
+							},
+						},
+					},
+				],
 				as: '*.js', // 这个选项很关键，告诉 Turbopack 把结果当 JS 文件处理
 			},
 		},

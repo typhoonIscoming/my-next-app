@@ -104,6 +104,11 @@
 		"emptyPositionDesc": "Connect your wallet and add liquidity to begin earning fees from swaps on this pool.",
 		"language": "Language",
 		"zh": "中文",
-		"en": "English"
+		"en": "English",
+        "buy": "Buy",
+        "sell": "Sell",
+        "positionSlogan": "Supply liquidity to collect fees",
+        "connectYourWallet": "Connect your wallet",
+        "viewPositions": "To view your positions and rewards you must connect your wallet."
 	}
 }

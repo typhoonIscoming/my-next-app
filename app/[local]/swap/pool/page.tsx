@@ -1,4 +1,7 @@
+import { Suspense } from 'react';
 import { getTranslations } from 'next-intl/server';
+import { useAccount } from 'wagmi';
+import { AddPosition, EmptyPool } from './PoolContent';
 
 export default async function PoolPage() {
 	const t = await getTranslations('swap');
@@ -12,17 +15,17 @@ export default async function PoolPage() {
 							{t('navPool')}
 						</p>
 						<h1 className="mt-2 text-3xl font-semibold tracking-[-0.06em] text-white">
-							{t('poolTitle')}
+							{t('positionSlogan')}
 						</h1>
 					</div>
 
-					<button className="inline-flex items-center justify-center rounded-full bg-[linear-gradient(135deg,#6fe8ff,#4bd3bd_35%,#2dbf9a)] px-5 py-2.5 text-sm font-semibold text-[#07131a] shadow-[0_18px_36px_rgba(59,201,175,0.35)] transition hover:brightness-110">
-						+ {t('createPool')}
-					</button>
+					<Suspense>
+						<AddPosition label={t('createPool')} />
+					</Suspense>
 				</div>
 
-				<div className="mb-6 grid gap-4 md:grid-cols-3">
-					{[
+				<div className="mb-6">
+					{/* {[
 						{ label: t('totalLiquidity'), value: '$128.4M', accent: 'text-cyan-300' },
 						{ label: t('volume24h'), value: '$9.7M', accent: 'text-emerald-300' },
 						{ label: t('feesCollected'), value: '$1.2M', accent: 'text-violet-300' },
@@ -40,7 +43,8 @@ export default async function PoolPage() {
 								{item.value}
 							</div>
 						</div>
-					))}
+					))} */}
+					<EmptyPool />
 				</div>
 
 				<section className="rounded-[32px] border border-white/10 bg-[#111827]/90 p-5 shadow-[0_40px_120px_rgba(0,0,0,0.5)] backdrop-blur-2xl">

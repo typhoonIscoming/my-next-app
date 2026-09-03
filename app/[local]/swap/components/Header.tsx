@@ -12,6 +12,14 @@ import List from '@mui/material/List';
 import InsertLinkIcon from '@mui/icons-material/InsertLink';
 import SvgIcon from '@mui/material/SvgIcon';
 import PoolSvg from '@/app/assets/svgs/pool-water-swimming-svgrepo-com.svg';
+import Portfolio from '@/public/portfolio-svgrepo-com.svg';
+import { styled } from '@mui/material/styles';
+
+const StyledDrawer = styled(Drawer)({
+	'.MuiPaper-root': {
+		backgroundColor: 'transparent',
+	},
+});
 
 export default function Header() {
 	const pathname = usePathname() || '/';
@@ -79,14 +87,14 @@ export default function Header() {
 							onClick={() => handleLocaleChange('zh')}
 							className={`rounded-full cursor-pointer px-2.5 py-1.5 transition ${locale === 'zh' ? 'bg-white text-[#0a0d17]' : 'text-zinc-300'}`}
 						>
-							中文
+							{t('LanguageSwitcher.zh')}
 						</button>
 						<button
 							type="button"
 							onClick={() => handleLocaleChange('en')}
 							className={`rounded-full cursor-pointer px-2.5 py-1.5 transition ${locale === 'en' ? 'bg-white text-[#0a0d17]' : 'text-zinc-300'}`}
 						>
-							EN
+							{t('LanguageSwitcher.en')}
 						</button>
 					</div>
 
@@ -113,28 +121,29 @@ export default function Header() {
 					</CustomConnectButton>
 				</div>
 			</header>
-			<Drawer anchor={'left'} open={state} onClose={() => toggleDrawer(false)}>
+			<StyledDrawer anchor={'bottom'} open={state} onClose={() => toggleDrawer(false)}>
 				<div
-					className="w-64 h-full bg-[#131313] text-white"
+					className="h-full w-full bg-[#131313] text-white pb-8 rounded-t-2xl"
 					role="presentation"
 					onClick={() => toggleDrawer(false)}
 					onKeyDown={() => toggleDrawer(false)}
 				>
 					<List>
-						<ListItem>
+						<ListItem className="gap-4">
 							<InsertLinkIcon />
 							<Link href="/swap">{t('swap.navSwap')}</Link>
 						</ListItem>
-						<ListItem>
+						<ListItem className="gap-4">
 							<SvgIcon component={PoolSvg} inheritViewBox />
 							<Link href="/swap/pool">{t('swap.navPool')}</Link>
 						</ListItem>
-						<ListItem>
+						<ListItem className="gap-4">
+							<SvgIcon component={Portfolio} inheritViewBox />
 							<Link href="/swap/position">{t('swap.navPosition')}</Link>
 						</ListItem>
 					</List>
 				</div>
-			</Drawer>
+			</StyledDrawer>
 		</>
 	);
 }

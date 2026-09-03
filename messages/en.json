@@ -88,6 +88,11 @@
 		"poolTitle": "Liquidity pools",
 		"createPool": "Create pool",
 		"totalLiquidity": "Total liquidity",
+		"totalLockedValue": "Total value locked",
+		"dayVolume": "1D volume",
+		"day30Volume": "30D volume",
+		"dayVolumeOverTvl": "1D volume / TVL",
+		"poolApr": "Pool APR",
 		"volume24h": "24h volume",
 		"feesCollected": "Fees collected",
 		"popularPools": "Popular pools",
@@ -100,8 +105,9 @@
 		"openPositions": "Open positions",
 		"activePositions": "Active positions",
 		"viewAll": "View all",
-		"emptyPositionTitle": "No active positions yet",
+		"emptyPositionTitle": "No positions",
 		"emptyPositionDesc": "Connect your wallet and add liquidity to begin earning fees from swaps on this pool.",
+        "emptyPosition": "You have no liquidity positions. Create a new position to start earning fees and rewards in eligible pools.",
 		"language": "Language",
 		"zh": "中文",
 		"en": "English",
@@ -109,6 +115,7 @@
         "sell": "Sell",
         "positionSlogan": "Supply liquidity to collect fees",
         "connectYourWallet": "Connect your wallet",
-        "viewPositions": "To view your positions and rewards you must connect your wallet."
+        "viewPositions": "To view your positions and rewards you must connect your wallet.",
+        "pleaseConnectWallet": "Please connect your wallet first"
 	}
 }

@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import { useAccount } from 'wagmi';
 import { useTranslations } from 'next-intl';
 import CustomConnectButton from '@/app/components/CustomConnectButton';
@@ -8,12 +9,40 @@ import SvgIcon from '@mui/material/SvgIcon';
 import Flower from '@/public/flower-svgrepo-com.svg';
 import Leaf from '@/public/maple-leaf-svgrepo-com.svg';
 import Leaf2 from '@/public/leaf-svgrepo-com.svg';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 export function AddPosition({ label }: { label: string }) {
+	const [open, setOpen] = useState(false);
+	const handleClose = () => setOpen(false);
+	const t = useTranslations('swap');
+	const { isConnected } = useAccount();
+	const handleConnect = () => {
+		if (!isConnected) {
+			setOpen(true);
+			return;
+		}
+		console.log('1111');
+	};
 	return (
-		<button className="inline-flex cursor-pointer items-center justify-center rounded-full bg-[linear-gradient(135deg,#6fe8ff,#4bd3bd_35%,#2dbf9a)] px-5 py-2.5 text-sm font-semibold text-[#07131a] shadow-[0_0px_20px_rgba(59,201,175,0.35)] transition hover:brightness-110">
-			+ {label}
-		</button>
+		<>
+			<button
+				className="inline-flex cursor-pointer items-center justify-center rounded-full bg-[linear-gradient(135deg,#6fe8ff,#4bd3bd_35%,#2dbf9a)] px-5 py-2.5 text-sm font-semibold text-[#07131a] shadow-[0_0px_20px_rgba(59,201,175,0.35)] transition hover:brightness-110"
+				onClick={handleConnect}
+			>
+				+ {label}
+			</button>
+			<Snackbar
+				open={open}
+				anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+				autoHideDuration={3000}
+				onClose={handleClose}
+			>
+				<Alert severity="warning" sx={{ width: '100%' }}>
+					{t('pleaseConnectWallet')}
+				</Alert>
+			</Snackbar>
+		</>
 	);
 }
 
@@ -21,16 +50,34 @@ export function EmptyPool() {
 	const { isConnected } = useAccount();
 	const t = useTranslations('swap');
 	return isConnected ? (
-		<div className="flex flex-col items-center justify-center rounded-[24px] border border-white/10 bg-white/3 p-8 text-center text-zinc-400">
-			<p className="text-lg font-semibold text-white">{t('emptyPositionTitle')}</p>
-			<p className="mt-2 text-sm">{t('emptyPositionDesc')}</p>
+		<div className="relative overflow-hidden flex flex-col items-center justify-center rounded-[24px] border border-white/10 bg-white/3 p-8 text-center text-zinc-400">
+			<h3 className="text-[24px] font-semibold text-white">{t('emptyPositionTitle')}</h3>
+			<p className="mt-2 text-[16px]">{t('emptyPosition')}</p>
+			<SvgIcon
+				component={Flower}
+				inheritViewBox
+				className="absolute bottom-4 left-5 md:left-16 transform rotate-343"
+				sx={{ color: '#FF37C7', fontSize: 84, opacity: 0.3 }}
+			/>
+			<SvgIcon
+				component={Leaf}
+				inheritViewBox
+				className="absolute bottom-4 right-1 md:right-6 transform rotate-343"
+				sx={{ color: '#FF37C7', fontSize: 84, opacity: 0.3 }}
+			/>
+			<SvgIcon
+				component={Leaf2}
+				inheritViewBox
+				className="absolute top-[-30] right-5 md:right-50 transform rotate-[-17]"
+				sx={{ color: '#FF37C7', fontSize: 84, opacity: 0.3 }}
+			/>
 		</div>
 	) : (
 		<div className="relative overflow-hidden flex flex-col items-center justify-center rounded-[24px] border border-white/10 bg-white/3 p-8 text-center text-zinc-400">
 			<SvgIcon
 				component={Flower}
 				inheritViewBox
-				className="absolute bottom-4 left-5 md:left-36 transform rotate-343"
+				className="absolute bottom-4 left-5 md:left-16 transform rotate-343"
 				sx={{ color: '#FF37C7', fontSize: 84, opacity: 0.3 }}
 			/>
 			<SvgIcon

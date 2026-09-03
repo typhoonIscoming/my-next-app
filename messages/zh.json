@@ -85,9 +85,14 @@
 		"slippage": "滑点",
 		"networkFee": "网络费用",
 		"reviewSwap": "确认兑换",
-		"poolTitle": "流动池",
-		"createPool": "创建流动池",
+		"poolTitle": "流动性池",
+		"createPool": "创建流动性池",
 		"totalLiquidity": "总流动性",
+		"totalLockedValue": "总锁仓量",
+		"dayVolume": "1天交易量",
+		"day30Volume": "30天交易量",
+		"dayVolumeOverTvl": "1天交易量/总锁仓量",
+		"poolApr": "资金池APR",
 		"volume24h": "24小时交易额",
 		"feesCollected": "累计手续费",
 		"popularPools": "热门流动池",
@@ -100,8 +105,9 @@
 		"openPositions": "开放仓位",
 		"activePositions": "活跃仓位",
 		"viewAll": "查看全部",
-		"emptyPositionTitle": "暂无活跃仓位",
+		"emptyPositionTitle": "暂无头寸",
 		"emptyPositionDesc": "连接钱包并添加流动性后，即可开始从交易中赚取手续费。",
+        "emptyPosition": "你没有任何流动性头寸。创建新头寸，开始在符合条件的资金池中赚取费用和奖励。",
 		"language": "语言",
 		"zh": "中文",
 		"en": "English",
@@ -109,6 +115,7 @@
         "sell": "卖出",
         "positionSlogan": "提供流动性，赚取费用",
         "connectYourWallet": "连接您的钱包",
-        "viewPositions": "要查看你的头寸和奖励，必须先连接钱包。"
+        "viewPositions": "要查看你的头寸和奖励，必须先连接钱包。",
+        "pleaseConnectWallet": "请先连接钱包"
 	}
 }

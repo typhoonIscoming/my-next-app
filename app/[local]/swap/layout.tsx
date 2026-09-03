@@ -6,7 +6,7 @@ export default function SwapLayout({ children }: { children: React.ReactNode }) 
 	return (
 		<WagmiProvider>
 			<Header />
-			<Box className="min-h-screen">{children}</Box>
+			{children}
 		</WagmiProvider>
 	);
 }

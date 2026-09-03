@@ -2,12 +2,13 @@ import { Suspense } from 'react';
 import { getTranslations } from 'next-intl/server';
 import { useAccount } from 'wagmi';
 import { AddPosition, EmptyPool } from './PoolContent';
+import { PoolTable } from '../components/PoolTable';
 
 export default async function PoolPage() {
 	const t = await getTranslations('swap');
 
 	return (
-		<main className="min-h-[calc(100vh-120px)] bg-[#050816] px-4 py-8 text-white sm:px-6 lg:px-8">
+		<main className="min-h-screen bg-[#050816] px-4 py-8 text-white sm:px-6 lg:px-8">
 			<div className="mx-auto max-w-6xl">
 				<div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
 					<div>
@@ -25,37 +26,15 @@ export default async function PoolPage() {
 				</div>
 
 				<div className="mb-6">
-					{/* {[
-						{ label: t('totalLiquidity'), value: '$128.4M', accent: 'text-cyan-300' },
-						{ label: t('volume24h'), value: '$9.7M', accent: 'text-emerald-300' },
-						{ label: t('feesCollected'), value: '$1.2M', accent: 'text-violet-300' },
-					].map((item) => (
-						<div
-							key={item.label}
-							className="rounded-[24px] border border-white/10 bg-white/3 p-4 backdrop-blur-xl"
-						>
-							<p className="text-xs uppercase tracking-[0.2em] text-zinc-400">
-								{item.label}
-							</p>
-							<div
-								className={`mt-3 text-2xl font-semibold tracking-[-0.06em] ${item.accent}`}
-							>
-								{item.value}
-							</div>
-						</div>
-					))} */}
 					<EmptyPool />
 				</div>
 
-				<section className="rounded-[32px] border border-white/10 bg-[#111827]/90 p-5 shadow-[0_40px_120px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
-					<div className="mb-5 flex items-center justify-between">
+				<section className="backdrop-blur-2xl">
+					<div className="mb-5 flex items-center">
 						<h2 className="text-lg font-semibold text-white">{t('popularPools')}</h2>
-						<button className="rounded-full border border-white/10 bg-white/3 px-3 py-1.5 text-sm text-zinc-200 transition hover:bg-white/5">
-							{t('seeAll')}
-						</button>
 					</div>
 
-					<div className="space-y-4">
+					{/* <div className="space-y-4">
 						{[
 							{ pair: 'ETH / USDC', fee: '0.05%', tvl: '$63.4M', apr: '3.92%' },
 							{ pair: 'WBTC / ETH', fee: '0.30%', tvl: '$41.1M', apr: '2.71%' },
@@ -103,7 +82,8 @@ export default async function PoolPage() {
 								</div>
 							</div>
 						))}
-					</div>
+					</div> */}
+					<PoolTable />
 				</section>
 			</div>
 		</main>

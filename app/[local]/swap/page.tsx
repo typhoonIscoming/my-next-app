@@ -1,5 +1,8 @@
+import { Suspense } from 'react';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
+import { ArrowDownSvgIcon } from './components/CustomSvgIcon';
+import Button from '@mui/material/Button';
 
 function assertValidLocale(locale: Lang) {
 	if (!locale) {
@@ -30,11 +33,11 @@ export default async function SwapPage({ params }: { params: Promise<{ local: La
 	const t = await getTranslations('swap');
 
 	return (
-		<main className="min-h-screen bg-[#050816] text-white">
+		<main className="min-h-screen bg-[#131313] text-white">
 			<div className="mx-auto max-w-[1440px] px-4 pb-10 pt-4 sm:px-6 lg:px-8">
 				<section className="flex min-h-[calc(100vh-120px)] items-center justify-center py-10">
-					<div className="w-full max-w-[500px] rounded-[32px] border border-white/10 bg-[#0f1320]/90 p-3 shadow-[0_40px_120px_rgba(0,0,0,0.6)] backdrop-blur-2xl">
-						<div className="rounded-[28px] border border-white/8 bg-[#121a2d]/95 p-4">
+					<div className="w-full max-w-[500px] rounded-[32px] backdrop-blur-2xl">
+						<div className="rounded-[28px] p-4">
 							<div className="mb-4 flex items-center justify-between px-2 py-1">
 								<div className="flex items-center gap-2 text-sm font-semibold text-white">
 									<span className="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400" />
@@ -57,7 +60,7 @@ export default async function SwapPage({ params }: { params: Promise<{ local: La
 								</button>
 							</div>
 
-							<div className="space-y-3">
+							<div className="flex flex-col gap-2">
 								<div className="rounded-[24px] border border-white/8 bg-[#161f33] p-4">
 									<div className="mb-3 flex items-center justify-between text-[11px] uppercase tracking-[0.2em] text-zinc-400">
 										<span>{t('from')}</span>
@@ -77,9 +80,9 @@ export default async function SwapPage({ params }: { params: Promise<{ local: La
 									</div>
 								</div>
 
-								<div className="relative flex justify-center -my-1">
-									<button className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-[#151b2b] text-xl shadow-[0_12px_30px_rgba(0,0,0,0.38)] transition hover:rotate-180">
-										⇅
+								<div className="relative w-full flex justify-center">
+									<button className="absolute cursor-pointer translate-y-[-50%] translate-x-[-50%] rounded-[8px] z-10 flex h-11 w-11 items-center justify-center border-4 border-[#131313] bg-[#151b2b] text-xl transition">
+										<ArrowDownSvgIcon fontSize="small" />
 									</button>
 								</div>
 

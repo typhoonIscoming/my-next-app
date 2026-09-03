@@ -55,7 +55,7 @@ export default function Header() {
 
 	return (
 		<>
-			<header className="sticky top-0 z-999 bg-[#050816] flex items-center justify-between border border-white/10  px-4 py-3 shadow-[0_20px_80px_rgba(19,41,84,0.35)] backdrop-blur-xl sm:px-6">
+			<header className="sticky top-0 z-999 bg-[#131313] flex items-center justify-between px-4 py-3 backdrop-blur-xl sm:px-6">
 				<div className="flex items-center gap-3">
 					<div className="flex h-9 w-9 items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_30%,#b0a3ff,#5a5cff_40%,#1e1f5e_70%,#110d2c)] shadow-[0_0_30px_rgba(138,109,255,0.6)]">
 						<span className="text-sm font-black tracking-[-0.08em]">M</span>
@@ -100,7 +100,7 @@ export default function Header() {
 
 					<CustomConnectButton>
 						{({ connected, chain, account, openAccountModal, openConnectModal }) => {
-							console.log('chain', chain, account);
+							// console.log('chain', chain, account);
 							// address只显示前后共4位
 							const shortAddress = account
 								? `${account.address.slice(0, 4)}...${account.address.slice(-4)}`

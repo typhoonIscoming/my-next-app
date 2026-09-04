@@ -118,6 +118,10 @@
         "viewPositions": "To view your positions and rewards you must connect your wallet.",
         "pleaseConnectWallet": "Please connect your wallet first",
         "prev": "Prev",
-        "next": "Next"
+        "next": "Next",
+        "feeRate": "Fee tier",
+        "priceRange": "Set price range",
+        "currentPrice": "Current price",
+        "liquidity": "Liquidity"
 	}
 }

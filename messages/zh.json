@@ -118,6 +118,10 @@
         "viewPositions": "要查看你的头寸和奖励，必须先连接钱包。",
         "pleaseConnectWallet": "请先连接钱包",
         "prev": "上一页",
-        "next": "下一页"
+        "next": "下一页",
+        "feeRate": "费率",
+        "priceRange": "设置价格区间",
+        "currentPrice": "当前价格",
+        "liquidity": "流动性"
 	}
 }

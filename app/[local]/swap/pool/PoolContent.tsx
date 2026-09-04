@@ -97,11 +97,11 @@ export function EmptyPool() {
 			<Box className="mt-4">
 				<CustomConnectButton>
 					{({ connected, chain, account, openAccountModal, openConnectModal }) => {
-						// console.log('chain', chain, account);
+						// console.log('chain', connected, chain, account);
 						// address只显示前后共4位
-						const shortAddress = account
-							? `${account.address.slice(0, 4)}...${account.address.slice(-4)}`
-							: '';
+						// const shortAddress = account
+						// 	? `${account.address.slice(0, 4)}...${account.address.slice(-4)}`
+						// 	: '';
 						return !connected ? (
 							<Button
 								onClick={openConnectModal}
@@ -109,11 +109,7 @@ export function EmptyPool() {
 							>
 								{t('connectWallet')}
 							</Button>
-						) : (
-							<Button onClick={openAccountModal} className="text-white!">
-								{shortAddress}
-							</Button>
-						);
+						) : null;
 					}}
 				</CustomConnectButton>
 			</Box>

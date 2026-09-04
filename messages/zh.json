@@ -116,6 +116,8 @@
         "positionSlogan": "提供流动性，赚取费用",
         "connectYourWallet": "连接您的钱包",
         "viewPositions": "要查看你的头寸和奖励，必须先连接钱包。",
-        "pleaseConnectWallet": "请先连接钱包"
+        "pleaseConnectWallet": "请先连接钱包",
+        "prev": "上一页",
+        "next": "下一页"
 	}
 }

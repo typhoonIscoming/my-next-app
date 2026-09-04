@@ -116,6 +116,8 @@
         "positionSlogan": "Supply liquidity to collect fees",
         "connectYourWallet": "Connect your wallet",
         "viewPositions": "To view your positions and rewards you must connect your wallet.",
-        "pleaseConnectWallet": "Please connect your wallet first"
+        "pleaseConnectWallet": "Please connect your wallet first",
+        "prev": "Prev",
+        "next": "Next"
 	}
 }

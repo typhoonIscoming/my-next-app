@@ -11,6 +11,7 @@ import Leaf from '@/public/maple-leaf-svgrepo-com.svg';
 import Leaf2 from '@/public/leaf-svgrepo-com.svg';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+import Link from 'next/link';
 
 export function AddPosition({ label }: { label: string }) {
 	const [open, setOpen] = useState(false);
@@ -26,12 +27,21 @@ export function AddPosition({ label }: { label: string }) {
 	};
 	return (
 		<>
-			<button
-				className="inline-flex cursor-pointer items-center justify-center rounded-full bg-[linear-gradient(135deg,#6fe8ff,#4bd3bd_35%,#2dbf9a)] px-5 py-2.5 text-sm font-semibold text-[#07131a] shadow-[0_0px_20px_rgba(59,201,175,0.35)] transition hover:brightness-110"
-				onClick={handleConnect}
-			>
-				+ {label}
-			</button>
+			<Box className="flex justify-end gap-4">
+				<button
+					className="inline-flex cursor-pointer items-center justify-center rounded-full bg-[linear-gradient(135deg,#6fe8ff,#4bd3bd_35%,#2dbf9a)] px-5 py-2.5 text-sm font-semibold text-[#07131a] shadow-[0_0px_20px_rgba(59,201,175,0.35)] transition hover:brightness-110"
+					onClick={handleConnect}
+				>
+					+ {label}
+				</button>
+				{isConnected && (
+					<Link href="/swap/position">
+						<button className="inline-flex cursor-pointer items-center justify-center rounded-full bg-[linear-gradient(135deg,#6fe8ff,#4bd3bd_35%,#2dbf9a)] px-5 py-2.5 text-sm font-semibold text-[#07131a] shadow-[0_0px_20px_rgba(59,201,175,0.35)] transition hover:brightness-110">
+							+ {t('myPositions')}
+						</button>
+					</Link>
+				)}
+			</Box>
 			<Snackbar
 				open={open}
 				anchorOrigin={{ vertical: 'top', horizontal: 'center' }}

@@ -122,6 +122,9 @@
         "feeRate": "Fee tier",
         "priceRange": "Set price range",
         "currentPrice": "Current price",
-        "liquidity": "Liquidity"
+        "liquidity": "Liquidity",
+        "myPositions": "My positions",
+        "emptyList": "No pools yet",
+        "noPools": "There are currently no liquidity pools available."
 	}
 }

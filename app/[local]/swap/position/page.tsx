@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import PositionList from './PositionList';
 
 export default async function PositionPage() {
 	const t = await getTranslations('swap');
@@ -43,34 +44,7 @@ export default async function PositionPage() {
 					))}
 				</div>
 
-				<section className="rounded-[32px] border border-white/10 bg-[#111827]/90 p-5 shadow-[0_40px_120px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
-					<div className="mb-5 flex items-center justify-between">
-						<h2 className="text-lg font-semibold text-white">{t('activePositions')}</h2>
-						<button className="rounded-full border border-white/10 bg-white/3 px-3 py-1.5 text-sm text-zinc-200 transition hover:bg-white/5">
-							{t('viewAll')}
-						</button>
-					</div>
-
-					<div className="rounded-[28px] border border-dashed border-violet-500/20 bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.16),transparent_50%)] p-10 text-center">
-						<div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-violet-400/30 bg-violet-500/10 text-2xl shadow-[0_0_40px_rgba(139,92,246,0.25)]">
-							◎
-						</div>
-						<h3 className="mt-6 text-2xl font-semibold tracking-tighter text-white">
-							{t('emptyPositionTitle')}
-						</h3>
-						<p className="mx-auto mt-3 max-w-md text-sm leading-6 text-zinc-400">
-							{t('emptyPositionDesc')}
-						</p>
-						<div className="mt-6 flex items-center justify-center gap-3">
-							<button className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#0a0d17]">
-								{t('connectWallet')}
-							</button>
-							<button className="rounded-full border border-white/10 bg-white/3 px-4 py-2 text-sm font-medium text-zinc-200">
-								{t('navPool')}
-							</button>
-						</div>
-					</div>
-				</section>
+				<PositionList />
 			</div>
 		</main>
 	);

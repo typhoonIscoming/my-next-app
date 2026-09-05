@@ -20,7 +20,7 @@ export function PoolTable() {
 	const isLoading = Boolean(poolData?.isLoading);
 
 	const poolRows = useMemo(() => {
-		const raw = Array.isArray(poolData?.data) ? poolData.data : [];
+		const raw = Array.isArray(poolData?.data) ? poolData.data.reverse() : [];
 		return raw.map((item, index) => {
 			if (typeof item === 'object' && item !== null && 'token0' in item && 'token1' in item) {
 				const fee = Number((item as { fee?: bigint | number }).fee ?? 0);

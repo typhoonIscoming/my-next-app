@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { useAccount } from 'wagmi';
 import { useTranslations } from 'next-intl';
 import CustomConnectButton from '@/app/components/CustomConnectButton';
@@ -11,10 +11,17 @@ import Leaf from '@/public/maple-leaf-svgrepo-com.svg';
 import Leaf2 from '@/public/leaf-svgrepo-com.svg';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
 import Link from 'next/link';
+import { SwapContext } from '../context/swapContext';
 
 export function AddPosition({ label }: { label: string }) {
 	const [open, setOpen] = useState(false);
+	const { openCreatePool } = useContext(SwapContext);
 	const handleClose = () => setOpen(false);
 	const t = useTranslations('swap');
 	const { isConnected } = useAccount();
@@ -23,7 +30,7 @@ export function AddPosition({ label }: { label: string }) {
 			setOpen(true);
 			return;
 		}
-		console.log('1111');
+		openCreatePool();
 	};
 	return (
 		<>
@@ -124,5 +131,38 @@ export function EmptyPool() {
 				</CustomConnectButton>
 			</Box>
 		</div>
+	);
+}
+
+// 创建流动池
+export function CreatePool() {
+	const t = useTranslations('swap');
+	const { isCreatePoolOpen, closeCreatePool } = useContext(SwapContext);
+
+	return (
+		<Dialog open={isCreatePoolOpen} onClose={closeCreatePool} maxWidth="sm" fullWidth>
+			<DialogTitle sx={{ pb: 1 }}>{t('createPool')}</DialogTitle>
+			<DialogContent>
+				<DialogContentText sx={{ color: 'rgba(0,0,0,0.7)' }}>
+					{t('positionSlogan')}
+				</DialogContentText>
+			</DialogContent>
+			<DialogActions sx={{ px: 3, pb: 2 }}>
+				<Button onClick={closeCreatePool} sx={{ color: '#fff' }}>
+					取消
+				</Button>
+				<Button
+					variant="contained"
+					onClick={closeCreatePool}
+					sx={{
+						background: 'linear-gradient(135deg,#6fe8ff,#4bd3bd_35%,#2dbf9a)',
+						color: '#07131a',
+						fontWeight: 700,
+					}}
+				>
+					确认
+				</Button>
+			</DialogActions>
+		</Dialog>
 	);
 }

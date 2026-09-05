@@ -6,6 +6,7 @@ import { useReadPool } from '../hooks/useReadPool';
 import { getToken, cn } from '@/lib/utils';
 import { formatEther } from 'viem';
 import useIsMobile from '@/hooks/useIsMobile';
+import TableSkeleton from './TableSkeleton';
 
 const PAGE_SIZE = 20;
 
@@ -16,6 +17,7 @@ export function PoolTable() {
 	const [currentPage, setCurrentPage] = useState(1);
 	const isMobile = useIsMobile();
 	const poolData = useReadPool();
+	const isLoading = Boolean(poolData?.isLoading);
 
 	const poolRows = useMemo(() => {
 		const raw = Array.isArray(poolData?.data) ? poolData.data : [];
@@ -101,57 +103,62 @@ export function PoolTable() {
 				</Box>
 				{poolRows.length ? (
 					<>
-						<Box
-							ref={tbodyRef}
-							onScroll={() => syncScroll(tbodyRef.current, theadRef.current)}
-							className="overflow-x-auto overflow-y-hidden scrollbar-none tbody-list"
-						>
-							<Box className="w-fit min-w-full">
-								<div className="mt-2 space-y-2">
-									{pageList.map((item) => (
-										<Box
-											key={`${item.pair}-${item.index}`}
-											className="flex items-center  border border-white/5 bg-[#050816] text-sm text-white"
-										>
-											{!isMobile && (
-												<Box className="sticky left-0 z-10 w-12 shrink-0 border-r border-white/5 bg-[#131313] px-3 py-3 text-left text-zinc-400">
-													{item.index}
-												</Box>
-											)}
+						{isLoading ? (
+							<TableSkeleton />
+						) : (
+							<Box
+								ref={tbodyRef}
+								onScroll={() => syncScroll(tbodyRef.current, theadRef.current)}
+								className="overflow-x-auto overflow-y-hidden scrollbar-none tbody-list"
+							>
+								<Box className="w-fit min-w-full">
+									<div className="mt-2 space-y-2">
+										{pageList.map((item) => (
 											<Box
-												className={cn(
-													'shrink-0 px-3 py-3 text-left font-bold border-r border-white/10',
-													isMobile
-														? 'sticky left-0 w-40 z-10 bg-[#050816]'
-														: 'w-60'
-												)}
+												key={`${item.pair}-${item.index}`}
+												className="flex items-center  border border-white/5 bg-[#050816] text-sm text-white"
 											>
-												{item.pair}
+												{!isMobile && (
+													<Box className="sticky left-0 z-10 w-12 shrink-0 border-r border-white/5 bg-[#131313] px-3 py-3 text-left text-zinc-400">
+														{item.index}
+													</Box>
+												)}
+												<Box
+													className={cn(
+														'shrink-0 px-3 py-3 text-left font-bold border-r border-white/10',
+														isMobile
+															? 'sticky left-0 w-40 z-10 bg-[#050816]'
+															: 'w-60'
+													)}
+												>
+													{item.pair}
+												</Box>
+												<Box className="w-40 shrink-0 text-right font-bold">
+													{item.fee}
+												</Box>
+												<Box className="w-40 shrink-0 grow text-right font-bold">
+													{item.range}
+												</Box>
+												<Box className="w-40 shrink-0 text-right font-bold">
+													{item.tick}
+												</Box>
+												<Box className="w-40 shrink-0 text-right pr-8 font-bold">
+													{item.liquidity}
+												</Box>
 											</Box>
-											<Box className="w-40 shrink-0 text-right font-bold">
-												{item.fee}
-											</Box>
-											<Box className="w-40 shrink-0 grow text-right font-bold">
-												{item.range}
-											</Box>
-											<Box className="w-40 shrink-0 text-right font-bold">
-												{item.tick}
-											</Box>
-											<Box className="w-40 shrink-0 text-right pr-8 font-bold">
-												{item.liquidity}
-											</Box>
-										</Box>
-									))}
-								</div>
+										))}
+									</div>
+								</Box>
 							</Box>
-						</Box>
+						)}
+
 						<div className="sticky  bottom-0 z-30 mt-4 border-t border-white/10 bg-[#131313]/95 px-3 py-3 backdrop-blur-md">
 							<div className="flex items-center justify-end gap-2 text-sm text-zinc-300">
 								<button
 									type="button"
 									onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
 									disabled={safePage === 1}
-									className="rounded-full border border-white/10 bg-white/3 px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-40"
+									className="rounded-full cursor-pointer border border-white/10 bg-white/3 px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-40"
 								>
 									{t('swap.prev')}
 								</button>
@@ -164,7 +171,7 @@ export function PoolTable() {
 										setCurrentPage((prev) => Math.min(totalPages, prev + 1))
 									}
 									disabled={safePage === totalPages}
-									className="rounded-full border border-white/10 bg-white/3 px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-40"
+									className="rounded-full cursor-pointer border border-white/10 bg-white/3 px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-40"
 								>
 									{t('swap.next')}
 								</button>

@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useMemo, useRef, useState } from 'react';
 import { useReadPool } from '../hooks/useReadPool';
 import { getToken, cn } from '@/lib/utils';
-import { formatEther } from 'viem';
+import { formatEther, formatUnits } from 'viem';
 import useIsMobile from '@/hooks/useIsMobile';
 import TableSkeleton from './TableSkeleton';
 
@@ -18,7 +18,19 @@ export function PoolTable() {
 	const isMobile = useIsMobile();
 	const poolData = useReadPool();
 	const isLoading = Boolean(poolData?.isLoading);
-
+	/**
+     * fee: 500
+        feeProtocol: 0
+        index: 0
+        liquidity: 0n
+        pool: "0x20418c73194540Dbc96ec2296F120042781Ef35D"
+        sqrtPriceX96: 792281625142643375935439503n
+        tick: -92109
+        tickLower: -887220
+        tickUpper: 887220
+        token0: "0x5A4eA3a013D42Cfd1B1609d19f6eA998EeE06D30"
+        token1: "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14"
+    */
 	const poolRows = useMemo(() => {
 		const raw = Array.isArray(poolData?.data) ? poolData.data.reverse() : [];
 		return raw.map((item, index) => {
@@ -27,10 +39,14 @@ export function PoolTable() {
 				const liquidityValue = Number(
 					formatEther((item as { liquidity: bigint }).liquidity ?? 0n)
 				);
+				const sqrtPriceX96 = (item as { sqrtPriceX96?: bigint }).sqrtPriceX96 ?? 0n;
+				const Q96 = 2n ** 96n;
+				const price = (sqrtPriceX96 * sqrtPriceX96) / (Q96 * Q96);
 				return {
 					pair: `${getToken((item as { token0: `0x${string}` }).token0)} / ${getToken((item as { token1: `0x${string}` }).token1)}`,
 					fee: `${(fee / 10_000).toFixed(2)}%`,
 					tick: item.tick,
+					currentPrice: price,
 					index: index + 1,
 					range:
 						item.tickLower && item.tickUpper
@@ -138,7 +154,7 @@ export function PoolTable() {
 												{item.range}
 											</Box>
 											<Box className="w-40 shrink-0 text-right font-bold">
-												{item.tick}
+												{item.currentPrice ?? '--'}
 											</Box>
 											<Box className="w-40 shrink-0 text-right pr-8 font-bold">
 												{item.liquidity}

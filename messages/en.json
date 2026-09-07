@@ -125,6 +125,7 @@
         "liquidity": "Liquidity",
         "myPositions": "My positions",
         "emptyList": "No pools yet",
-        "noPools": "There are currently no liquidity pools available."
-	}
+        "noPools": "There are currently no liquidity pools available.",
+        "actions": "Actions"
+    }
 }

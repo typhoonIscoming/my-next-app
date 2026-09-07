@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useMemo, useRef, useState, forwardRef } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import useIsMobile from '@/hooks/useIsMobile';
-import { cn, formatAddress } from '@/lib/utils';
+import { cn, formatAddress, getToken } from '@/lib/utils';
 import { useReadPositions } from '../hooks/useReadPositions';
 import { formatEther } from 'viem';
 
@@ -82,8 +82,8 @@ const PositionTableHead = forwardRef(({ onScroll }: { onScroll?: () => void }, r
 						<Box className="w-40 font-bold shrink-0 text-right">
 							{t('swap.currentPrice')}
 						</Box>
-						<Box className="w-40 font-bold shrink-0 text-right pr-8">
-							{t('swap.liquidity')}
+						<Box className="w-80 font-bold shrink-0 text-right pr-8">
+							{t('swap.actions')}
 						</Box>
 					</Box>
 				</Box>
@@ -98,7 +98,7 @@ export default function PositionList() {
 	const theadRef = useRef<HTMLDivElement | null>(null);
 	const isMobile = useIsMobile();
 	const [currentPage, setCurrentPage] = useState(1);
-	const { data, isLoading } = useReadPositions();
+	const { data, isLoading, ...rest } = useReadPositions();
 
 	const rows = useMemo(() => {
 		if (Array.isArray(data) && data.length)
@@ -108,8 +108,10 @@ export default function PositionList() {
 				);
 				return {
 					...item,
+					pair: `${getToken(item.token0)} / ${getToken(item.token1)}`,
 					fee: `${(item.fee / 10_000).toFixed(2)}%`,
 					liquidity: liquidityValue.toFixed(2),
+					range: `${item.tickLower} - ${item.tickUpper}`,
 				};
 			});
 		return [];
@@ -124,7 +126,7 @@ export default function PositionList() {
 		if (!source || !target) return;
 		target.scrollLeft = source.scrollLeft;
 	};
-	console.log('pageList', pageList);
+	// console.log('pageList', data, rest);
 	return (
 		<Box className="position-list">
 			<Box className="relative">
@@ -163,7 +165,7 @@ export default function PositionList() {
 														: 'w-60'
 												)}
 											>
-												{formatAddress(item.owner)}
+												{item.pair}
 											</Box>
 											<Box className="w-40 shrink-0 text-right font-bold">
 												{item.fee}
@@ -174,7 +176,7 @@ export default function PositionList() {
 											<Box className="w-40 shrink-0 text-right font-bold">
 												{item.tick ?? '--'}
 											</Box>
-											<Box className="w-40 shrink-0 text-right pr-8 font-bold">
+											<Box className="w-80 shrink-0 text-right pr-8 font-bold">
 												{item.liquidity}
 											</Box>
 										</Box>
@@ -208,7 +210,7 @@ export default function PositionList() {
 					</div>
 				</div>
 			</Box>
-			<Box className="h-[100vh]"></Box>
+			<Box className="h-[20vh]"></Box>
 		</Box>
 	);
 }

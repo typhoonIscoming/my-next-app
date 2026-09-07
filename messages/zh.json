@@ -125,6 +125,7 @@
         "liquidity": "流动性",
         "myPositions": "我的头寸",
         "emptyList": "暂无列表",
-        "noPools": "暂无流动性池"
+        "noPools": "暂无流动性池",
+        "actions": "操作"
 	}
 }

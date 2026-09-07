@@ -5,3 +5,7 @@ if (typeof globalThis.TextEncoder === 'undefined') {
 	globalThis.TextEncoder = TextEncoder;
 	globalThis.TextDecoder = TextDecoder;
 }
+
+if (!HTMLElement.prototype.scrollIntoView) {
+	HTMLElement.prototype.scrollIntoView = jest.fn();
+}

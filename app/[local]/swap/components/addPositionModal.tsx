@@ -6,7 +6,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import { forwardRef, useImperativeHandle, useRef } from 'react';
+import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import {
@@ -26,28 +26,36 @@ import {
 	SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { formatUnits } from 'viem';
+import Box from '@mui/material/Box';
+import useBalance from '../../wagmi/hooks/useAccount';
 
 const pairOptions = ['ETH / USDC', 'BTC / USDC', 'SOL / USDT', 'ARB / ETH'];
 
-const addPositionSchema = z
-	.object({
-		pair: z.string().min(1, '请选择交易对'),
-		amount: z.coerce
-			.number({ invalid_type_error: '请输入有效数量' })
-			.positive('数量必须大于 0'),
-		minPrice: z.coerce
-			.number({ invalid_type_error: '请输入有效的最低价格' })
-			.positive('最低价格必须大于 0'),
-		maxPrice: z.coerce
-			.number({ invalid_type_error: '请输入有效的最高价格' })
-			.positive('最高价格必须大于 0'),
-	})
-	.refine((data) => data.maxPrice > data.minPrice, {
-		message: '最高价格必须大于最低价格',
-		path: ['maxPrice'],
-	});
+const addPositionSchema = (maxEthAmount: number) =>
+	z
+		.object({
+			ethAmount: z.coerce
+				.number({ invalid_type_error: '请输入有效数量' })
+				.positive('数量必须大于 0')
+				.max(maxEthAmount, `ETH数量不能超过可用余额 ${maxEthAmount}`),
+			pair: z.string().min(1, '请选择交易对'),
+			amount: z.coerce
+				.number({ invalid_type_error: '请输入有效数量' })
+				.positive('数量必须大于 0'),
+			minPrice: z.coerce
+				.number({ invalid_type_error: '请输入有效的最低价格' })
+				.positive('最低价格必须大于 0'),
+			maxPrice: z.coerce
+				.number({ invalid_type_error: '请输入有效的最高价格' })
+				.positive('最高价格必须大于 0'),
+		})
+		.refine((data) => data.maxPrice > data.minPrice, {
+			message: '最高价格必须大于最低价格',
+			path: ['maxPrice'],
+		});
 
-type AddPositionFormValues = z.infer<typeof addPositionSchema>;
+type AddPositionFormValues = z.infer<ReturnType<typeof addPositionSchema>>;
 
 export type AddPositionFormHandle = {
 	submit: () => void;
@@ -63,9 +71,13 @@ export const AddPositionForm = forwardRef<
 		onCancel?: () => void;
 	}
 >(function AddPositionForm({ onSubmit, onCancel }, ref) {
+	const { balance } = useBalance();
+	const formattedBalance = Number(formatUnits(balance ?? 0, 18)).toFixed(2);
+	const maxEthAmount = Number(formattedBalance || 0);
 	const form = useForm<AddPositionFormValues>({
-		resolver: zodResolver(addPositionSchema),
+		resolver: zodResolver(addPositionSchema(maxEthAmount)),
 		defaultValues: {
+			ethAmount: 0,
 			pair: pairOptions[0],
 			amount: 0,
 			minPrice: 0,
@@ -74,7 +86,6 @@ export const AddPositionForm = forwardRef<
 	});
 
 	const handleSubmit = (values: AddPositionFormValues) => {
-		console.log('add-position-submit', values);
 		toast.success('添加成功');
 		onSubmit?.(values);
 	};
@@ -93,7 +104,56 @@ export const AddPositionForm = forwardRef<
 	);
 
 	return (
-		<Form form={form} onSubmit={handleSubmit} className="space-y-5">
+		<Form form={form} onSubmit={handleSubmit}>
+			<FormField control={form.control} name="ethAmount">
+				{({ value, onChange, onBlur, error }) => {
+					const numberValue = typeof value === 'number' ? value : value === '' ? 0 : 0;
+					const ratioOptions = [0.25, 0.5, 0.75, 1];
+
+					return (
+						<FormItem className="group rounded-xl border border-white/10 bg-[#0d1727] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+							<FormLabel className="text-slate-200">ETH数量</FormLabel>
+							<FormControl>
+								<Input
+									value={numberValue}
+									onChange={(event) => onChange?.(Number(event.target.value))}
+									onBlur={onBlur}
+									type="number"
+									step="any"
+									placeholder="0.00"
+									aria-invalid={Boolean(error)}
+									className="border-0 bg-transparent text-white shadow-none focus-visible:ring-0"
+								/>
+							</FormControl>
+							<Box className="text-slate-400 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+								<span className="text-sm">可用余额: {formattedBalance} ETH</span>
+								<Box className="hidden overflow-hidden md:flex gap-2">
+									{ratioOptions.map((fraction, index) => (
+										<div
+											key={fraction}
+											onClick={() => {
+												// 取两位小数
+												const v = Number(
+													(Number(formattedBalance) * fraction).toFixed(2)
+												);
+												onChange?.(v);
+											}}
+											className="hidden cursor-pointer text-sm bg-white/10 px-2 rounded-full md:flex gap-2 opacity-0 translate-y-[-20px] transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0"
+											style={{
+												['--d' as any]: `${0.05 * index}s`,
+												transitionDelay: `var(--d)`,
+											}}
+										>
+											{fraction * 100}%
+										</div>
+									))}
+								</Box>
+							</Box>
+							<FormMessage />
+						</FormItem>
+					);
+				}}
+			</FormField>
 			<FormField control={form.control} name="pair">
 				{({ value, onChange, onBlur, error }) => {
 					const pairValue = typeof value === 'string' ? value : '';

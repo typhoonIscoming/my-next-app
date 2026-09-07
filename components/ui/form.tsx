@@ -217,9 +217,12 @@ function FormControl({ className, children, ...props }: FormControlProps) {
 			},
 		};
 
+		const nextValue = normalizedValue;
 		childProps.onChange?.(syntheticEvent as never);
-		childProps.onValueChange?.(normalizedValue as never);
-		field.onChange?.(normalizedValue as never);
+		if (childProps.onValueChange) {
+			childProps.onValueChange(nextValue as never);
+		}
+		field.onChange?.(nextValue as never);
 	};
 
 	const handleBlur = () => {

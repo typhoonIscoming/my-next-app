@@ -46,7 +46,7 @@ export function PoolTable() {
 					pair: `${getToken((item as { token0: `0x${string}` }).token0)} / ${getToken((item as { token1: `0x${string}` }).token1)}`,
 					fee: `${(fee / 10_000).toFixed(2)}%`,
 					tick: item.tick,
-					currentPrice: price,
+					currentPrice: Number(price).toFixed(2),
 					index: index + 1,
 					range:
 						item.tickLower && item.tickUpper

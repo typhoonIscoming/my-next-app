@@ -1,5 +1,5 @@
 'use client';
-import { useContext, useState } from 'react';
+import { useContext, useRef, useState } from 'react';
 import { useAccount } from 'wagmi';
 import { useTranslations } from 'next-intl';
 import CustomConnectButton from '@/app/components/CustomConnectButton';
@@ -137,8 +137,15 @@ export function EmptyPool() {
 
 // 创建流动池
 export function CreatePool() {
+	const formRef = useRef<any>(null);
 	const t = useTranslations('swap');
 	const { isCreatePoolOpen, closeCreatePool } = useContext(SwapContext);
+
+	const handleConfirm = () => {
+		if (formRef.current) {
+			formRef.current?.submit();
+		}
+	};
 
 	return (
 		<Dialog
@@ -153,10 +160,11 @@ export function CreatePool() {
 			<DialogTitle sx={{ pb: 1 }}>{t('createPool')}</DialogTitle>
 			<DialogContent>
 				<AddPositionForm
+					ref={formRef}
 					onCancel={closeCreatePool}
 					onSubmit={(values) => {
 						console.log('submit-values', values);
-						closeCreatePool();
+						// closeCreatePool();
 					}}
 				/>
 			</DialogContent>
@@ -173,7 +181,7 @@ export function CreatePool() {
 				</Button>
 				<Button
 					variant="contained"
-					onClick={closeCreatePool}
+					onClick={handleConfirm}
 					sx={{
 						background: 'linear-gradient(135deg,#6fe8ff,#4bd3bd_35%,#2dbf9a)',
 						color: '#fff',

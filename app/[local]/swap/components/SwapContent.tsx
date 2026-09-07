@@ -72,7 +72,10 @@ export default function SwapContent() {
 
 					<div className="relative w-full">
 						<button className="absolute left-[50%] cursor-pointer translate-y-[-50%] translate-x-[-50%] rounded-[16px] z-10 flex h-11 w-11 items-center justify-center border-4 border-[#131313] bg-[#151b2b] text-xl transition">
-							<ArrowDownSvgIcon fontSize="small" />
+							<ArrowDownSvgIcon
+								fontSize="small"
+								sx={{ color: '#FF37C7', fontSize: 24, opacity: 0.3 }}
+							/>
 						</button>
 					</div>
 

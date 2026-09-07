@@ -30,7 +30,6 @@ export function PoolTable() {
 				return {
 					pair: `${getToken((item as { token0: `0x${string}` }).token0)} / ${getToken((item as { token1: `0x${string}` }).token1)}`,
 					fee: `${(fee / 10_000).toFixed(2)}%`,
-					tvl: '--',
 					tick: item.tick,
 					index: index + 1,
 					range:
@@ -101,56 +100,54 @@ export function PoolTable() {
 						</Box>
 					</Box>
 				</Box>
-				{poolRows.length ? (
+				{isLoading ? (
+					<TableSkeleton />
+				) : poolRows.length ? (
 					<>
-						{isLoading ? (
-							<TableSkeleton />
-						) : (
-							<Box
-								ref={tbodyRef}
-								onScroll={() => syncScroll(tbodyRef.current, theadRef.current)}
-								className="overflow-x-auto overflow-y-hidden scrollbar-none tbody-list"
-							>
-								<Box className="w-fit min-w-full">
-									<div className="mt-2 space-y-2">
-										{pageList.map((item) => (
+						<Box
+							ref={tbodyRef}
+							onScroll={() => syncScroll(tbodyRef.current, theadRef.current)}
+							className="overflow-x-auto overflow-y-hidden scrollbar-none tbody-list"
+						>
+							<Box className="w-fit min-w-full">
+								<div className="mt-2 space-y-2">
+									{pageList.map((item) => (
+										<Box
+											key={`${item.pair}-${item.index}`}
+											className="flex items-center  border border-white/5 bg-[#050816] text-sm text-white"
+										>
+											{!isMobile && (
+												<Box className="sticky left-0 z-10 w-12 shrink-0 border-r border-white/5 bg-[#131313] px-3 py-3 text-left text-zinc-400">
+													{item.index}
+												</Box>
+											)}
 											<Box
-												key={`${item.pair}-${item.index}`}
-												className="flex items-center  border border-white/5 bg-[#050816] text-sm text-white"
-											>
-												{!isMobile && (
-													<Box className="sticky left-0 z-10 w-12 shrink-0 border-r border-white/5 bg-[#131313] px-3 py-3 text-left text-zinc-400">
-														{item.index}
-													</Box>
+												className={cn(
+													'shrink-0 px-3 py-3 text-left font-bold border-r border-white/10',
+													isMobile
+														? 'sticky left-0 w-40 z-10 bg-[#050816]'
+														: 'w-60'
 												)}
-												<Box
-													className={cn(
-														'shrink-0 px-3 py-3 text-left font-bold border-r border-white/10',
-														isMobile
-															? 'sticky left-0 w-40 z-10 bg-[#050816]'
-															: 'w-60'
-													)}
-												>
-													{item.pair}
-												</Box>
-												<Box className="w-40 shrink-0 text-right font-bold">
-													{item.fee}
-												</Box>
-												<Box className="w-40 shrink-0 grow text-right font-bold">
-													{item.range}
-												</Box>
-												<Box className="w-40 shrink-0 text-right font-bold">
-													{item.tick}
-												</Box>
-												<Box className="w-40 shrink-0 text-right pr-8 font-bold">
-													{item.liquidity}
-												</Box>
+											>
+												{item.pair}
 											</Box>
-										))}
-									</div>
-								</Box>
+											<Box className="w-40 shrink-0 text-right font-bold">
+												{item.fee}
+											</Box>
+											<Box className="w-40 shrink-0 grow text-right font-bold">
+												{item.range}
+											</Box>
+											<Box className="w-40 shrink-0 text-right font-bold">
+												{item.tick}
+											</Box>
+											<Box className="w-40 shrink-0 text-right pr-8 font-bold">
+												{item.liquidity}
+											</Box>
+										</Box>
+									))}
+								</div>
 							</Box>
-						)}
+						</Box>
 
 						<div className="sticky  bottom-0 z-30 mt-4 border-t border-white/10 bg-[#131313]/95 px-3 py-3 backdrop-blur-md">
 							<div className="flex items-center justify-end gap-2 text-sm text-zinc-300">

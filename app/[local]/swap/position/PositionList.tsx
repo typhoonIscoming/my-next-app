@@ -1,110 +1,214 @@
 'use client';
 
+import Box from '@mui/material/Box';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { useMemo, useRef, useState, forwardRef } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+import useIsMobile from '@/hooks/useIsMobile';
+import { cn, formatAddress } from '@/lib/utils';
 import { useReadPositions } from '../hooks/useReadPositions';
+import { formatEther } from 'viem';
 
-const mockPositions = [
-	{
-		id: '1',
-		pair: 'ETH / USDC',
-		fee: '0.3%',
-		range: '1,450 - 1,700',
-		liquidity: '$12,480.20',
-		status: 'In range',
-	},
-	{
-		id: '2',
-		pair: 'BTC / ETH',
-		fee: '0.5%',
-		range: '0.07 - 0.09',
-		liquidity: '$18,290.60',
-		status: 'Close',
-	},
-];
+const PAGE_SIZE = 20;
 
-export default function PositionList() {
-	const t = useTranslations('swap');
-	const positions = useReadPositions();
-	console.log('positions', positions);
-
-	if (!mockPositions.length) {
-		return (
-			<section className="rounded-[32px] border border-white/10 bg-[#111827]/90 p-5 shadow-[0_40px_120px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
-				<div className="mb-5 flex items-center justify-between">
-					<h2 className="text-lg font-semibold text-white">{t('activePositions')}</h2>
-					<button className="rounded-full border border-white/10 bg-white/3 px-3 py-1.5 text-sm text-zinc-200 transition hover:bg-white/5">
-						{t('viewAll')}
-					</button>
-				</div>
-
-				<div className="rounded-[28px] border border-dashed border-violet-500/20 bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.16),transparent_50%)] p-10 text-center">
-					<div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-violet-400/30 bg-violet-500/10 text-2xl shadow-[0_0_40px_rgba(139,92,246,0.25)]">
-						◎
-					</div>
-					<h3 className="mt-6 text-2xl font-semibold tracking-tighter text-white">
-						{t('emptyPositionTitle')}
-					</h3>
-					<p className="mx-auto mt-3 max-w-md text-sm leading-6 text-zinc-400">
-						{t('emptyPositionDesc')}
-					</p>
-					<div className="mt-6 flex items-center justify-center gap-3">
-						<button className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#0a0d17]">
-							{t('connectWallet')}
-						</button>
-						<Link
-							href="/swap/pool"
-							className="rounded-full border border-white/10 bg-white/3 px-4 py-2 text-sm font-medium text-zinc-200"
-						>
-							{t('navPool')}
-						</Link>
-					</div>
-				</div>
-			</section>
-		);
-	}
+function PositionTableSkeleton() {
+	const isMobile = useIsMobile();
 
 	return (
-		<section className="rounded-[32px] border border-white/10 bg-[#111827]/90 p-5 shadow-[0_40px_120px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
-			<div className="mb-5 flex items-center justify-between">
-				<h2 className="text-lg font-semibold text-white">{t('activePositions')}</h2>
-				<button className="rounded-full border border-white/10 bg-white/3 px-3 py-1.5 text-sm text-zinc-200 transition hover:bg-white/5">
-					{t('viewAll')}
-				</button>
-			</div>
-
-			<div className="overflow-hidden rounded-[24px] border border-white/10 bg-[#0b1220]">
-				<div className="grid grid-cols-[1.5fr_1fr_1.2fr_1fr_0.8fr] gap-4 border-b border-white/10 px-4 py-3 text-xs uppercase tracking-[0.18em] text-zinc-400">
-					<div>Pair</div>
-					<div>Fee</div>
-					<div>Range</div>
-					<div>Liquidity</div>
-					<div>Status</div>
-				</div>
-
-				{mockPositions.map((item) => (
-					<div
-						key={item.id}
-						className="grid grid-cols-[1.5fr_1fr_1.2fr_1fr_0.8fr] items-center gap-4 border-b border-white/5 px-4 py-4 text-sm text-white last:border-b-0"
-					>
-						<div className="font-medium">{item.pair}</div>
-						<div className="text-zinc-300">{item.fee}</div>
-						<div className="text-zinc-300">{item.range}</div>
-						<div className="font-medium text-violet-300">{item.liquidity}</div>
-						<div>
-							<span
-								className={
-									item.status === 'In range'
-										? 'rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-300'
-										: 'rounded-full bg-amber-500/15 px-2.5 py-1 text-xs font-medium text-amber-300'
-								}
-							>
-								{item.status}
-							</span>
-						</div>
+		<div
+			className="relative mt-2 w-full"
+			role="status"
+			aria-live="polite"
+			aria-label="Loading positions"
+		>
+			<div className="space-y-3">
+				{Array.from({ length: 8 }).map((_, index) => (
+					<div key={index} className="flex items-center">
+						<Skeleton className="h-10 w-48 shrink-0 rounded-none bg-white/8" />
+						<Skeleton
+							className={cn(
+								'sh-10 shrink-0 rounded-none bg-white/8',
+								isMobile ? 'w-28' : 'w-36'
+							)}
+						/>
+						<Skeleton className="h-10 w-40 shrink-0 rounded-none bg-white/8" />
+						<Skeleton className="h-10 w-40 shrink-0 rounded-none bg-white/8" />
+						<Skeleton className="h-10 w-32 shrink-0 rounded-none bg-white/8" />
 					</div>
 				))}
 			</div>
-		</section>
+		</div>
+	);
+}
+
+const PositionTableHead = forwardRef(({ onScroll }: { onScroll?: () => void }, ref) => {
+	const t = useTranslations();
+	const isMobile = useIsMobile();
+
+	const syncScroll = () => {
+		onScroll?.();
+	};
+
+	return (
+		<Box className="sticky top-[63px] z-20">
+			<Box className="overflow-hidden ">
+				<Box
+					ref={ref}
+					onScroll={syncScroll}
+					className="overflow-x-auto bg-[#131313] scrollbar-none thead-list"
+				>
+					<Box className="flex w-fit min-w-full items-center whitespace-nowrap border-b border-white/10 text-sm text-zinc-400">
+						{!isMobile && (
+							<Box className="sticky  left-0 z-20 w-12 shrink-0 border-r border-white/10 bg-[#131313] px-3 py-3 text-left">
+								#
+							</Box>
+						)}
+
+						<Box
+							className={cn(
+								'font-bold shrink-0 px-3 py-3 text-left border-r border-white/10',
+								isMobile ? 'sticky w-40 left-0 z-10 bg-[#131313]' : 'w-60'
+							)}
+						>
+							{t('swap.poolTitle')}
+						</Box>
+						<Box className="w-40 font-bold shrink-0 text-right">
+							{t('swap.feeRate')}
+						</Box>
+						<Box className="w-40 font-bold shrink-0 grow text-right">
+							{t('swap.priceRange')}
+						</Box>
+						<Box className="w-40 font-bold shrink-0 text-right">
+							{t('swap.currentPrice')}
+						</Box>
+						<Box className="w-40 font-bold shrink-0 text-right pr-8">
+							{t('swap.liquidity')}
+						</Box>
+					</Box>
+				</Box>
+			</Box>
+		</Box>
+	);
+});
+
+export default function PositionList() {
+	const t = useTranslations();
+	const tbodyRef = useRef<HTMLDivElement | null>(null);
+	const theadRef = useRef<HTMLDivElement | null>(null);
+	const isMobile = useIsMobile();
+	const [currentPage, setCurrentPage] = useState(1);
+	const { data, isLoading } = useReadPositions();
+
+	const rows = useMemo(() => {
+		if (Array.isArray(data) && data.length)
+			return data.map((item) => {
+				const liquidityValue = Number(
+					formatEther((item as { liquidity: bigint }).liquidity ?? 0n)
+				);
+				return {
+					...item,
+					fee: `${(item.fee / 10_000).toFixed(2)}%`,
+					liquidity: liquidityValue.toFixed(2),
+				};
+			});
+		return [];
+	}, [data]);
+
+	const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+	const safePage = Math.min(currentPage, totalPages);
+	const start = (safePage - 1) * PAGE_SIZE;
+	const end = start + PAGE_SIZE;
+	const pageList = rows.slice(start, end);
+	const syncScroll = (source: HTMLDivElement | null, target: HTMLDivElement | null) => {
+		if (!source || !target) return;
+		target.scrollLeft = source.scrollLeft;
+	};
+	console.log('pageList', pageList);
+	return (
+		<Box className="position-list">
+			<Box className="relative">
+				<PositionTableHead
+					ref={theadRef}
+					onScroll={() => syncScroll(theadRef.current, tbodyRef.current)}
+				/>
+				{isLoading ? (
+					<PositionTableSkeleton />
+				) : (
+					<Box
+						ref={tbodyRef}
+						onScroll={() => syncScroll(tbodyRef.current, theadRef.current)}
+						className="overflow-x-auto scrollbar-none tbody-list"
+					>
+						<Box className="w-fit min-w-full">
+							<div className="mt-2 space-y-2">
+								{pageList.map((item, index) => {
+									const rowIndex = start + index + 1;
+									const i = Number(item.id);
+									return (
+										<Box
+											key={`${i}`}
+											className="flex items-center border border-white/5 bg-[#050816] text-sm text-white"
+										>
+											{!isMobile && (
+												<Box className="sticky left-0 z-9 w-12 shrink-0 border-r border-white/5 bg-[#131313] px-3 py-3 text-left text-zinc-400">
+													{i}
+												</Box>
+											)}
+											<Box
+												className={cn(
+													'shrink-0 px-3 py-3 text-left font-bold border-r border-white/10',
+													isMobile
+														? 'sticky left-0 w-40 z-10 bg-[#050816]'
+														: 'w-60'
+												)}
+											>
+												{formatAddress(item.owner)}
+											</Box>
+											<Box className="w-40 shrink-0 text-right font-bold">
+												{item.fee}
+											</Box>
+											<Box className="w-40 shrink-0 grow text-right font-bold">
+												{item.range}
+											</Box>
+											<Box className="w-40 shrink-0 text-right font-bold">
+												{item.tick ?? '--'}
+											</Box>
+											<Box className="w-40 shrink-0 text-right pr-8 font-bold">
+												{item.liquidity}
+											</Box>
+										</Box>
+									);
+								})}
+							</div>
+						</Box>
+					</Box>
+				)}
+				<div className="sticky z-15 bottom-0 mt-4 border-t border-white/10 bg-[#131313]/95 px-3 py-3 backdrop-blur-md">
+					<div className="flex items-center justify-end gap-2 text-sm text-zinc-300">
+						<button
+							type="button"
+							onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+							disabled={safePage === 1}
+							className="rounded-full cursor-pointer border border-white/10 bg-white/3 px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-40"
+						>
+							{t('swap.prev')}
+						</button>
+						<span className="min-w-16 text-center">
+							{safePage}/{totalPages}
+						</span>
+						<button
+							type="button"
+							onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+							disabled={safePage === totalPages}
+							className="rounded-full cursor-pointer border border-white/10 bg-white/3 px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-40"
+						>
+							{t('swap.next')}
+						</button>
+					</div>
+				</div>
+			</Box>
+			<Box className="h-[100vh]"></Box>
+		</Box>
 	);
 }

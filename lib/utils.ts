@@ -57,6 +57,13 @@ export const tokenB = process.env.NEXT_PUBLIC_MN_TOKEN_B as `0x${string}`;
 export const tokenC = process.env.NEXT_PUBLIC_MN_TOKEN_C as `0x${string}`;
 export const tokenD = process.env.NEXT_PUBLIC_MN_TOKEN_D as `0x${string}`;
 
+// token列表
+export const tokenList = [
+	{ address: tokenA, name: 'tokenA' },
+	{ address: tokenB, name: 'tokenB' },
+	{ address: tokenC, name: 'tokenC' },
+	{ address: tokenD, name: 'tokenD' },
+];
 // 判断是哪一个token
 export const getToken = (address: `0x${string}`) => {
 	if (address === tokenA) return 'tokenA';

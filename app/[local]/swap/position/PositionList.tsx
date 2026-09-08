@@ -99,7 +99,7 @@ export default function PositionList() {
 	const isMobile = useIsMobile();
 	const [currentPage, setCurrentPage] = useState(1);
 	const { data, isLoading, ...rest } = useReadPositions();
-
+	console.log('data', data);
 	const rows = useMemo(() => {
 		if (Array.isArray(data) && data.length)
 			return data.map((item) => {

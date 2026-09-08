@@ -9,10 +9,9 @@ export function useReadPositions() {
 		isLoading,
 		refetch: contractRefetch,
 	} = useReadContract({
-		// contract configuration here
 		abi: postionsAbi,
 		address: positionsAddress,
-		functionName: 'getAllPositions', // replace with the actual function name in your contract
+		functionName: 'getAllPositions',
 	});
 
 	// 获取我创建的流动池

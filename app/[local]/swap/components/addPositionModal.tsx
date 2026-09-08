@@ -29,6 +29,7 @@ import { toast } from 'sonner';
 import { formatUnits } from 'viem';
 import Box from '@mui/material/Box';
 import useBalance from '../../wagmi/hooks/useAccount';
+import { tokenList } from '@/lib/utils';
 
 const pairOptions = ['ETH / USDC', 'BTC / USDC', 'SOL / USDT', 'ARB / ETH'];
 
@@ -49,6 +50,12 @@ const addPositionSchema = (maxEthAmount: number) =>
 			maxPrice: z.coerce
 				.number({ invalid_type_error: '请输入有效的最高价格' })
 				.positive('最高价格必须大于 0'),
+			fee: z.coerce
+				.number({ invalid_type_error: '请输入有效的手续费' })
+				.positive('手续费必须大于 0'),
+			currentPrice: z.coerce
+				.number({ invalid_type_error: '请输入有效的当前价格' })
+				.positive('当前价格必须大于 0'),
 		})
 		.refine((data) => data.maxPrice > data.minPrice, {
 			message: '最高价格必须大于最低价格',
@@ -78,10 +85,12 @@ export const AddPositionForm = forwardRef<
 		resolver: zodResolver(addPositionSchema(maxEthAmount)),
 		defaultValues: {
 			ethAmount: 0,
-			pair: pairOptions[0],
+			pair: tokenList[0].address,
 			amount: 0,
 			minPrice: 0,
 			maxPrice: 0,
+			fee: 0,
+			currentPrice: 0,
 		},
 	});
 
@@ -177,13 +186,13 @@ export const AddPositionForm = forwardRef<
 									<SelectValue placeholder="请选择" />
 								</SelectTrigger>
 								<SelectContent className="border border-white/10 bg-[#0b1220] text-white">
-									{pairOptions.map((pair) => (
+									{tokenList.map((item) => (
 										<SelectItem
-											key={pair}
-											value={pair}
+											key={item.address}
+											value={item.address}
 											className="text-white cursor-pointer focus:bg-white/10"
 										>
-											{pair}
+											{item.name}
 										</SelectItem>
 									))}
 								</SelectContent>
@@ -193,34 +202,70 @@ export const AddPositionForm = forwardRef<
 					);
 				}}
 			</FormField>
+			<FormField control={form.control} name="fee">
+				{({ value, onChange, onBlur, error }) => {
+					const pairValue = typeof value === 'string' ? value : '';
 
+					return (
+						<FormItem className="rounded-xl border border-white/10 bg-[#0d1727] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+							<FormLabel className="text-slate-200">手续费</FormLabel>
+							<Select
+								value={pairValue || undefined}
+								onValueChange={(nextValue) => {
+									onChange?.(nextValue);
+								}}
+								onOpenChange={(open) => {
+									if (!open) onBlur?.();
+								}}
+							>
+								<SelectTrigger
+									className="h-10 w-full rounded-lg border border-white/10 bg-[#0b1220] px-3 text-sm text-white outline-none ring-0 data-placeholder:text-slate-400"
+									aria-invalid={Boolean(error)}
+								>
+									<SelectValue placeholder="请选择" />
+								</SelectTrigger>
+								<SelectContent className="border border-white/10 bg-[#0b1220] text-white">
+									{[0.01, 0.05, 0.3, 1].map((item) => (
+										<SelectItem
+											key={item}
+											value={item.toString()}
+											className="text-white cursor-pointer focus:bg-white/10"
+										>
+											{item}%
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							<FormMessage />
+						</FormItem>
+					);
+				}}
+			</FormField>
+			<FormField control={form.control} name="amount">
+				{({ value, onChange, onBlur, error }) => {
+					const numberValue = typeof value === 'number' ? value : value === '' ? 0 : 0;
+
+					return (
+						<FormItem className="rounded-xl border border-white/10 bg-[#0d1727] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+							<FormLabel className="text-slate-200">数量</FormLabel>
+							<FormControl>
+								<Input
+									value={numberValue}
+									onChange={(event) => onChange?.(Number(event.target.value))}
+									onBlur={onBlur}
+									type="number"
+									step="any"
+									placeholder="0.00"
+									aria-invalid={Boolean(error)}
+									className="border-0 bg-transparent text-white shadow-none focus-visible:ring-0"
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					);
+				}}
+			</FormField>
 			<div className="grid gap-4 md:grid-cols-2">
-				<FormField control={form.control} name="amount">
-					{({ value, onChange, onBlur, error }) => {
-						const numberValue =
-							typeof value === 'number' ? value : value === '' ? 0 : 0;
-
-						return (
-							<FormItem className="rounded-xl border border-white/10 bg-[#0d1727] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-								<FormLabel className="text-slate-200">数量</FormLabel>
-								<FormControl>
-									<Input
-										value={numberValue}
-										onChange={(event) => onChange?.(Number(event.target.value))}
-										onBlur={onBlur}
-										type="number"
-										step="any"
-										placeholder="0.00"
-										aria-invalid={Boolean(error)}
-										className="border-0 bg-transparent text-white shadow-none focus-visible:ring-0"
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						);
-					}}
-				</FormField>
-
 				<FormField control={form.control} name="minPrice">
 					{({ value, onChange, onBlur, error }) => {
 						const numberValue =
@@ -246,15 +291,39 @@ export const AddPositionForm = forwardRef<
 						);
 					}}
 				</FormField>
-			</div>
+				<FormField control={form.control} name="maxPrice">
+					{({ value, onChange, onBlur, error }) => {
+						const numberValue =
+							typeof value === 'number' ? value : value === '' ? 0 : 0;
 
-			<FormField control={form.control} name="maxPrice">
+						return (
+							<FormItem className="rounded-xl border border-white/10 bg-[#0d1727] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+								<FormLabel className="text-slate-200">最高价</FormLabel>
+								<FormControl>
+									<Input
+										value={numberValue}
+										onChange={(event) => onChange?.(Number(event.target.value))}
+										onBlur={onBlur}
+										type="number"
+										step="any"
+										placeholder="0.00"
+										aria-invalid={Boolean(error)}
+										className="border-0 bg-transparent text-white shadow-none focus-visible:ring-0"
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						);
+					}}
+				</FormField>
+			</div>
+			<FormField control={form.control} name="currentPrice">
 				{({ value, onChange, onBlur, error }) => {
 					const numberValue = typeof value === 'number' ? value : value === '' ? 0 : 0;
 
 					return (
 						<FormItem className="rounded-xl border border-white/10 bg-[#0d1727] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-							<FormLabel className="text-slate-200">最高价</FormLabel>
+							<FormLabel className="text-slate-200">当前价格</FormLabel>
 							<FormControl>
 								<Input
 									value={numberValue}

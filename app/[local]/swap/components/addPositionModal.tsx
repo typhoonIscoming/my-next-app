@@ -26,12 +26,11 @@ import {
 	SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { formatUnits } from 'viem';
+import { formatUnits, type Address } from 'viem';
 import Box from '@mui/material/Box';
 import useBalance from '../../wagmi/hooks/useAccount';
 import { tokenList } from '@/lib/utils';
-
-const pairOptions = ['ETH / USDC', 'BTC / USDC', 'SOL / USDT', 'ARB / ETH'];
+import { useCreatePool } from '../hooks/useCreatePool';
 
 const addPositionSchema = (maxEthAmount: number) =>
 	z
@@ -40,7 +39,12 @@ const addPositionSchema = (maxEthAmount: number) =>
 				.number({ invalid_type_error: '请输入有效数量' })
 				.positive('数量必须大于 0')
 				.max(maxEthAmount, `ETH数量不能超过可用余额 ${maxEthAmount}`),
-			pair: z.string().min(1, '请选择交易对'),
+			pair: z
+				.array(z.string().min(1, '请选择交易对'))
+				.length(2, '请选择两个代币组成交易对')
+				.refine((value) => value[0] !== value[1], {
+					message: '交易对两个值不能相同',
+				}),
 			amount: z.coerce
 				.number({ invalid_type_error: '请输入有效数量' })
 				.positive('数量必须大于 0'),
@@ -85,7 +89,7 @@ export const AddPositionForm = forwardRef<
 		resolver: zodResolver(addPositionSchema(maxEthAmount)),
 		defaultValues: {
 			ethAmount: 0,
-			pair: tokenList[0].address,
+			pair: [tokenList[0].address, tokenList[1].address],
 			amount: 0,
 			minPrice: 0,
 			maxPrice: 0,
@@ -93,17 +97,60 @@ export const AddPositionForm = forwardRef<
 			currentPrice: 0,
 		},
 	});
+	const { createAndInitializePoolIfNecessary, isPending } = useCreatePool();
+	const setPairError = (message: string) => {
+		form.setError('pair', {
+			type: 'manual',
+			message,
+		});
+	};
 
-	const handleSubmit = (values: AddPositionFormValues) => {
-		toast.success('添加成功');
-		onSubmit?.(values);
+	const handleSubmit = async (values: AddPositionFormValues) => {
+		if (values.pair[0] === values.pair[1]) {
+			setPairError('交易对两个值不能相同');
+			toast.error('交易对两个值不能相同');
+			return;
+		}
+		form.clearErrors('pair');
+
+		try {
+			const feeValue = Number(values.fee || 0);
+			const currentPriceValue = Number(values.currentPrice || 0);
+			const tickLower = -887272n;
+			const tickUpper = 887272n;
+			const fee = BigInt(Math.max(0, Math.round(feeValue * 10000)));
+			const sqrtPriceX96 =
+				currentPriceValue > 0
+					? BigInt(Math.floor(Math.sqrt(currentPriceValue) * Number(2n ** 96n)))
+					: 2n ** 96n;
+			const params = {
+				token0: values.pair[0] as Address,
+				token1: values.pair[1] as Address,
+				fee,
+				tickLower,
+				tickUpper,
+				sqrtPriceX96,
+			};
+			console.log('params', params);
+			const result = await createAndInitializePoolIfNecessary(params);
+			console.log('result', result);
+			toast.success('添加成功');
+			onSubmit?.(values);
+		} catch (error) {
+			console.error('create pool failed', error);
+			toast.error('创建交易对失败，请检查参数或钱包余额');
+		}
 	};
 
 	useImperativeHandle(
 		ref,
 		() => ({
-			submit: () => {
-				void form.handleSubmit(handleSubmit)();
+			submit: async () => {
+				console.log('123');
+				const isValid = await form.trigger();
+				console.log('isValid', isValid);
+				if (!isValid) return;
+				await handleSubmit(form.getValues());
 			},
 			reset: () => form.reset(),
 			trigger: () => form.trigger(),
@@ -114,94 +161,89 @@ export const AddPositionForm = forwardRef<
 
 	return (
 		<Form form={form} onSubmit={handleSubmit}>
-			<FormField control={form.control} name="ethAmount">
+			<FormField control={form.control} name="pair">
 				{({ value, onChange, onBlur, error }) => {
-					const numberValue = typeof value === 'number' ? value : value === '' ? 0 : 0;
-					const ratioOptions = [0.25, 0.5, 0.75, 1];
+					const pairValue = Array.isArray(value) ? value : [];
 
 					return (
-						<FormItem className="group rounded-xl border border-white/10 bg-[#0d1727] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-							<FormLabel className="text-slate-200">ETH数量</FormLabel>
-							<FormControl>
-								<Input
-									value={numberValue}
-									onChange={(event) => onChange?.(Number(event.target.value))}
-									onBlur={onBlur}
-									type="number"
-									step="any"
-									placeholder="0.00"
-									aria-invalid={Boolean(error)}
-									className="border-0 bg-transparent text-white shadow-none focus-visible:ring-0"
-								/>
-							</FormControl>
-							<Box className="text-slate-400 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-								<span className="text-sm">可用余额: {formattedBalance} ETH</span>
-								<Box className="hidden overflow-hidden md:flex gap-2">
-									{ratioOptions.map((fraction, index) => (
-										<div
-											key={fraction}
-											onClick={() => {
-												// 取两位小数
-												const v = Number(
-													(Number(formattedBalance) * fraction).toFixed(2)
-												);
-												onChange?.(v);
-											}}
-											className="hidden cursor-pointer text-sm bg-white/10 px-2 rounded-full md:flex gap-2 opacity-0 translate-y-[-20px] transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0"
-											style={{
-												['--d' as any]: `${0.05 * index}s`,
-												transitionDelay: `var(--d)`,
-											}}
-										>
-											{fraction * 100}%
-										</div>
-									))}
-								</Box>
+						<FormItem className="p-3 rounded-xl border border-white/10 bg-[#0d1727] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+							<FormLabel className="text-slate-200">交易对</FormLabel>
+							<Box className="flex flex-col md:flex-row gap-4 ">
+								<Select
+									value={pairValue[0] || undefined}
+									onValueChange={(nextValue) => {
+										const nextPair = [nextValue, pairValue[1]].filter(Boolean);
+										if (nextPair[0] === nextPair[1]) {
+											setPairError('交易对两个值不能相同');
+											toast.error('交易对两个值不能相同');
+											return;
+										}
+										form.clearErrors('pair');
+										onChange?.([nextValue, pairValue[1]]);
+									}}
+									onOpenChange={(open) => {
+										if (!open) onBlur?.();
+									}}
+								>
+									<SelectTrigger
+										className="h-10 w-full md:flex-1 rounded-lg border border-white/10 bg-[#0b1220] px-3 text-sm text-white outline-none ring-0 data-placeholder:text-slate-400"
+										aria-invalid={Boolean(error)}
+									>
+										<SelectValue placeholder="请选择" />
+									</SelectTrigger>
+									<SelectContent className="border border-white/10 bg-[#0b1220] text-white">
+										{tokenList.map((item) => (
+											<SelectItem
+												key={item.address}
+												value={item.address}
+												className="text-white cursor-pointer focus:bg-white/10"
+											>
+												{item.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								<Select
+									value={pairValue[1] || undefined}
+									onValueChange={(nextValue) => {
+										const nextPair = [pairValue[0], nextValue].filter(Boolean);
+										if (nextPair[0] === nextPair[1]) {
+											setPairError('交易对两个值不能相同');
+											toast.error('交易对两个值不能相同');
+											return;
+										}
+										form.clearErrors('pair');
+										onChange?.([pairValue[0], nextValue]);
+									}}
+									onOpenChange={(open) => {
+										if (!open) onBlur?.();
+									}}
+								>
+									<SelectTrigger
+										className="h-10 w-full md:flex-1 rounded-lg border border-white/10 bg-[#0b1220] px-3 text-sm text-white outline-none ring-0 data-placeholder:text-slate-400"
+										aria-invalid={Boolean(error)}
+									>
+										<SelectValue placeholder="请选择" />
+									</SelectTrigger>
+									<SelectContent className="border border-white/10 bg-[#0b1220] text-white">
+										{tokenList.map((item) => (
+											<SelectItem
+												key={item.address}
+												value={item.address}
+												className="text-white cursor-pointer focus:bg-white/10"
+											>
+												{item.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
 							</Box>
 							<FormMessage />
 						</FormItem>
 					);
 				}}
 			</FormField>
-			<FormField control={form.control} name="pair">
-				{({ value, onChange, onBlur, error }) => {
-					const pairValue = typeof value === 'string' ? value : '';
 
-					return (
-						<FormItem className="rounded-xl border border-white/10 bg-[#0d1727] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-							<FormLabel className="text-slate-200">交易对</FormLabel>
-							<Select
-								value={pairValue || undefined}
-								onValueChange={(nextValue) => {
-									onChange?.(nextValue);
-								}}
-								onOpenChange={(open) => {
-									if (!open) onBlur?.();
-								}}
-							>
-								<SelectTrigger
-									className="h-10 w-full rounded-lg border border-white/10 bg-[#0b1220] px-3 text-sm text-white outline-none ring-0 data-placeholder:text-slate-400"
-									aria-invalid={Boolean(error)}
-								>
-									<SelectValue placeholder="请选择" />
-								</SelectTrigger>
-								<SelectContent className="border border-white/10 bg-[#0b1220] text-white">
-									{tokenList.map((item) => (
-										<SelectItem
-											key={item.address}
-											value={item.address}
-											className="text-white cursor-pointer focus:bg-white/10"
-										>
-											{item.name}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-							<FormMessage />
-						</FormItem>
-					);
-				}}
-			</FormField>
 			<FormField control={form.control} name="fee">
 				{({ value, onChange, onBlur, error }) => {
 					const pairValue = typeof value === 'string' ? value : '';

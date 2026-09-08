@@ -3,7 +3,7 @@
 import Box from '@mui/material/Box';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { useMemo, useRef, useState, forwardRef } from 'react';
+import { useMemo, useRef, useState, forwardRef, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import useIsMobile from '@/hooks/useIsMobile';
 import { cn, formatAddress, getToken } from '@/lib/utils';
@@ -101,8 +101,13 @@ export default function PositionList() {
 	const { data, isLoading, ...rest } = useReadPositions();
 	console.log('data', data);
 	const rows = useMemo(() => {
-		if (Array.isArray(data) && data.length)
-			return data.map((item) => {
+		const raw = Array.isArray(data) && data.length ? data : [];
+		const ownerItem = raw.find(
+			(item) => item.owner === '0x14cC41dcB4fa5BCb91fA1D7D71b22f24Cfe401EE'
+		);
+		console.log('ownerItem', ownerItem);
+		if (raw.length)
+			return raw.map((item) => {
 				const liquidityValue = Number(
 					formatEther((item as { liquidity: bigint }).liquidity ?? 0n)
 				);
@@ -127,6 +132,31 @@ export default function PositionList() {
 		target.scrollLeft = source.scrollLeft;
 	};
 	// console.log('pageList', data, rest);
+	const getNftsByOwner = async () => {
+		// 使用post请求，参数
+		const params = {
+			id: 1,
+			jsonrpc: '2.0',
+			method: 'zan_getNFTsByOwner',
+			params: ['0x14cC41dcB4fa5BCb91fA1D7D71b22f24Cfe401EE', 'ERC721', 100, 1],
+		};
+		// https://api.zan.top/node/v1/eth/sepolia/b7fce6fe8baa4152830388c6da30d58d
+		const result = await fetch(
+			'https://api.zan.top/node/v1/eth/sepolia/b7fce6fe8baa4152830388c6da30d58d',
+			{
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(params),
+			}
+		);
+		const data = await result.json();
+		console.log('NFTs by owner:', data);
+	};
+	useEffect(() => {
+		// getNftsByOwner();
+	}, []);
 	return (
 		<Box className="position-list">
 			<Box className="relative">

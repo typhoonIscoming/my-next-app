@@ -33,6 +33,10 @@ export function PoolTable() {
     */
 	const poolRows = useMemo(() => {
 		const raw = Array.isArray(poolData?.data) ? poolData.data.reverse() : [];
+		const txHash = '0xb6a16a821aae7c11c814eb858349e3a2cf97d87e864021262df3c04b97bc85f6';
+		const pool = '0xD9D32d8173AA010E16E5F5aB6644E6027129F1b4';
+		const createItem = raw.find((item) => item.pool === pool);
+		console.log('createItem', raw, createItem);
 		return raw.map((item, index) => {
 			if (typeof item === 'object' && item !== null && 'token0' in item && 'token1' in item) {
 				const fee = Number((item as { fee?: bigint | number }).fee ?? 0);

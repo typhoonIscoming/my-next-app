@@ -74,7 +74,7 @@
 	"swap": {
 		"navSwap": "兑换",
 		"navPool": "流动池",
-		"navPosition": "持仓",
+		"navPosition": "头寸",
 		"connectWallet": "连接钱包",
 		"network": "以太坊",
 		"title": "兑换",
@@ -99,7 +99,7 @@
 		"seeAll": "查看全部",
 		"addLiquidity": "添加流动性",
 		"positionTitle": "你的流动性",
-		"newPosition": "新仓位",
+		"newPosition": "新头寸",
 		"totalValue": "总价值",
 		"feesEarned": "已赚手续费",
 		"openPositions": "开放仓位",

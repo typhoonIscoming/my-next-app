@@ -7,5 +7,9 @@ if (typeof globalThis.TextEncoder === 'undefined') {
 }
 
 if (!HTMLElement.prototype.scrollIntoView) {
-	HTMLElement.prototype.scrollIntoView = jest.fn();
+	Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+		value: () => undefined,
+		writable: true,
+		configurable: true,
+	});
 }

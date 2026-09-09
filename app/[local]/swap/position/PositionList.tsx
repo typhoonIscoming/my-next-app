@@ -131,7 +131,6 @@ export default function PositionList() {
 		if (!source || !target) return;
 		target.scrollLeft = source.scrollLeft;
 	};
-	// console.log('pageList', data, rest);
 	const getNftsByOwner = async () => {
 		// 使用post请求，参数
 		const params = {

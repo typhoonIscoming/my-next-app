@@ -47,5 +47,12 @@ async function LocaleProvider({
 	setRequestLocale(local);
 	const messages = await getMessages({ locale: local });
 
-	return <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>;
+	return (
+		<NextIntlClientProvider messages={messages}>
+			<ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+				{children}
+				<Toaster richColors position="top-right" closeButton />
+			</ThemeProvider>
+		</NextIntlClientProvider>
+	);
 }

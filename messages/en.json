@@ -126,6 +126,9 @@
         "myPositions": "My positions",
         "emptyList": "No pools yet",
         "noPools": "There are currently no liquidity pools available.",
-        "actions": "Actions"
+        "actions": "Actions",
+        "addPosition": "Add position",
+        "confirm": "Confirm",
+        "cancel": "Cancel"
     }
 }

@@ -126,6 +126,9 @@
         "myPositions": "我的头寸",
         "emptyList": "暂无列表",
         "noPools": "暂无流动性池",
-        "actions": "操作"
+        "actions": "操作",
+        "addPosition": "添加头寸",
+        "confirm": "确认",
+        "cancel": "取消"
 	}
 }

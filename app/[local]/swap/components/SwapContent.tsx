@@ -1,12 +1,46 @@
 'use client';
 import { useState } from 'react';
 import Box from '@mui/material/Box';
+import { styled } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
-import { ArrowDownSvgIcon } from './CustomSvgIcon';
 import CustomConnectButton from '@/app/components/CustomConnectButton';
 import Button from '@mui/material/Button';
 import SvgIcon from '@mui/material/SvgIcon';
 import { MoveDown } from 'lucide-react';
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from '@/components/ui/form';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { tokenList } from '@/lib/utils';
+import Input from '@mui/material/Input';
+const CustomSelect = styled(Select)({
+	border: 'none',
+	background: 'transparent',
+	color: 'white',
+	fontSize: '2.2rem',
+	fontWeight: 500,
+	button: {
+		border: 'none',
+		background: 'transparent',
+		color: 'white',
+		fontSize: '2.2rem',
+		fontWeight: 500,
+	},
+});
 
 function TokenBadge({ symbol, name, color }: { symbol: string; name: string; color: string }) {
 	return (
@@ -25,10 +59,48 @@ function TokenBadge({ symbol, name, color }: { symbol: string; name: string; col
 	);
 }
 
+const addPositionSchema = () =>
+	z.object({
+		pair: z
+			.array(z.string().min(1, '请选择交易对'))
+			.length(2, '请选择两个代币组成交易对')
+			.refine((value) => value[0] !== value[1], {
+				message: '交易对两个值不能相同',
+			}),
+		amount0: z.coerce
+			.number({ invalid_type_error: '请输入有效的数量' })
+			.positive('数量必须大于 0'),
+		amount1: z.coerce
+			.number({ invalid_type_error: '请输入有效的数量' })
+			.positive('数量必须大于 0'),
+	});
+
+type AddPositionFormValues = z.infer<ReturnType<typeof addPositionSchema>>;
+
 export default function SwapContent() {
 	const t = useTranslations();
-	const [fromAmount, setFromAmount] = useState('');
-	const [toAmount, setToAmount] = useState('');
+
+	const form = useForm<AddPositionFormValues>({
+		resolver: zodResolver(addPositionSchema()),
+		defaultValues: {
+			pair: [tokenList[0].address, tokenList[1].address],
+			amount0: 0,
+			amount1: 0,
+		},
+	});
+	const handleSubmit = form.handleSubmit(
+		async (values) => {
+			console.log('values', values);
+		},
+		(err) => {
+			console.log(err);
+		}
+	);
+
+	// 交换两个token的位置
+	const handleExchange = () => {
+		form.setValue('pair', [form.getValues('pair')[1], form.getValues('pair')[0]]);
+	};
 
 	return (
 		<div className="w-full max-w-[500px] rounded-[32px] backdrop-blur-2xl">
@@ -39,58 +111,150 @@ export default function SwapContent() {
 						{t('swap.title')}
 					</div>
 				</div>
-
-				<div className="flex flex-col gap-1">
-					<div className="rounded-[24px] border border-white/8 bg-[#161f33] p-4">
-						<div className="mb-3 flex items-center justify-between text-[16px] font-bold uppercase tracking-[0.2em] text-[#ffffffa6]">
-							<span>{t('swap.sell')}</span>
-						</div>
-						<div className="flex items-center justify-between gap-4">
-							<div className="text-[2.2rem] font-medium tracking-[-0.07em] text-white">
-								0.01
+				<Form form={form} onSubmit={() => handleSubmit()}>
+					<div className="flex flex-col gap-1">
+						<div className="rounded-[24px] border border-white/8 bg-[#161f33] p-4">
+							<div className="mb-3 flex items-center justify-between text-[16px] font-bold uppercase tracking-[0.2em] text-[#ffffffa6]">
+								<span>{t('swap.sell')}</span>
 							</div>
-							<div className="flex items-center justify-end">
-								<TokenBadge
-									symbol="ETH"
-									name="Ethereum"
-									color="linear-gradient(135deg,#8a8fff,#5c6af7 40%,#1d294a)"
+							<div className="flex items-center justify-between gap-4">
+								<div className="text-[2.2rem] flex-1 font-medium tracking-[-0.07em] text-white">
+									<FormField control={form.control} name="amount0">
+										{({ value, onChange, onBlur, error }) => {
+											const numberValue =
+												typeof value === 'number'
+													? value
+													: value === ''
+														? 0
+														: 0;
+											return (
+												<CustomNumberInput
+													value={numberValue}
+													onChange={onChange}
+													onBlur={onBlur}
+												/>
+											);
+										}}
+									</FormField>
+								</div>
+								<div className="flex items-center justify-end">
+									<FormField control={form.control} name="pair">
+										{({ value, onChange, onBlur, error }) => {
+											const originValue = Array.isArray(value) ? value : [];
+											const selectedValue = originValue[0] || '';
+											return (
+												<Select
+													value={selectedValue}
+													onValueChange={(v) =>
+														onChange?.([v, originValue[1]])
+													}
+												>
+													<SelectTrigger className="border-none bg-none bg-transparent! font-bold text-xl">
+														<SelectValue
+															placeholder="Select token"
+															className="text-white font-bold"
+														/>
+													</SelectTrigger>
+													<SelectContent>
+														{tokenList.map((item) => (
+															<SelectItem
+																key={item.address}
+																value={item.address}
+																className="text-white cursor-pointer focus:bg-white/10"
+															>
+																{item.name}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+											);
+										}}
+									</FormField>
+								</div>
+							</div>
+						</div>
+
+						<div className="relative w-full">
+							<button
+								onClick={handleExchange}
+								className="absolute left-[50%] cursor-pointer translate-y-[-50%] translate-x-[-50%] rounded-[16px] z-10 flex h-11 w-11 items-center justify-center border-4 border-[#131313] bg-[#151b2b] text-xl transition"
+							>
+								<SvgIcon
+									component={MoveDown}
+									sx={{ color: '#ffffff', fontSize: 24 }}
+									inheritViewBox
 								/>
-							</div>
+							</button>
 						</div>
-					</div>
 
-					<div className="relative w-full">
-						<button className="absolute left-[50%] cursor-pointer translate-y-[-50%] translate-x-[-50%] rounded-[16px] z-10 flex h-11 w-11 items-center justify-center border-4 border-[#131313] bg-[#151b2b] text-xl transition">
-							{/* <ArrowDownSvgIcon
-								fontSize="small"
-								sx={{ color: '#FF37C7', fontSize: 24, opacity: 0.3 }}
-							/> */}
-							<SvgIcon
-								component={MoveDown}
-								sx={{ color: '#ffffff', fontSize: 24 }}
-								inheritViewBox
-							/>
-						</button>
-					</div>
-
-					<div className="rounded-[24px] border border-white/8 bg-[#161f33] p-4">
-						<div className="mb-3 flex items-center justify-between text-[16px] font-bold uppercase tracking-[0.2em] text-[#ffffffa6]">
-							<span>{t('swap.buy')}</span>
-						</div>
-						<div className="flex items-center justify-between gap-4">
-							<div className="text-[2.2rem] font-medium tracking-[-0.07em] text-white">
-								0.54
+						<div className="rounded-[24px] border border-white/8 bg-[#161f33] p-4">
+							<div className="mb-3 flex items-center justify-between text-[16px] font-bold uppercase tracking-[0.2em] text-[#ffffffa6]">
+								<span>{t('swap.buy')}</span>
 							</div>
-							<div className="flex items-center justify-end">
-								<TokenBadge
-									symbol="USDC"
-									name="USD Coin"
-									color="linear-gradient(135deg,#6fe8ff,#4bd3bd 40%,#184c57)"
-								/>
+							<div className="flex items-center justify-between gap-4">
+								<div className="flex items-center justify-between gap-4">
+									<div className="text-[2.2rem] flex-1 font-medium tracking-[-0.07em] text-white">
+										<FormField control={form.control} name="amount1">
+											{({ value, onChange, onBlur, error }) => {
+												const numberValue =
+													typeof value === 'number'
+														? value
+														: value === ''
+															? 0
+															: 0;
+												return (
+													<CustomNumberInput
+														value={numberValue}
+														onChange={onChange}
+														onBlur={onBlur}
+													/>
+												);
+											}}
+										</FormField>
+									</div>
+									<div className="flex items-center justify-end">
+										<FormField control={form.control} name="pair">
+											{({ value, onChange, onBlur, error }) => {
+												const originValue = Array.isArray(value)
+													? value
+													: [];
+												const selectedValue = Array.isArray(value)
+													? value[1]
+													: '';
+												return (
+													<Select
+														value={selectedValue}
+														onValueChange={(v) =>
+															onChange?.([originValue[0], v])
+														}
+													>
+														<SelectTrigger className="border-none bg-none bg-transparent! font-bold text-xl">
+															<SelectValue
+																placeholder="Select token"
+																className="text-white font-bold"
+															/>
+														</SelectTrigger>
+														<SelectContent>
+															{tokenList.map((item) => (
+																<SelectItem
+																	key={item.address}
+																	value={item.address}
+																	className="text-white cursor-pointer focus:bg-white/10"
+																>
+																	{item.name}
+																</SelectItem>
+															))}
+														</SelectContent>
+													</Select>
+												);
+											}}
+										</FormField>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
-				</div>
+				</Form>
 				<CustomConnectButton>
 					{({ connected, chain, account, openAccountModal, openConnectModal }) => {
 						// console.log('chain', connected, chain, account);
@@ -106,7 +270,12 @@ export default function SwapContent() {
 								{t('swap.connectWallet')}
 							</Button>
 						) : (
-							<Button className="mt-5! flex w-full items-center justify-center rounded-full! px-5 py-4 text-base font-semibold text-black/80! transition bg-[linear-gradient(135deg,#6fe8ff,#4bd3bd_35%,#2dbf9a)]! hover:brightness-110">
+							<Button
+								className="mt-5! flex w-full items-center justify-center rounded-full! px-5 py-4 text-base font-semibold text-black/80! transition bg-[linear-gradient(135deg,#6fe8ff,#4bd3bd_35%,#2dbf9a)]! hover:brightness-110"
+								onClick={() => {
+									void handleSubmit();
+								}}
+							>
 								{t('swap.reviewSwap')}
 							</Button>
 						);
@@ -114,5 +283,52 @@ export default function SwapContent() {
 				</CustomConnectButton>
 			</div>
 		</div>
+	);
+}
+
+function CustomNumberInput(props: {
+	value: number;
+	onChange?: (value: number) => void;
+	onBlur?: () => void;
+}) {
+	return (
+		<Input
+			type="number"
+			value={props.value}
+			onChange={(e) => props.onChange?.(parseFloat(e.target.value))}
+			onBlur={props.onBlur}
+			sx={{
+				'& input': {
+					color: 'white',
+					fontSize: '2.2rem',
+					fontWeight: 500,
+					letterSpacing: '-0.07em',
+					backgroundColor: 'transparent',
+					border: 'none',
+					outline: 'none',
+				},
+				// 针对 Webkit 内核浏览器（Chrome, Safari, Edge 等）
+				'& input[type=number]::-webkit-inner-spin-button, & input[type=number]::-webkit-outer-spin-button':
+					{
+						WebkitAppearance: 'none',
+						margin: 0,
+					},
+				// 针对 Firefox 浏览器
+				'& input[type=number]': {
+					MozAppearance: 'textfield',
+				},
+				'&::after': {
+					// borderBottomColor: '#ffffff',
+				},
+				'&::before': {
+					borderBottomColor: 'transparent',
+				},
+				'&:hover::before': {
+					opacity: 0,
+					borderBottomColor: '#ffffff',
+				},
+			}}
+			className="text-[2.2rem] w-full font-medium tracking-[-0.07em] bg-transparent border-none outline-none"
+		/>
 	);
 }

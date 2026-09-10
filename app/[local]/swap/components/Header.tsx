@@ -55,7 +55,7 @@ export default function Header() {
 
 	return (
 		<>
-			<header className="sticky top-0 z-999 border-b border-white/10 bg-[#131313]/70 shadow-[0_8px_30px_rgba(0,0,0,0.25)] backdrop-blur-xl supports-backdrop-filter:bg-[#131313]/20">
+			<header className="sticky top-0 z-999 border-b border-white/10 not-dark:bg-[#050816]! backdrop-blur-xl supports-backdrop-filter:bg-[#131313]/20">
 				<div className="mx-auto flex max-w-[1440px] items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
 					<div className="flex items-center gap-3">
 						<div className="flex h-9 w-9 items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_30%,#b0a3ff,#5a5cff_40%,#1e1f5e_70%,#110d2c)] shadow-[0_0_30px_rgba(138,109,255,0.6)]">

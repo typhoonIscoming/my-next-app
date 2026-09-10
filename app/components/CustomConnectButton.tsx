@@ -28,9 +28,7 @@ export default function CustomConnectButton({ children }: GenericChildFunctionPr
 				return (
 					<div
 						{...(!ready && {
-							'aria-hidden': true,
 							style: {
-								opacity: 0,
 								pointerEvents: 'none',
 								userSelect: 'none',
 							},

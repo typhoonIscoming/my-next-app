@@ -3,6 +3,10 @@ import { useState } from 'react';
 import Box from '@mui/material/Box';
 import { useTranslations } from 'next-intl';
 import { ArrowDownSvgIcon } from './CustomSvgIcon';
+import CustomConnectButton from '@/app/components/CustomConnectButton';
+import Button from '@mui/material/Button';
+import SvgIcon from '@mui/material/SvgIcon';
+import { MoveDown } from 'lucide-react';
 
 function TokenBadge({ symbol, name, color }: { symbol: string; name: string; color: string }) {
 	return (
@@ -34,21 +38,6 @@ export default function SwapContent() {
 						<span className="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400" />
 						{t('swap.title')}
 					</div>
-					<button className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/3 text-zinc-200 transition hover:bg-white/5">
-						<svg
-							viewBox="0 0 24 24"
-							className="h-4 w-4"
-							fill="none"
-							stroke="currentColor"
-							strokeWidth="1.8"
-						>
-							<path
-								d="M10 6.5h8.5M15.5 2l4.5 4.5-4.5 4.5M14 17.5H5.5M8.5 13l-4.5 4.5L8.5 22"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-							/>
-						</svg>
-					</button>
 				</div>
 
 				<div className="flex flex-col gap-1">
@@ -72,9 +61,14 @@ export default function SwapContent() {
 
 					<div className="relative w-full">
 						<button className="absolute left-[50%] cursor-pointer translate-y-[-50%] translate-x-[-50%] rounded-[16px] z-10 flex h-11 w-11 items-center justify-center border-4 border-[#131313] bg-[#151b2b] text-xl transition">
-							<ArrowDownSvgIcon
+							{/* <ArrowDownSvgIcon
 								fontSize="small"
 								sx={{ color: '#FF37C7', fontSize: 24, opacity: 0.3 }}
+							/> */}
+							<SvgIcon
+								component={MoveDown}
+								sx={{ color: '#ffffff', fontSize: 24 }}
+								inheritViewBox
 							/>
 						</button>
 					</div>
@@ -97,25 +91,27 @@ export default function SwapContent() {
 						</div>
 					</div>
 				</div>
-
-				<div className="mt-5 rounded-[22px] border border-white/8 bg-white/2 p-3">
-					<div className="flex items-center justify-between text-sm text-zinc-300">
-						<span>{t('swap.rate')}</span>
-						<span className="font-medium text-white">1 ETH = 54.17 USDC</span>
-					</div>
-					<div className="mt-3 flex items-center justify-between text-sm text-zinc-300">
-						<span>{t('swap.slippage')}</span>
-						<span className="font-medium text-white">0.5%</span>
-					</div>
-					<div className="mt-3 flex items-center justify-between text-sm text-zinc-300">
-						<span>{t('swap.networkFee')}</span>
-						<span className="font-medium text-white">~$2.31</span>
-					</div>
-				</div>
-
-				<button className="mt-5 flex w-full items-center justify-center rounded-[18px] bg-[linear-gradient(135deg,#b29bff,#8a7bff_35%,#4a5df7)] px-5 py-4 text-base font-semibold text-white shadow-[0_18px_40px_rgba(96,89,255,0.45)] transition hover:brightness-110">
-					{t('swap.reviewSwap')}
-				</button>
+				<CustomConnectButton>
+					{({ connected, chain, account, openAccountModal, openConnectModal }) => {
+						// console.log('chain', connected, chain, account);
+						// address只显示前后共4位
+						// const shortAddress = account
+						// 	? `${account.address.slice(0, 4)}...${account.address.slice(-4)}`
+						// 	: '';
+						return !connected ? (
+							<Button
+								onClick={openConnectModal}
+								className="w-full rounded-full! mt-5! text-white! hover:text-(--swap-hover-background)! bg-(--swap-background)!"
+							>
+								{t('swap.connectWallet')}
+							</Button>
+						) : (
+							<Button className="mt-5! flex w-full items-center justify-center rounded-full! px-5 py-4 text-base font-semibold text-black/80! transition bg-[linear-gradient(135deg,#6fe8ff,#4bd3bd_35%,#2dbf9a)]! hover:brightness-110">
+								{t('swap.reviewSwap')}
+							</Button>
+						);
+					}}
+				</CustomConnectButton>
 			</div>
 		</div>
 	);

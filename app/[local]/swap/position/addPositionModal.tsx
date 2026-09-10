@@ -61,10 +61,10 @@ type AddPositionFormHandle = {
 
 export default function AddPositionModal() {
 	const t = useTranslations();
-	const [open, setOpen] = useState(true);
+	const [open, setOpen] = useState(false);
 	const { addPosition, isPending } = useAddPosition();
 	const { data: pools = [] } = useReadPool();
-
+	console.log('pools', pools);
 	const form = useForm<AddPositionFormValues>({
 		resolver: zodResolver(addPositionSchema()),
 		defaultValues: {
@@ -110,7 +110,7 @@ export default function AddPositionModal() {
 				toast.error('请输入两种代币的授权数量');
 				return;
 			}
-
+			console.log('pool', pools);
 			const matchedPool = (pools as any[]).find((pool) => {
 				const poolFee = Number(pool?.fee ?? 0);
 				const expectedFee = Math.round(feePercent * 10000);

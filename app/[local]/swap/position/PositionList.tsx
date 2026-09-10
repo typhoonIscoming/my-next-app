@@ -23,18 +23,9 @@ function PositionTableSkeleton() {
 			aria-label="Loading positions"
 		>
 			<div className="space-y-3">
-				{Array.from({ length: 8 }).map((_, index) => (
+				{Array.from({ length: PAGE_SIZE }).map((_, index) => (
 					<div key={index} className="flex items-center">
-						<Skeleton className="h-10 w-48 shrink-0 rounded-none bg-white/8" />
-						<Skeleton
-							className={cn(
-								'sh-10 shrink-0 rounded-none bg-white/8',
-								isMobile ? 'w-28' : 'w-36'
-							)}
-						/>
-						<Skeleton className="h-10 w-40 shrink-0 rounded-none bg-white/8" />
-						<Skeleton className="h-10 w-40 shrink-0 rounded-none bg-white/8" />
-						<Skeleton className="h-10 w-32 shrink-0 rounded-none bg-white/8" />
+						<Skeleton className="h-10 w-full shrink-0 rounded-none bg-white/8" />
 					</div>
 				))}
 			</div>
@@ -165,79 +156,88 @@ export default function PositionList() {
 				/>
 				{isLoading ? (
 					<PositionTableSkeleton />
-				) : (
-					<Box
-						ref={tbodyRef}
-						onScroll={() => syncScroll(tbodyRef.current, theadRef.current)}
-						className="overflow-x-auto scrollbar-none tbody-list"
-					>
-						<Box className="w-fit min-w-full">
-							<div className="mt-2 space-y-2">
-								{pageList.map((item, index) => {
-									const rowIndex = start + index + 1;
-									const i = Number(item.id);
-									return (
-										<Box
-											key={`${i}`}
-											className="flex items-center border border-white/5 bg-[#050816] text-sm text-white"
-										>
-											{!isMobile && (
-												<Box className="sticky left-0 z-9 w-12 shrink-0 border-r border-white/5 bg-[#131313] px-3 py-3 text-left text-zinc-400">
-													{i}
-												</Box>
-											)}
-											<Box
-												className={cn(
-													'shrink-0 px-3 py-3 text-left font-bold border-r border-white/10',
-													isMobile
-														? 'sticky left-0 w-40 z-10 bg-[#050816]'
-														: 'w-60'
-												)}
-											>
-												{item.pair}
-											</Box>
-											<Box className="w-40 shrink-0 text-right font-bold">
-												{item.fee}
-											</Box>
-											<Box className="w-40 shrink-0 grow text-right font-bold">
-												{item.range}
-											</Box>
-											<Box className="w-40 shrink-0 text-right font-bold">
-												{item.tick ?? '--'}
-											</Box>
-											<Box className="w-80 shrink-0 text-right pr-8 font-bold">
-												{item.liquidity}
-											</Box>
-										</Box>
-									);
-								})}
-							</div>
-						</Box>
-					</Box>
-				)}
-				<div className="sticky z-15 bottom-0 mt-4 border-t border-white/10 bg-[#131313]/95 px-3 py-3 backdrop-blur-md">
-					<div className="flex items-center justify-end gap-2 text-sm text-zinc-300">
-						<button
-							type="button"
-							onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-							disabled={safePage === 1}
-							className="rounded-full cursor-pointer border border-white/10 bg-white/3 px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-40"
-						>
-							{t('swap.prev')}
-						</button>
-						<span className="min-w-16 text-center">
-							{safePage}/{totalPages}
-						</span>
-						<button
-							type="button"
-							onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-							disabled={safePage === totalPages}
-							className="rounded-full cursor-pointer border border-white/10 bg-white/3 px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-40"
-						>
-							{t('swap.next')}
-						</button>
+				) : !rows.length ? (
+					<div className="mt-6 rounded-2xl border border-dashed border-white/10 bg-white/2 px-6 py-12 text-center text-zinc-400">
+						<div className="text-lg font-medium text-white">{t('swap.emptyList')}</div>
+						<p className="mt-2 text-sm text-zinc-400">{t('swap.noPools')}</p>
 					</div>
-				</div>
+				) : (
+					<>
+						<Box
+							ref={tbodyRef}
+							onScroll={() => syncScroll(tbodyRef.current, theadRef.current)}
+							className="overflow-x-auto scrollbar-none tbody-list"
+						>
+							<Box className="w-fit min-w-full">
+								<div className="mt-2 space-y-2">
+									{pageList.map((item, index) => {
+										const rowIndex = start + index + 1;
+										const i = Number(item.id);
+										return (
+											<Box
+												key={`${i}`}
+												className="flex items-center border border-white/5 bg-[#050816] text-sm text-white"
+											>
+												{!isMobile && (
+													<Box className="sticky left-0 z-9 w-12 shrink-0 border-r border-white/5 bg-[#131313] px-3 py-3 text-left text-zinc-400">
+														{i}
+													</Box>
+												)}
+												<Box
+													className={cn(
+														'shrink-0 px-3 py-3 text-left font-bold border-r border-white/10',
+														isMobile
+															? 'sticky left-0 w-40 z-10 bg-[#050816]'
+															: 'w-60'
+													)}
+												>
+													{item.pair}
+												</Box>
+												<Box className="w-40 shrink-0 text-right font-bold">
+													{item.fee}
+												</Box>
+												<Box className="w-40 shrink-0 grow text-right font-bold">
+													{item.range}
+												</Box>
+												<Box className="w-40 shrink-0 text-right font-bold">
+													{item.tick ?? '--'}
+												</Box>
+												<Box className="w-80 shrink-0 text-right pr-8 font-bold">
+													{item.liquidity}
+												</Box>
+											</Box>
+										);
+									})}
+								</div>
+							</Box>
+						</Box>
+						<div className="sticky z-15 bottom-0 mt-4 border-t border-white/10 bg-[#131313]/95 px-3 py-3 backdrop-blur-md">
+							<div className="flex items-center justify-end gap-2 text-sm text-zinc-300">
+								<button
+									type="button"
+									onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+									disabled={safePage === 1}
+									className="rounded-full cursor-pointer border border-white/10 bg-white/3 px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-40"
+								>
+									{t('swap.prev')}
+								</button>
+								<span className="min-w-16 text-center">
+									{safePage}/{totalPages}
+								</span>
+								<button
+									type="button"
+									onClick={() =>
+										setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+									}
+									disabled={safePage === totalPages}
+									className="rounded-full cursor-pointer border border-white/10 bg-white/3 px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-40"
+								>
+									{t('swap.next')}
+								</button>
+							</div>
+						</div>
+					</>
+				)}
 			</Box>
 			<Box className="h-[20vh]"></Box>
 		</Box>

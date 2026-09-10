@@ -3,7 +3,6 @@ import { postionsAbi } from './abi';
 import { positionsAddress } from '@/lib/utils';
 
 export function useReadPositions() {
-	// refetch
 	const {
 		data,
 		isLoading,

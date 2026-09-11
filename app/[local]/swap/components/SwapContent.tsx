@@ -27,6 +27,7 @@ import {
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useDebouncedCallback } from 'use-debounce';
 import { cn, tokenList } from '@/lib/utils';
 import Input from '@mui/material/Input';
 import { toast } from 'sonner';
@@ -49,12 +50,8 @@ const addPositionSchema = (validateMessages: {
 			.refine((value) => value[0] !== value[1], {
 				message: validateMessages.selectToken,
 			}),
-		amount0: z.coerce
-			.number({ invalid_type_error: validateMessages.enterValidAmount })
-			.positive(validateMessages.amountMustBeGreaterThanZero),
-		amount1: z.coerce
-			.number({ invalid_type_error: validateMessages.enterValidAmount })
-			.positive(validateMessages.amountMustBeGreaterThanZero),
+		amount0: z.string().regex(/^(|\d+(\.\d*)?|\.\d+)$/, validateMessages.enterValidAmount),
+		amount1: z.string().regex(/^(|\d+(\.\d*)?|\.\d+)$/, validateMessages.enterValidAmount),
 	});
 };
 
@@ -74,9 +71,10 @@ export default function SwapContent() {
 	const form = useForm<AddPositionFormValues>({
 		resolver: zodResolver(addPositionSchema(validateMessages)),
 		defaultValues: {
-			pair: [tokenList[0].address, tokenList[1].address],
-			amount0: 0,
-			amount1: 0,
+			pair: [],
+			// pair: [tokenList[0].address, tokenList[1].address],
+			amount0: '',
+			amount1: '',
 		},
 	});
 	const watchedPair = form.watch('pair');
@@ -88,40 +86,39 @@ export default function SwapContent() {
 		isLoading: isToken0BalanceLoading,
 		refetch,
 	} = useTokenBalance(selectedToken0Address, { decimals: 18 });
+	// useEffect(() => {
+	// 	if (!selectedToken0Address) return;
 
-	useEffect(() => {
-		if (!selectedToken0Address) return;
+	// 	void (async () => {
+	// 		const candidatePools = await getCandidatePools(selectedToken0Address);
+	// 		console.log('candidatePools', candidatePools);
+	// 	})();
+	// }, [selectedToken0Address, getCandidatePools]);
 
-		void (async () => {
-			const candidatePools = await getCandidatePools(selectedToken0Address);
-			console.log('candidatePools', candidatePools);
-		})();
-	}, [selectedToken0Address, getCandidatePools]);
+	// useEffect(() => {
+	// 	if (!selectedToken0Address || !selectedToken1Address) return;
+	// 	if (!form.getValues('amount0')) return;
 
-	useEffect(() => {
-		if (!selectedToken0Address || !selectedToken1Address) return;
-		if (!form.getValues('amount0')) return;
+	// 	void (async () => {
+	// 		const candidatePools = await getCandidatePools(selectedToken0Address);
+	// 		const matchedPool = candidatePools.find(
+	// 			(pool: { token0: string; token1: string; index: number | string }) =>
+	// 				pool.token0.toLowerCase() === selectedToken1Address.toLowerCase() ||
+	// 				pool.token1.toLowerCase() === selectedToken1Address.toLowerCase()
+	// 		);
+	// 		if (!matchedPool) return;
 
-		void (async () => {
-			const candidatePools = await getCandidatePools(selectedToken0Address);
-			const matchedPool = candidatePools.find(
-				(pool: { token0: string; token1: string; index: number | string }) =>
-					pool.token0.toLowerCase() === selectedToken1Address.toLowerCase() ||
-					pool.token1.toLowerCase() === selectedToken1Address.toLowerCase()
-			);
-			if (!matchedPool) return;
-
-			const quoted = await quoteExactInput({
-				tokenIn: selectedToken0Address,
-				tokenOut: selectedToken1Address,
-				poolIndex: Number(matchedPool.index),
-				amountIn: String(form.getValues('amount0')),
-				decimals: 18,
-			});
-			const amount1 = Number(quoted.toString()) / 1e18;
-			form.setValue('amount1', amount1, { shouldValidate: true });
-		})();
-	}, [selectedToken0Address, selectedToken1Address, form, getCandidatePools, quoteExactInput]);
+	// 		const quoted = await quoteExactInput({
+	// 			tokenIn: selectedToken0Address,
+	// 			tokenOut: selectedToken1Address,
+	// 			poolIndex: Number(matchedPool.index),
+	// 			amountIn: String(form.getValues('amount0')),
+	// 			decimals: 18,
+	// 		});
+	// 		const amount1 = Number(quoted.toString()) / 1e18;
+	// 		form.setValue('amount1', amount1, { shouldValidate: true });
+	// 	})();
+	// }, [selectedToken0Address, selectedToken1Address, form, getCandidatePools, quoteExactInput]);
 
 	const handleSubmit = form.handleSubmit(
 		async (values) => {
@@ -137,6 +134,13 @@ export default function SwapContent() {
 					return;
 				}
 
+				const rawAmount0 = values.amount0.trim();
+				const numericAmount0 = Number(rawAmount0);
+				if (rawAmount0 === '' || !Number.isFinite(numericAmount0) || numericAmount0 <= 0) {
+					toast.error('输入金额必须大于 0');
+					return;
+				}
+
 				const candidatePools = await getCandidatePools(tokenIn);
 				const matchedPool = candidatePools.find(
 					(pool: { token0: string; token1: string; index: number | string }) =>
@@ -149,7 +153,7 @@ export default function SwapContent() {
 					return;
 				}
 
-				const amountIn = parseUnits(String(values.amount0), 18);
+				const amountIn = parseUnits(rawAmount0, 18);
 				if (amountIn <= 0n) {
 					toast.error('输入金额必须大于 0');
 					return;
@@ -244,14 +248,17 @@ export default function SwapContent() {
 		}
 	);
 
+	const debouncedHandleSubmit = useDebouncedCallback(() => {
+		void handleSubmit();
+	}, 400);
+
 	// 交换两个token的位置
 	const handleExchange = () => {
 		form.setValue('pair', [form.getValues('pair')[1], form.getValues('pair')[0]]);
 	};
-	// 舒心余额
-	const handleRefreshToken0Balance = () => {
-		// Implement the logic to refresh token0 balance here
-		refetch();
+	// 刷新余额
+	const handleRefreshToken0Balance = async () => {
+		await refetch();
 	};
 
 	return (
@@ -263,9 +270,9 @@ export default function SwapContent() {
 						{t('swap.title')}
 					</div>
 				</div>
-				<Form form={form} onSubmit={() => handleSubmit()}>
+				<Form form={form} onSubmit={() => {}}>
 					<div className="flex flex-col gap-1">
-						<div className="rounded-[24px] border border-white/8 bg-[#161f33] p-4">
+						<div className="rounded-[24px] border border-white/8 bg-[#161f33] p-4 pb-6">
 							<div className="mb-3 flex items-center justify-between text-[16px] font-bold uppercase tracking-[0.2em] text-[#ffffffa6]">
 								<span>{t('swap.sell')}</span>
 								<Box className="flex items-center gap-2 text-[11px] normal-case tracking-normal text-slate-300">
@@ -290,16 +297,20 @@ export default function SwapContent() {
 								<div className="text-[2.2rem] flex-1 font-medium tracking-[-0.07em] text-white">
 									<FormField control={form.control} name="amount0">
 										{({ value, onChange, onBlur, error }) => {
-											const numberValue =
-												typeof value === 'number'
+											const displayValue =
+												typeof value === 'string'
 													? value
-													: value === ''
-														? 0
-														: 0;
+													: typeof value === 'number' &&
+														  Number.isFinite(value)
+														? String(value)
+														: '';
 											return (
 												<CustomNumberInput
-													value={numberValue}
-													onChange={onChange}
+													value={displayValue}
+													placeholder={t('swap.pleaseInput', {
+														type: t('swap.sell'),
+													})}
+													onChange={onChange as (value: string) => void}
 													onBlur={onBlur}
 												/>
 											);
@@ -320,7 +331,7 @@ export default function SwapContent() {
 												>
 													<SelectTrigger className="border-none bg-none bg-transparent! font-bold text-xl">
 														<SelectValue
-															placeholder="Select token"
+															placeholder={t('swap.selectToken')}
 															className="text-white font-bold"
 														/>
 													</SelectTrigger>
@@ -366,15 +377,23 @@ export default function SwapContent() {
 										<FormField control={form.control} name="amount1">
 											{({ value, onChange, onBlur, error }) => {
 												const numberValue =
-													typeof value === 'number'
+													typeof value === 'string'
 														? value
-														: value === ''
-															? 0
-															: 0;
+														: typeof value === 'number' &&
+															  Number.isFinite(value)
+															? String(value)
+															: '';
 												return (
 													<CustomNumberInput
 														value={numberValue}
-														onChange={onChange}
+														placeholder={t('swap.pleaseInput', {
+															type: t('swap.buy'),
+														})}
+														onChange={
+															onChange as (
+																value: number | string
+															) => void
+														}
 														onBlur={onBlur}
 													/>
 												);
@@ -399,7 +418,7 @@ export default function SwapContent() {
 													>
 														<SelectTrigger className="border-none bg-none bg-transparent! font-bold text-xl">
 															<SelectValue
-																placeholder="Select token"
+																placeholder={t('swap.selectToken')}
 																className="text-white font-bold"
 															/>
 														</SelectTrigger>
@@ -441,9 +460,7 @@ export default function SwapContent() {
 						) : (
 							<Button
 								className="mt-5! flex w-full items-center justify-center rounded-full! px-5 py-4 text-base font-semibold text-black/80! transition bg-[linear-gradient(135deg,#6fe8ff,#4bd3bd_35%,#2dbf9a)]! hover:brightness-110"
-								onClick={() => {
-									void handleSubmit();
-								}}
+								onClick={debouncedHandleSubmit}
 							>
 								{t('swap.reviewSwap')}
 							</Button>
@@ -456,16 +473,45 @@ export default function SwapContent() {
 }
 
 function CustomNumberInput(props: {
-	value: number;
-	onChange?: (value: number) => void;
+	value: string;
+	onChange?: (value: string) => void;
 	onBlur?: () => void;
+	placeholder?: string;
 }) {
 	return (
 		<Input
-			type="number"
-			value={props.value}
-			onChange={(e) => props.onChange?.(parseFloat(e.target.value))}
-			onBlur={props.onBlur}
+			type="text"
+			inputMode="decimal"
+			value={props.value ?? ''}
+			placeholder={props.placeholder}
+			onChange={(e) => {
+				const rawValue = e.target.value;
+				if (rawValue === '') {
+					props.onChange?.('');
+					return;
+				}
+				if (rawValue.startsWith('-')) {
+					return;
+				}
+				if (!/^(\d+(\.\d*)?|\.\d+)$/.test(rawValue)) {
+					return;
+				}
+				props.onChange?.(rawValue);
+			}}
+			onBlur={(e) => {
+				const rawValue = e.target.value;
+				if (rawValue === '') {
+					props.onChange?.('');
+					props.onBlur?.();
+					return;
+				}
+				if (rawValue.startsWith('-') || !/^(\d+(\.\d*)?|\.\d+)$/.test(rawValue)) {
+					props.onChange?.('');
+					props.onBlur?.();
+					return;
+				}
+				props.onBlur?.();
+			}}
 			sx={{
 				'& input': {
 					color: 'white',
@@ -475,6 +521,12 @@ function CustomNumberInput(props: {
 					backgroundColor: 'transparent',
 					border: 'none',
 					outline: 'none',
+				},
+				'& input::placeholder': {
+					fontSize: '2.2rem',
+					letterSpacing: '-0.07em',
+					fontWeight: 500,
+					color: 'rgba(255,255,255,0.45)',
 				},
 				// 针对 Webkit 内核浏览器（Chrome, Safari, Edge 等）
 				'& input[type=number]::-webkit-inner-spin-button, & input[type=number]::-webkit-outer-spin-button':

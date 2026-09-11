@@ -134,6 +134,8 @@
         "selectToken0": "Select token 0",
         "selectToken1": "Select token 1",
         "invalidNumber": "Please enter a valid number.",
-        "invalidAmount": "The input quantity must be greater than 0."
+        "invalidAmount": "The input quantity must be greater than 0",
+        "pleaseInput": "Please enter a quantity for {type}",
+        "selectToken": "Select a token"
     }
 }

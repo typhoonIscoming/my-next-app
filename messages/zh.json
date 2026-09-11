@@ -134,6 +134,8 @@
         "selectToken0": "选择卖出的代币",
         "selectToken1": "选择买入的代币",
         "invalidNumber": "请输入有效的数字",
-        "invalidAmount": "输入的数量需要大于 0"
+        "invalidAmount": "输入的数量需要大于 0",
+        "pleaseInput": "请输入{type}数量",
+        "selectToken": "请选择代币"
 	}
 }

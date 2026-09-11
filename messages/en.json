@@ -81,6 +81,7 @@
 		"from": "From",
 		"to": "To",
 		"balance": "Balance",
+        "loading": "Loading...",
 		"rate": "Rate",
 		"slippage": "Slippage",
 		"networkFee": "Network fee",
@@ -129,6 +130,10 @@
         "actions": "Actions",
         "addPosition": "Add position",
         "confirm": "Confirm",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "selectToken0": "Select token 0",
+        "selectToken1": "Select token 1",
+        "invalidNumber": "Please enter a valid number.",
+        "invalidAmount": "The input quantity must be greater than 0."
     }
 }

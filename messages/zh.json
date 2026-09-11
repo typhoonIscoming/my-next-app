@@ -81,6 +81,7 @@
 		"from": "从",
 		"to": "至",
 		"balance": "余额",
+        "loading": "加载中",
 		"rate": "汇率",
 		"slippage": "滑点",
 		"networkFee": "网络费用",
@@ -129,6 +130,10 @@
         "actions": "操作",
         "addPosition": "添加头寸",
         "confirm": "确认",
-        "cancel": "取消"
+        "cancel": "取消",
+        "selectToken0": "选择卖出的代币",
+        "selectToken1": "选择买入的代币",
+        "invalidNumber": "请输入有效的数字",
+        "invalidAmount": "输入的数量需要大于 0"
 	}
 }

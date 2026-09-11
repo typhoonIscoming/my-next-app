@@ -1,12 +1,14 @@
 'use client';
-import { useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
 import { useTranslations } from 'next-intl';
 import CustomConnectButton from '@/app/components/CustomConnectButton';
 import Button from '@mui/material/Button';
 import SvgIcon from '@mui/material/SvgIcon';
-import { MoveDown } from 'lucide-react';
+import { MoveDown, RotateCw } from 'lucide-react';
+import { parseUnits, type Address } from 'viem';
+import { useAccount, useWriteContract } from 'wagmi';
 import {
 	Form,
 	FormControl,
@@ -25,75 +27,182 @@ import {
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { tokenList } from '@/lib/utils';
+import { cn, tokenList } from '@/lib/utils';
 import Input from '@mui/material/Input';
-const CustomSelect = styled(Select)({
-	border: 'none',
-	background: 'transparent',
-	color: 'white',
-	fontSize: '2.2rem',
-	fontWeight: 500,
-	button: {
-		border: 'none',
-		background: 'transparent',
-		color: 'white',
-		fontSize: '2.2rem',
-		fontWeight: 500,
-	},
-});
+import { toast } from 'sonner';
+import { useTokenBalance } from '../hooks/useTokenBalance';
+import { useSwapRoute } from '../hooks/useSwapRoute';
+import { swapRouterAbi } from '../hooks/abi';
+import { swapAddress } from '@/lib/utils';
 
-function TokenBadge({ symbol, name, color }: { symbol: string; name: string; color: string }) {
-	return (
-		<div className="flex items-center gap-3">
-			<div
-				className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold text-white shadow-inner"
-				style={{ background: color }}
-			>
-				{symbol.slice(0, 2)}
-			</div>
-			<div className="leading-none">
-				<div className="text-[11px] uppercase tracking-[0.2em] text-zinc-400">{name}</div>
-				<div className="mt-1 text-base font-semibold text-white">{symbol}</div>
-			</div>
-		</div>
-	);
-}
-
-const addPositionSchema = () =>
-	z.object({
+const addPositionSchema = (validateMessages: {
+	selectToken: string;
+	enterValidAmount: string;
+	amountMustBeGreaterThanZero: string;
+}) => {
+	return z.object({
 		pair: z
-			.array(z.string().min(1, '请选择交易对'))
-			.length(2, '请选择两个代币组成交易对')
+			.array(z.string().min(1, validateMessages.selectToken))
+			.length(2, validateMessages.selectToken)
 			.refine((value) => value[0] !== value[1], {
-				message: '交易对两个值不能相同',
+				message: validateMessages.selectToken,
 			}),
 		amount0: z.coerce
-			.number({ invalid_type_error: '请输入有效的数量' })
-			.positive('数量必须大于 0'),
+			.number({ invalid_type_error: validateMessages.enterValidAmount })
+			.positive(validateMessages.amountMustBeGreaterThanZero),
 		amount1: z.coerce
-			.number({ invalid_type_error: '请输入有效的数量' })
-			.positive('数量必须大于 0'),
+			.number({ invalid_type_error: validateMessages.enterValidAmount })
+			.positive(validateMessages.amountMustBeGreaterThanZero),
 	});
+};
 
 type AddPositionFormValues = z.infer<ReturnType<typeof addPositionSchema>>;
 
 export default function SwapContent() {
 	const t = useTranslations();
+	const { address } = useAccount();
+	const { writeContractAsync } = useWriteContract();
+	const validateMessages = {
+		selectToken: t('swap.selectToken0'),
+		enterValidAmount: t('swap.invalidNumber'),
+		amountMustBeGreaterThanZero: t('swap.invalidAmount'),
+	};
 
 	const form = useForm<AddPositionFormValues>({
-		resolver: zodResolver(addPositionSchema()),
+		resolver: zodResolver(addPositionSchema(validateMessages)),
 		defaultValues: {
 			pair: [tokenList[0].address, tokenList[1].address],
 			amount0: 0,
 			amount1: 0,
 		},
 	});
+	const watchedPair = form.watch('pair');
+	const selectedToken0Address = watchedPair?.[0] as `0x${string}` | undefined;
+	const selectedToken1Address = watchedPair?.[1] as `0x${string}` | undefined;
+	const { getCandidatePools, quoteExactInput, quoteExactOutput } = useSwapRoute();
+	const {
+		formatted: token0Balance,
+		isLoading: isToken0BalanceLoading,
+		refetch,
+	} = useTokenBalance(selectedToken0Address, { decimals: 18 });
+
+	useEffect(() => {
+		if (!selectedToken0Address) return;
+
+		void (async () => {
+			const candidatePools = await getCandidatePools(selectedToken0Address);
+			console.log('candidatePools', candidatePools);
+		})();
+	}, [selectedToken0Address, getCandidatePools]);
+
+	useEffect(() => {
+		if (!selectedToken0Address || !selectedToken1Address) return;
+		if (!form.getValues('amount0')) return;
+
+		void (async () => {
+			const candidatePools = await getCandidatePools(selectedToken0Address);
+			const matchedPool = candidatePools.find(
+				(pool: { token0: string; token1: string; index: number | string }) =>
+					pool.token0.toLowerCase() === selectedToken1Address.toLowerCase() ||
+					pool.token1.toLowerCase() === selectedToken1Address.toLowerCase()
+			);
+			if (!matchedPool) return;
+
+			const quoted = await quoteExactInput({
+				tokenIn: selectedToken0Address,
+				tokenOut: selectedToken1Address,
+				poolIndex: Number(matchedPool.index),
+				amountIn: String(form.getValues('amount0')),
+				decimals: 18,
+			});
+			const amount1 = Number(quoted.toString()) / 1e18;
+			form.setValue('amount1', amount1, { shouldValidate: true });
+		})();
+	}, [selectedToken0Address, selectedToken1Address, form, getCandidatePools, quoteExactInput]);
+
 	const handleSubmit = form.handleSubmit(
 		async (values) => {
-			console.log('values', values);
+			try {
+				if (!address) {
+					toast.error('请先连接钱包');
+					return;
+				}
+
+				const [tokenIn, tokenOut] = form.getValues('pair') as [Address, Address];
+				if (!tokenIn || !tokenOut || tokenIn === tokenOut) {
+					toast.error('请选择有效的交易对');
+					return;
+				}
+
+				const candidatePools = await getCandidatePools(tokenIn);
+				const matchedPool = candidatePools.find(
+					(pool: { token0: string; token1: string; index: number | string }) =>
+						pool.token0.toLowerCase() === tokenOut.toLowerCase() ||
+						pool.token1.toLowerCase() === tokenOut.toLowerCase()
+				);
+
+				if (!matchedPool) {
+					toast.error('当前交易对没有可用池');
+					return;
+				}
+
+				const amountIn = parseUnits(String(values.amount0), 18);
+				if (amountIn <= 0n) {
+					toast.error('输入金额必须大于 0');
+					return;
+				}
+
+				await writeContractAsync({
+					address: tokenIn,
+					abi: [
+						{
+							constant: false,
+							inputs: [
+								{ name: 'spender', type: 'address' },
+								{ name: 'value', type: 'uint256' },
+							],
+							name: 'approve',
+							outputs: [{ name: '', type: 'bool' }],
+							stateMutability: 'nonpayable',
+							type: 'function',
+						},
+					],
+					functionName: 'approve',
+					args: [swapAddress, amountIn],
+				});
+
+				const txHash = await writeContractAsync({
+					address: swapAddress,
+					abi: swapRouterAbi,
+					functionName: 'exactInput',
+					args: [
+						{
+							tokenIn,
+							tokenOut,
+							indexPath: [Number(matchedPool.index)],
+							recipient: address,
+							deadline: BigInt(Math.floor(Date.now() / 1000) + 3600),
+							amountIn,
+							amountOutMinimum: 0n,
+							sqrtPriceLimitX96: 0n,
+						},
+					],
+				});
+
+				toast.success(`Swap submitted: ${txHash}`);
+				console.log('swap txHash', txHash);
+			} catch (error: any) {
+				console.error(error);
+				toast.error(error?.shortMessage || error?.message || 'Swap failed');
+			}
 		},
-		(err) => {
+		(err: { [key: string]: { message?: string } }) => {
+			if (!err) return;
 			console.log(err);
+			for (let key in err) {
+				toast.error(err[key]?.message || '发生错误');
+				break;
+			}
 		}
 	);
 
@@ -101,9 +210,14 @@ export default function SwapContent() {
 	const handleExchange = () => {
 		form.setValue('pair', [form.getValues('pair')[1], form.getValues('pair')[0]]);
 	};
+	// 舒心余额
+	const handleRefreshToken0Balance = () => {
+		// Implement the logic to refresh token0 balance here
+		refetch();
+	};
 
 	return (
-		<div className="w-full max-w-[500px] rounded-[32px] backdrop-blur-2xl">
+		<div className="w-full max-w-125 rounded-[32px] backdrop-blur-2xl">
 			<div className="rounded-[28px] p-4">
 				<div className="mb-4 flex items-center justify-between px-2 py-1">
 					<div className="flex items-center gap-2 text-sm font-semibold text-white">
@@ -116,6 +230,23 @@ export default function SwapContent() {
 						<div className="rounded-[24px] border border-white/8 bg-[#161f33] p-4">
 							<div className="mb-3 flex items-center justify-between text-[16px] font-bold uppercase tracking-[0.2em] text-[#ffffffa6]">
 								<span>{t('swap.sell')}</span>
+								<Box className="flex items-center gap-2 text-[11px] normal-case tracking-normal text-slate-300">
+									{isToken0BalanceLoading ? (
+										<Box>{t('swap.loading')}</Box>
+									) : (
+										<Box className="flex items-center">
+											{`${t('swap.balance')}: ${token0Balance}`}
+										</Box>
+									)}
+									<RotateCw
+										size={18}
+										className={cn(
+											'cursor-pointer',
+											isToken0BalanceLoading && 'animate-spin'
+										)}
+										onClick={handleRefreshToken0Balance}
+									/>
+								</Box>
 							</div>
 							<div className="flex items-center justify-between gap-4">
 								<div className="text-[2.2rem] flex-1 font-medium tracking-[-0.07em] text-white">

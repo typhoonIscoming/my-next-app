@@ -6,9 +6,9 @@ import { useTranslations } from 'next-intl';
 import CustomConnectButton from '@/app/components/CustomConnectButton';
 import Button from '@mui/material/Button';
 import SvgIcon from '@mui/material/SvgIcon';
-import { MoveDown, RotateCw } from 'lucide-react';
+import { MoveDown, RotateCw, ArrowBigDown } from 'lucide-react';
 import { parseUnits, type Address } from 'viem';
-import { useAccount, useWriteContract } from 'wagmi';
+import { useAccount, usePublicClient, useWriteContract } from 'wagmi';
 import {
 	Form,
 	FormControl,
@@ -34,6 +34,8 @@ import { useTokenBalance } from '../hooks/useTokenBalance';
 import { useSwapRoute } from '../hooks/useSwapRoute';
 import { swapRouterAbi } from '../hooks/abi';
 import { swapAddress } from '@/lib/utils';
+
+const MAX_RPC_GAS_LIMIT = 16_777_216n;
 
 const addPositionSchema = (validateMessages: {
 	selectToken: string;
@@ -61,6 +63,7 @@ type AddPositionFormValues = z.infer<ReturnType<typeof addPositionSchema>>;
 export default function SwapContent() {
 	const t = useTranslations();
 	const { address } = useAccount();
+	const publicClient = usePublicClient();
 	const { writeContractAsync } = useWriteContract();
 	const validateMessages = {
 		selectToken: t('swap.selectToken0'),
@@ -152,6 +155,28 @@ export default function SwapContent() {
 					return;
 				}
 
+				const approveGas = publicClient
+					? await publicClient.estimateContractGas({
+							address: tokenIn,
+							account: address,
+							abi: [
+								{
+									constant: false,
+									inputs: [
+										{ name: 'spender', type: 'address' },
+										{ name: 'value', type: 'uint256' },
+									],
+									name: 'approve',
+									outputs: [{ name: '', type: 'bool' }],
+									stateMutability: 'nonpayable',
+									type: 'function',
+								},
+							],
+							functionName: 'approve',
+							args: [swapAddress, amountIn],
+						})
+					: 200_000n;
+
 				await writeContractAsync({
 					address: tokenIn,
 					abi: [
@@ -169,24 +194,37 @@ export default function SwapContent() {
 					],
 					functionName: 'approve',
 					args: [swapAddress, amountIn],
+					gas: approveGas > MAX_RPC_GAS_LIMIT ? MAX_RPC_GAS_LIMIT : approveGas,
 				});
+
+				const exactInputParams = {
+					tokenIn,
+					tokenOut,
+					indexPath: [Number(matchedPool.index)],
+					recipient: address,
+					deadline: BigInt(Math.floor(Date.now() / 1000) + 3600),
+					amountIn,
+					amountOutMinimum: 0n,
+					sqrtPriceLimitX96: 0n,
+				};
+
+				const estimatedSwapGas = publicClient
+					? await publicClient.estimateContractGas({
+							address: swapAddress,
+							account: address,
+							abi: swapRouterAbi,
+							functionName: 'exactInput',
+							args: [exactInputParams],
+						})
+					: 16777216n;
 
 				const txHash = await writeContractAsync({
 					address: swapAddress,
 					abi: swapRouterAbi,
 					functionName: 'exactInput',
-					args: [
-						{
-							tokenIn,
-							tokenOut,
-							indexPath: [Number(matchedPool.index)],
-							recipient: address,
-							deadline: BigInt(Math.floor(Date.now() / 1000) + 3600),
-							amountIn,
-							amountOutMinimum: 0n,
-							sqrtPriceLimitX96: 0n,
-						},
-					],
+					args: [exactInputParams],
+					gas:
+						estimatedSwapGas > MAX_RPC_GAS_LIMIT ? MAX_RPC_GAS_LIMIT : estimatedSwapGas,
 				});
 
 				toast.success(`Swap submitted: ${txHash}`);
@@ -311,7 +349,7 @@ export default function SwapContent() {
 								className="absolute left-[50%] cursor-pointer translate-y-[-50%] translate-x-[-50%] rounded-[16px] z-10 flex h-11 w-11 items-center justify-center border-4 border-[#131313] bg-[#151b2b] text-xl transition"
 							>
 								<SvgIcon
-									component={MoveDown}
+									component={ArrowBigDown}
 									sx={{ color: '#ffffff', fontSize: 24 }}
 									inheritViewBox
 								/>

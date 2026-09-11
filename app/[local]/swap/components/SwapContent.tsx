@@ -523,9 +523,8 @@ function CustomNumberInput(props: {
 					outline: 'none',
 				},
 				'& input::placeholder': {
-					fontSize: '2.2rem',
+					fontSize: '1.2rem',
 					letterSpacing: '-0.07em',
-					fontWeight: 500,
 					color: 'rgba(255,255,255,0.45)',
 				},
 				// 针对 Webkit 内核浏览器（Chrome, Safari, Edge 等）

@@ -46,14 +46,14 @@ const connectors = connectorsForWallets(
 		projectId: 'e7ae58a69fba1b98149541f9fb6751b2',
 	}
 );
+const isDev = process.env.NODE_ENV === 'development';
 const initConfig = createConfig({
 	chains: [mainnet, sepolia],
 	// connectors: [metaMask(), injected(), safe()],
 	connectors,
 	transports: {
-		[mainnet.id]: http(sepoliaNetUrl),
-		[sepolia.id]: http(sepoliaNetUrl),
+		[mainnet.id]: isDev ? http(sepoliaNetUrl) : http(),
+		[sepolia.id]: isDev ? http(sepoliaNetUrl) : http(),
 	},
 });
-
 export const config = initConfig;

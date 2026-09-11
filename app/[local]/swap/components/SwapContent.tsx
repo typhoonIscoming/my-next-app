@@ -37,6 +37,25 @@ import { swapRouterAbi } from '../hooks/abi';
 import { swapAddress } from '@/lib/utils';
 
 const MAX_RPC_GAS_LIMIT = 16_777_216n;
+const MIN_SQRT_PRICE_X96 = 4_295_128_739n;
+const MAX_SQRT_PRICE_X96 = 146_144_670_348_521_010_328_727_305_220_398_882_237_184_430n;
+
+const getValidSqrtPriceLimitX96 = (
+	currentSqrtPriceX96: bigint | undefined,
+	tokenIn: Address,
+	tokenOut: Address
+) => {
+	const price = currentSqrtPriceX96 ?? MIN_SQRT_PRICE_X96 + 1n;
+	const zeroForOne = tokenIn.toLowerCase() < tokenOut.toLowerCase();
+
+	if (zeroForOne) {
+		const candidate = price > MIN_SQRT_PRICE_X96 + 1n ? price - 1n : MIN_SQRT_PRICE_X96 + 1n;
+		return candidate < MAX_SQRT_PRICE_X96 ? candidate : MAX_SQRT_PRICE_X96 - 1n;
+	}
+
+	const candidate = price < MAX_SQRT_PRICE_X96 - 1n ? price + 1n : MAX_SQRT_PRICE_X96 - 1n;
+	return candidate > MIN_SQRT_PRICE_X96 ? candidate : MIN_SQRT_PRICE_X96 + 1n;
+};
 
 const addPositionSchema = (validateMessages: {
 	selectToken: string;
@@ -86,39 +105,75 @@ export default function SwapContent() {
 		isLoading: isToken0BalanceLoading,
 		refetch,
 	} = useTokenBalance(selectedToken0Address, { decimals: 18 });
-	// useEffect(() => {
-	// 	if (!selectedToken0Address) return;
 
-	// 	void (async () => {
-	// 		const candidatePools = await getCandidatePools(selectedToken0Address);
-	// 		console.log('candidatePools', candidatePools);
-	// 	})();
-	// }, [selectedToken0Address, getCandidatePools]);
+	// 当用户选择了token0、token1、且输入了token0的数量后，去获取预估token1的数量
+	const handleToken0AmountChange = useDebouncedCallback(
+		async (amount: string, isChangeSell: boolean) => {
+			if (!selectedToken0Address || !selectedToken1Address) return;
+			if (!amount) return;
 
-	// useEffect(() => {
-	// 	if (!selectedToken0Address || !selectedToken1Address) return;
-	// 	if (!form.getValues('amount0')) return;
+			const candidatePools = await getCandidatePools(
+				isChangeSell ? selectedToken0Address : selectedToken1Address
+			);
+			// 获取到匹配的交易对，且取流动性最大的交易对
+			type PoolItem = {
+				token0: string;
+				token1: string;
+				index: number;
+				liquidity: BigInt;
+				sqrtPriceX96: BigInt;
+			};
+			const matchedPool = candidatePools.reduce((prev, pool: PoolItem) => {
+				const isPair =
+					pool.token0.toLowerCase() === selectedToken0Address.toLowerCase() &&
+					pool.token1.toLowerCase() === selectedToken1Address.toLowerCase();
+				if (isPair) {
+					if (prev) {
+						return prev.liquidity > pool.liquidity ? prev : pool;
+					}
+					return pool;
+				}
+				return prev;
+			}, null);
+			console.log('matchedPool', matchedPool, amount);
+			if (!matchedPool) {
+				console.log('No matched pool found');
+				return;
+			}
+			if (isChangeSell) {
+				const result = await quoteExactInput({
+					tokenIn: selectedToken0Address,
+					tokenOut: selectedToken1Address,
+					indexPath: matchedPool.index,
+					amountIn: `${parseUnits(amount, 18)}`,
+					sqrtPriceLimitX96: matchedPool.sqrtPriceX96 - 1n,
+				});
+				console.log('result', result);
+				form.setValue('amount1', `${result}`);
+				return;
+			} else {
+				console.log('amount', amount);
+				const result = await quoteExactOutput({
+					tokenIn: selectedToken1Address,
+					tokenOut: selectedToken0Address,
+					poolIndex: matchedPool.index,
+					amountOut: amount,
+					sqrtPriceLimitX96: matchedPool.sqrtPriceX96 + 1n,
+				});
+				console.log('quoteExactOutput result', result);
+				form.setValue('amount0', `${result}`);
+			}
+			// const amount1 = Number(quoted.toString()) / 1e18;
+			// form.setValue('amount1', amount1, { shouldValidate: true });
+		},
+		500
+	);
 
-	// 	void (async () => {
-	// 		const candidatePools = await getCandidatePools(selectedToken0Address);
-	// 		const matchedPool = candidatePools.find(
-	// 			(pool: { token0: string; token1: string; index: number | string }) =>
-	// 				pool.token0.toLowerCase() === selectedToken1Address.toLowerCase() ||
-	// 				pool.token1.toLowerCase() === selectedToken1Address.toLowerCase()
-	// 		);
-	// 		if (!matchedPool) return;
-
-	// 		const quoted = await quoteExactInput({
-	// 			tokenIn: selectedToken0Address,
-	// 			tokenOut: selectedToken1Address,
-	// 			poolIndex: Number(matchedPool.index),
-	// 			amountIn: String(form.getValues('amount0')),
-	// 			decimals: 18,
-	// 		});
-	// 		const amount1 = Number(quoted.toString()) / 1e18;
-	// 		form.setValue('amount1', amount1, { shouldValidate: true });
-	// 	})();
-	// }, [selectedToken0Address, selectedToken1Address, form, getCandidatePools, quoteExactInput]);
+	useEffect(() => {
+		if (form.getValues('amount0')) {
+			handleToken0AmountChange(form.getValues('amount0'), true);
+		}
+	}, [selectedToken0Address, selectedToken1Address]);
 
 	const handleSubmit = form.handleSubmit(
 		async (values) => {
@@ -158,49 +213,7 @@ export default function SwapContent() {
 					toast.error('输入金额必须大于 0');
 					return;
 				}
-
-				const approveGas = publicClient
-					? await publicClient.estimateContractGas({
-							address: tokenIn,
-							account: address,
-							abi: [
-								{
-									constant: false,
-									inputs: [
-										{ name: 'spender', type: 'address' },
-										{ name: 'value', type: 'uint256' },
-									],
-									name: 'approve',
-									outputs: [{ name: '', type: 'bool' }],
-									stateMutability: 'nonpayable',
-									type: 'function',
-								},
-							],
-							functionName: 'approve',
-							args: [swapAddress, amountIn],
-						})
-					: 200_000n;
-
-				await writeContractAsync({
-					address: tokenIn,
-					abi: [
-						{
-							constant: false,
-							inputs: [
-								{ name: 'spender', type: 'address' },
-								{ name: 'value', type: 'uint256' },
-							],
-							name: 'approve',
-							outputs: [{ name: '', type: 'bool' }],
-							stateMutability: 'nonpayable',
-							type: 'function',
-						},
-					],
-					functionName: 'approve',
-					args: [swapAddress, amountIn],
-					gas: approveGas > MAX_RPC_GAS_LIMIT ? MAX_RPC_GAS_LIMIT : approveGas,
-				});
-
+				console.log('matchedPool', matchedPool);
 				const exactInputParams = {
 					tokenIn,
 					tokenOut,
@@ -209,9 +222,13 @@ export default function SwapContent() {
 					deadline: BigInt(Math.floor(Date.now() / 1000) + 3600),
 					amountIn,
 					amountOutMinimum: 0n,
-					sqrtPriceLimitX96: 0n,
+					sqrtPriceLimitX96: getValidSqrtPriceLimitX96(
+						BigInt(matchedPool.sqrtPriceX96 ?? 0),
+						tokenIn,
+						tokenOut
+					),
 				};
-
+				// 执行swap的预估gas
 				const estimatedSwapGas = publicClient
 					? await publicClient.estimateContractGas({
 							address: swapAddress,
@@ -221,7 +238,7 @@ export default function SwapContent() {
 							args: [exactInputParams],
 						})
 					: 16777216n;
-
+				console.log('预估swap gas', estimatedSwapGas);
 				const txHash = await writeContractAsync({
 					address: swapAddress,
 					abi: swapRouterAbi,
@@ -231,8 +248,8 @@ export default function SwapContent() {
 						estimatedSwapGas > MAX_RPC_GAS_LIMIT ? MAX_RPC_GAS_LIMIT : estimatedSwapGas,
 				});
 
-				toast.success(`Swap submitted: ${txHash}`);
-				console.log('swap txHash', txHash);
+				// toast.success(`Swap submitted: ${txHash}`);
+				// console.log('swap txHash', txHash);
 			} catch (error: any) {
 				console.error(error);
 				toast.error(error?.shortMessage || error?.message || 'Swap failed');
@@ -255,6 +272,10 @@ export default function SwapContent() {
 	// 交换两个token的位置
 	const handleExchange = () => {
 		form.setValue('pair', [form.getValues('pair')[1], form.getValues('pair')[0]]);
+		const amount0 = form.getValues('amount0');
+		const amount1 = form.getValues('amount1');
+		form.setValue('amount0', amount1);
+		form.setValue('amount1', amount0);
 	};
 	// 刷新余额
 	const handleRefreshToken0Balance = async () => {
@@ -310,7 +331,10 @@ export default function SwapContent() {
 													placeholder={t('swap.pleaseInput', {
 														type: t('swap.sell'),
 													})}
-													onChange={onChange as (value: string) => void}
+													onChange={(value) => {
+														onChange?.(value);
+														handleToken0AmountChange(value, true);
+													}}
 													onBlur={onBlur}
 												/>
 											);
@@ -389,11 +413,10 @@ export default function SwapContent() {
 														placeholder={t('swap.pleaseInput', {
 															type: t('swap.buy'),
 														})}
-														onChange={
-															onChange as (
-																value: number | string
-															) => void
-														}
+														onChange={(v) => {
+															onChange?.(v);
+															handleToken0AmountChange(v, false);
+														}}
 														onBlur={onBlur}
 													/>
 												);

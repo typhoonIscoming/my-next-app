@@ -16,7 +16,7 @@ export function useSwapRoute() {
 				abi: poolManagerAbi,
 				functionName: 'getAllPools',
 			})) as any[];
-
+			console.log('getCandidatePools pools', pools);
 			return pools.filter(
 				(pool) =>
 					pool.token0.toLowerCase() === token0.toLowerCase() ||
@@ -30,31 +30,30 @@ export function useSwapRoute() {
 		async ({
 			tokenIn,
 			tokenOut,
-			poolIndex,
+			indexPath,
 			amountIn,
-			decimals = 18,
+			sqrtPriceLimitX96,
 		}: {
 			tokenIn: Address;
 			tokenOut: Address;
-			poolIndex: number;
+			indexPath: number;
 			amountIn: string;
-			decimals?: number;
+			sqrtPriceLimitX96?: BigInt;
 		}) => {
 			if (!publicClient) return 0n;
-
+			const params = {
+				tokenIn,
+				tokenOut,
+				indexPath: [indexPath],
+				amountIn: parseUnits(amountIn, 18),
+				sqrtPriceLimitX96: sqrtPriceLimitX96 ?? 0n,
+			};
+			console.log('quoteExactInput params', params);
 			return (await publicClient.readContract({
 				address: swapAddress,
 				abi: swapRouterAbi,
 				functionName: 'quoteExactInput',
-				args: [
-					{
-						tokenIn,
-						tokenOut,
-						indexPath: [poolIndex],
-						amountIn: parseUnits(amountIn, decimals),
-						sqrtPriceLimitX96: 0n,
-					},
-				],
+				args: [params],
 			})) as bigint;
 		},
 		[publicClient]
@@ -66,29 +65,28 @@ export function useSwapRoute() {
 			tokenOut,
 			poolIndex,
 			amountOut,
-			decimals = 18,
+			sqrtPriceLimitX96,
 		}: {
 			tokenIn: Address;
 			tokenOut: Address;
 			poolIndex: number;
 			amountOut: string;
-			decimals?: number;
+			sqrtPriceLimitX96: BigInt;
 		}) => {
 			if (!publicClient) return 0n;
-
+			const arg = {
+				tokenIn,
+				tokenOut,
+				indexPath: [poolIndex],
+				amount: parseUnits(amountOut, 18),
+				sqrtPriceLimitX96: sqrtPriceLimitX96 ?? 0n,
+			};
+			console.log('args', arg);
 			return (await publicClient.readContract({
 				address: swapAddress,
 				abi: swapRouterAbi,
 				functionName: 'quoteExactOutput',
-				args: [
-					{
-						tokenIn,
-						tokenOut,
-						indexPath: [poolIndex],
-						amountOut: parseUnits(amountOut, decimals),
-						sqrtPriceLimitX96: 0n,
-					},
-				],
+				args: [arg],
 			})) as bigint;
 		},
 		[publicClient]

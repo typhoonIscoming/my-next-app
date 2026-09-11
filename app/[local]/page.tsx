@@ -1,12 +1,12 @@
-'use cache'
-import Image from 'next/image'
+'use cache';
+import Image from 'next/image';
 
 type Props = {
-	params: Promise<{ local: string }>
-}
+	params: Promise<{ local: string }>;
+};
 
 export async function generateStaticParams() {
-	return [{ local: 'zh' }]
+	return [{ local: 'zh' }, { local: 'en' }];
 }
 
 export default async function Home({ params }: Props) {
@@ -64,5 +64,5 @@ export default async function Home({ params }: Props) {
 				</div>
 			</main>
 		</div>
-	)
+	);
 }

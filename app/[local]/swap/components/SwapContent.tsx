@@ -145,7 +145,7 @@ export default function SwapContent() {
 					tokenIn: selectedToken0Address,
 					tokenOut: selectedToken1Address,
 					indexPath: matchedPool.index,
-					amountIn: `${parseUnits(amount, 18)}`,
+					amountIn: amount,
 					sqrtPriceLimitX96: matchedPool.sqrtPriceX96 - 1n,
 				});
 				console.log('result', result);

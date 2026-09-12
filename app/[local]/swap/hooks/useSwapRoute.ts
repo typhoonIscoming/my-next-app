@@ -48,13 +48,15 @@ export function useSwapRoute() {
 				amountIn: parseUnits(amountIn, 18),
 				sqrtPriceLimitX96: sqrtPriceLimitX96 ?? 0n,
 			};
-			console.log('quoteExactInput params', params);
-			return (await publicClient.readContract({
+
+			const result = (await publicClient.readContract({
 				address: swapAddress,
 				abi: swapRouterAbi,
 				functionName: 'quoteExactInput',
 				args: [params],
 			})) as bigint;
+			console.log('quoteExactInput params', params, 'result', result);
+			return result;
 		},
 		[publicClient]
 	);

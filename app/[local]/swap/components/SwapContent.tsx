@@ -9,14 +9,7 @@ import SvgIcon from '@mui/material/SvgIcon';
 import { MoveDown, RotateCw, ArrowBigDown } from 'lucide-react';
 import { formatUnits, parseUnits, type Address } from 'viem';
 import { useAccount, usePublicClient, useWriteContract } from 'wagmi';
-import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-} from '@/components/ui/form';
+import { Form, FormField } from '@/components/ui/form';
 import {
 	Select,
 	SelectContent,
@@ -36,6 +29,7 @@ import { useSwapRoute } from '../hooks/useSwapRoute';
 import { useSwapPoolSelection } from '../hooks/useSwapPoolSelection';
 import { swapRouterAbi } from '../hooks/abi';
 import { swapAddress } from '@/lib/utils';
+import { useReadToken } from '../hooks/useReadPool';
 
 const MAX_RPC_GAS_LIMIT = 16_777_216n;
 
@@ -60,6 +54,8 @@ type AddPositionFormValues = z.infer<ReturnType<typeof addPositionSchema>>;
 
 export default function SwapContent() {
 	const t = useTranslations();
+    const [tokenInfo, setTokenInfo] = useState<Map<`0x${string}`, { decimals: number }>>(new Map());
+    const [isFetchingTokenInfo, setIsFetchingTokenInfo] = useState(false);
 	const { address } = useAccount();
 	const publicClient = usePublicClient();
 	const { writeContractAsync } = useWriteContract();
@@ -79,8 +75,8 @@ export default function SwapContent() {
 		},
 	});
 	const watchedPair = form.watch('pair');
-	const selectedToken0Address = watchedPair?.[0] as `0x${string}` | undefined;
-	const selectedToken1Address = watchedPair?.[1] as `0x${string}` | undefined;
+	const selectedToken0Address = watchedPair?.[0] as `0x${string}`;
+	const selectedToken1Address = watchedPair?.[1] as `0x${string}`;
 	const { getCandidatePools, quoteExactInput, quoteExactOutput } = useSwapRoute();
 	const { getValidSqrtPriceLimitX96, getBestPoolForExactInput, getBestPoolForExactOutput } =
 		useSwapPoolSelection();
@@ -107,7 +103,8 @@ export default function SwapContent() {
 				liquidity: BigInt;
 				sqrtPriceX96: BigInt;
 			};
-			if (isChangeSell) {
+            if (isChangeSell) {
+                setIsFetchingTokenInfo(true)
 				const bestQuote = await getBestPoolForExactInput({
 					candidatePools,
 					tokenIn: selectedToken0Address,
@@ -115,7 +112,7 @@ export default function SwapContent() {
 					amountIn: amount,
 					quoteExactInput,
 				});
-
+                setIsFetchingTokenInfo(false);
 				if (!bestQuote?.pool) {
 					console.log('No valid pool found for exact input');
 					return;
@@ -125,7 +122,7 @@ export default function SwapContent() {
 				form.setValue('amount1', `${bestQuote.amountOut}`);
 				return;
 			}
-
+            setIsFetchingTokenInfo(true);
 			const bestQuote = await getBestPoolForExactOutput({
 				candidatePools,
 				tokenIn: selectedToken0Address,
@@ -133,23 +130,45 @@ export default function SwapContent() {
 				amountOut: amount,
 				quoteExactOutput,
 			});
+            setIsFetchingTokenInfo(false);
+			console.log('bestQuote', bestQuote);
 
 			if (!bestQuote?.pool) {
 				console.log('No valid pool found for exact output');
 				return;
 			}
 
-			console.log('bestQuote', bestQuote);
 			form.setValue('amount0', `${bestQuote.amountIn}`);
 			// const amount1 = Number(quoted.toString()) / 1e18;
 			// form.setValue('amount1', amount1, { shouldValidate: true });
 		},
 		500
 	);
-
+    const { data: token0Data, isLoading: isToken0Loading, error: token0Error, refetch: refetchToken0 } = useReadToken(selectedToken0Address);
+    const { data: token1Data, isLoading: isToken1Loading, error: token1Error, refetch: refetchToken1 } = useReadToken(selectedToken1Address);
+    // console.log('token0Data', token0Data, 'token1Data', token1Data);
 	useEffect(() => {
 		if (form.getValues('amount0')) {
 			handleToken0AmountChange(form.getValues('amount0'), true);
+		}
+		// 获取选择的代币的精度，而不是页面固定写死
+		const token0Decimals = tokenInfo.get(selectedToken0Address)?.decimals;
+		const token1Decimals = tokenInfo.get(selectedToken1Address)?.decimals;
+		if (selectedToken0Address && !token0Decimals) {
+			refetchToken0();
+			if (token0Data) {
+				setTokenInfo((prev) =>
+					new Map(prev).set(selectedToken0Address, { decimals: Number(token0Data) })
+				);
+			}
+		}
+		if (selectedToken1Address && !token1Decimals) {
+			refetchToken1();
+			if (token1Data) {
+				setTokenInfo((prev) =>
+					new Map(prev).set(selectedToken1Address, { decimals: Number(token1Data) })
+				);
+			}
 		}
 	}, [selectedToken0Address, selectedToken1Address]);
 
@@ -448,11 +467,6 @@ export default function SwapContent() {
 				</Form>
 				<CustomConnectButton>
 					{({ connected, chain, account, openAccountModal, openConnectModal }) => {
-						// console.log('chain', connected, chain, account);
-						// address只显示前后共4位
-						// const shortAddress = account
-						// 	? `${account.address.slice(0, 4)}...${account.address.slice(-4)}`
-						// 	: '';
 						return !connected ? (
 							<Button
 								onClick={openConnectModal}
@@ -461,7 +475,8 @@ export default function SwapContent() {
 								{t('swap.connectWallet')}
 							</Button>
 						) : (
-							<Button
+                            <Button
+                                loading={isFetchingTokenInfo}
 								className="mt-5! flex w-full items-center justify-center rounded-full! px-5 py-4 text-base font-semibold text-black/80! transition bg-[linear-gradient(135deg,#6fe8ff,#4bd3bd_35%,#2dbf9a)]! hover:brightness-110"
 								onClick={debouncedHandleSubmit}
 							>

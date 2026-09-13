@@ -16,7 +16,6 @@ export function useSwapRoute() {
 				abi: poolManagerAbi,
 				functionName: 'getAllPools',
 			})) as any[];
-			console.log('getCandidatePools pools', pools);
 			return pools.filter(
 				(pool) =>
 					pool.token0.toLowerCase() === token0.toLowerCase() ||
@@ -55,7 +54,6 @@ export function useSwapRoute() {
 				functionName: 'quoteExactInput',
 				args: [params],
 			})) as bigint;
-			console.log('quoteExactInput params', params, 'result', result);
 			return result;
 		},
 		[publicClient]
@@ -83,7 +81,6 @@ export function useSwapRoute() {
 				amountOut: parseUnits(amountOut, 18),
 				sqrtPriceLimitX96: sqrtPriceLimitX96 ?? 0n,
 			};
-			console.log('args', arg);
 			return (await publicClient.readContract({
 				address: swapAddress,
 				abi: swapRouterAbi,

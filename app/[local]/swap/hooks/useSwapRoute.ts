@@ -80,7 +80,7 @@ export function useSwapRoute() {
 				tokenIn,
 				tokenOut,
 				indexPath: [poolIndex],
-				amount: parseUnits(amountOut, 18),
+				amountOut: parseUnits(amountOut, 18),
 				sqrtPriceLimitX96: sqrtPriceLimitX96 ?? 0n,
 			};
 			console.log('args', arg);

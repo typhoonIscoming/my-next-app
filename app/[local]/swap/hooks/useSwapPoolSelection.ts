@@ -5,11 +5,33 @@ const MIN_SQRT_PRICE_X96 = 4_295_128_739n;
 const MAX_SQRT_PRICE_X96 = 146_144_670_348_521_010_328_727_305_220_398_882_237_184_430n;
 
 export function useSwapPoolSelection() {
+	const getZeroForOneInPool = useCallback(
+		(pool: { token0: string; token1: string }, tokenIn: Address, tokenOut: Address) => {
+			const a = tokenIn.toLowerCase();
+			const b = tokenOut.toLowerCase();
+			const p0 = pool.token0.toLowerCase();
+			const p1 = pool.token1.toLowerCase();
+
+			if (a === p0 && b === p1) return true;
+			if (a === p1 && b === p0) return false;
+
+			return a < b;
+		},
+		[]
+	);
+
 	const getValidSqrtPriceLimitX96 = useCallback(
-		(currentSqrtPriceX96: bigint | undefined, tokenIn: Address, tokenOut: Address) => {
+		(
+			currentSqrtPriceX96: bigint | undefined,
+			tokenIn: Address,
+			tokenOut: Address,
+			pool?: { token0: string; token1: string }
+		) => {
 			const price = currentSqrtPriceX96 ?? MIN_SQRT_PRICE_X96 + 1n;
-			const zeroForOne = tokenIn.toLowerCase() < tokenOut.toLowerCase();
-			const slippageRatio = 95n;
+			const zeroForOne = pool
+				? getZeroForOneInPool(pool, tokenIn, tokenOut)
+				: tokenIn.toLowerCase() < tokenOut.toLowerCase();
+			const slippageRatio = zeroForOne ? 95n : 105n;
 			const limit = (price * slippageRatio) / 100n;
 
 			if (zeroForOne) {
@@ -18,7 +40,7 @@ export function useSwapPoolSelection() {
 
 			return limit < MAX_SQRT_PRICE_X96 ? limit : MAX_SQRT_PRICE_X96 - 1n;
 		},
-		[]
+		[getZeroForOneInPool]
 	);
 
 	const isPoolMatch = useCallback(
@@ -35,12 +57,12 @@ export function useSwapPoolSelection() {
 
 	const isPoolTradeableInDirection = useCallback(
 		(
-			pool: { sqrtPriceX96?: bigint | string | number },
+			pool: { token0: string; token1: string; sqrtPriceX96?: bigint | string | number },
 			tokenIn: Address,
 			tokenOut: Address
 		) => {
 			const currentPrice = BigInt(pool.sqrtPriceX96 ?? 0);
-			const zeroForOne = tokenIn.toLowerCase() < tokenOut.toLowerCase();
+			const zeroForOne = getZeroForOneInPool(pool, tokenIn, tokenOut);
 
 			if (zeroForOne) {
 				return currentPrice > MIN_SQRT_PRICE_X96;
@@ -48,7 +70,7 @@ export function useSwapPoolSelection() {
 
 			return currentPrice < MAX_SQRT_PRICE_X96;
 		},
-		[]
+		[getZeroForOneInPool]
 	);
 
 	const getBestPoolForExactInput = useCallback(
@@ -98,7 +120,8 @@ export function useSwapPoolSelection() {
 						sqrtPriceLimitX96: getValidSqrtPriceLimitX96(
 							BigInt(pool.sqrtPriceX96 ?? 0),
 							tokenIn,
-							tokenOut
+							tokenOut,
+							pool
 						),
 					});
 
@@ -170,10 +193,11 @@ export function useSwapPoolSelection() {
 						sqrtPriceLimitX96: getValidSqrtPriceLimitX96(
 							BigInt(pool.sqrtPriceX96 ?? 0),
 							tokenIn,
-							tokenOut
+							tokenOut,
+							pool
 						),
 					});
-
+					console.log('requiredAmountIn', requiredAmountIn);
 					if (requiredAmountIn < bestAmountIn) {
 						bestAmountIn = requiredAmountIn;
 						bestPool = pool;
@@ -183,11 +207,10 @@ export function useSwapPoolSelection() {
 					continue;
 				}
 			}
-			const amountIn = Number(formatUnits(bestAmountIn, 18));
-			const flooredAmountIn = Math.floor(amountIn * 100) / 100;
+			const amountIn = formatUnits(bestAmountIn, 18);
 			return {
 				pool: bestPool,
-				amountIn: flooredAmountIn.toFixed(2),
+				amountIn,
 			};
 		},
 		[getValidSqrtPriceLimitX96, isPoolMatch, isPoolTradeableInDirection]

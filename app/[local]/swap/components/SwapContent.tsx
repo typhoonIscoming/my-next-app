@@ -125,8 +125,8 @@ export default function SwapContent() {
             setIsFetchingTokenInfo(true);
 			const bestQuote = await getBestPoolForExactOutput({
 				candidatePools,
-				tokenIn: selectedToken0Address,
-				tokenOut: selectedToken1Address,
+				tokenIn: selectedToken1Address,
+				tokenOut: selectedToken0Address,
 				amountOut: amount,
 				quoteExactOutput,
 			});

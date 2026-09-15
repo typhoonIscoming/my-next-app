@@ -136,6 +136,8 @@
         "invalidNumber": "Please enter a valid number.",
         "invalidAmount": "The input quantity must be greater than 0",
         "pleaseInput": "Please enter a quantity for {type}",
-        "selectToken": "Select a token"
+        "selectToken": "Select a token",
+        "addAccount": "Add funds to swap",
+        "insufficientFunds": "Insufficient funds"
     }
 }

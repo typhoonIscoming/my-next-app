@@ -30,6 +30,9 @@ import { useSwapPoolSelection } from '../hooks/useSwapPoolSelection';
 import { swapRouterAbi } from '../hooks/abi';
 import { swapAddress } from '@/lib/utils';
 import { useReadToken } from '../hooks/useReadPool';
+import { LoaderCircle } from 'lucide-react'
+
+const isEmpty = (value: any) => value === null || value === undefined || value === '';
 
 const MAX_RPC_GAS_LIMIT = 16_777_216n;
 
@@ -76,7 +79,9 @@ export default function SwapContent() {
 	});
 	const watchedPair = form.watch('pair');
 	const selectedToken0Address = watchedPair?.[0] as `0x${string}`;
-	const selectedToken1Address = watchedPair?.[1] as `0x${string}`;
+    const selectedToken1Address = watchedPair?.[1] as `0x${string}`;
+    const token0Amount = form.watch('amount0');
+
 	const { getCandidatePools, quoteExactInput, quoteExactOutput } = useSwapRoute();
 	const { getValidSqrtPriceLimitX96, getBestPoolForExactInput, getBestPoolForExactOutput } =
 		useSwapPoolSelection();
@@ -264,7 +269,8 @@ export default function SwapContent() {
 		}
 	);
 
-	const debouncedHandleSubmit = useDebouncedCallback(() => {
+    const debouncedHandleSubmit = useDebouncedCallback(() => {
+        if (isFetchingTokenInfo) return;
 		void handleSubmit();
 	}, 400);
 
@@ -474,9 +480,23 @@ export default function SwapContent() {
 							>
 								{t('swap.connectWallet')}
 							</Button>
-						) : (
+                        ) :
+                            isEmpty(token0Amount) ? (
+                                <Button
+                                    startIcon={isFetchingTokenInfo ? <LoaderCircle className="animate-spin" /> : null}
+                                    className="mt-5! flex w-full items-center justify-center rounded-full! px-5 py-4 text-base font-semibold transition text-white! hover:text-(--swap-hover-background)! bg-(--swap-background)!"
+                                >
+                                    {t('swap.addAccount')}
+                                </Button>
+                            ) : !isEmpty(token0Balance) && token0Balance <= (token0Amount ?? 0) ? (
+                                <Button
+                                    className="mt-5! flex w-full items-center justify-center rounded-full! px-5 py-4 text-base font-semibold transition text-white! hover:text-(--swap-hover-background)! bg-(--swap-background)!"
+                                >
+                                    {t('swap.insufficientFunds')}
+                                </Button>
+                            ) : (
                             <Button
-                                loading={isFetchingTokenInfo}
+                                startIcon={isFetchingTokenInfo ? <LoaderCircle className="animate-spin" /> : null}
 								className="mt-5! flex w-full items-center justify-center rounded-full! px-5 py-4 text-base font-semibold text-black/80! transition bg-[linear-gradient(135deg,#6fe8ff,#4bd3bd_35%,#2dbf9a)]! hover:brightness-110"
 								onClick={debouncedHandleSubmit}
 							>

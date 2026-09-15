@@ -136,6 +136,8 @@
         "invalidNumber": "请输入有效的数字",
         "invalidAmount": "输入的数量需要大于 0",
         "pleaseInput": "请输入{type}数量",
-        "selectToken": "请选择代币"
+        "selectToken": "请选择代币",
+        "addAccount": "添加资金以兑换",
+        "insufficientFunds": "资金不足"
 	}
 }

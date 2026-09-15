@@ -138,6 +138,8 @@
         "pleaseInput": "Please enter a quantity for {type}",
         "selectToken": "Select a token",
         "addAccount": "Add funds to swap",
-        "insufficientFunds": "Insufficient funds"
+        "insufficientFunds": "Insufficient funds",
+        "remove": "Remove",
+        "collect": "Collect"
     }
 }

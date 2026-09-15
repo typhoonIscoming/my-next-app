@@ -1,14 +1,18 @@
 'use client';
 
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { useMemo, useRef, useState, forwardRef, useEffect } from 'react';
+import { useMemo, useRef, useState, forwardRef, useEffect, use } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import useIsMobile from '@/hooks/useIsMobile';
 import { cn, formatAddress, getToken } from '@/lib/utils';
 import { useReadPositions } from '../hooks/useReadPositions';
 import { formatEther } from 'viem';
+import { useAccount, useWriteContract } from 'wagmi';
+import { postionsAbi } from '../hooks/abi';
+import { positionsAddress } from '@/lib/utils';
 
 const PAGE_SIZE = 20;
 
@@ -73,7 +77,7 @@ const PositionTableHead = forwardRef(({ onScroll }: { onScroll?: () => void }, r
 						<Box className="w-40 font-bold shrink-0 text-right">
 							{t('swap.currentPrice')}
 						</Box>
-						<Box className="w-80 font-bold shrink-0 text-right pr-8">
+						<Box className="w-80 font-bold shrink-0 text-center">
 							{t('swap.actions')}
 						</Box>
 					</Box>
@@ -87,14 +91,37 @@ export default function PositionList() {
 	const t = useTranslations();
 	const tbodyRef = useRef<HTMLDivElement | null>(null);
 	const theadRef = useRef<HTMLDivElement | null>(null);
+	const { address } = useAccount();
+	const { writeContractAsync, isPending } = useWriteContract();
 	const isMobile = useIsMobile();
 	const [currentPage, setCurrentPage] = useState(1);
 	const { data, isLoading, ...rest } = useReadPositions();
 	console.log('data', data);
-	const rows = useMemo(() => {
+
+	const handleCollect = async (positionId: bigint) => {
+		if (!address || !positionsAddress) return;
+
+		try {
+			const result = await writeContractAsync({
+				address: positionsAddress,
+				abi: postionsAbi,
+				functionName: 'collect',
+				args: [positionId, address],
+			});
+			console.log('handleCollect result', result);
+		} catch (error) {
+			console.error('Collect failed:', error);
+		}
+	};
+	const ownerList = useMemo(() => {
 		const raw = Array.isArray(data) && data.length ? data : [];
-		const ownerItem = raw.find(
-			(item) => item.owner === '0x14cC41dcB4fa5BCb91fA1D7D71b22f24Cfe401EE'
+		return raw.filter((item) => item.owner === address);
+	}, [data, address]);
+	const rows = useMemo(() => {
+		const raw = Array.isArray(data) && data.length ? data.reverse() : [];
+		const ownerItem = raw.filter(
+			// 0x14cC41dcB4fa5BCb91fA1D7D71b22f24Cfe401EE
+			(item) => item.owner === address
 		);
 		console.log('ownerItem', ownerItem);
 		if (raw.length)
@@ -105,13 +132,14 @@ export default function PositionList() {
 				return {
 					...item,
 					pair: `${getToken(item.token0)} / ${getToken(item.token1)}`,
-					fee: `${(item.fee / 10_000).toFixed(2)}%`,
+					fee: `${(Number(item.fee) / 10_000).toFixed(2)}%`,
 					liquidity: liquidityValue.toFixed(2),
 					range: `${item.tickLower} - ${item.tickUpper}`,
+					isOwner: item.owner === address,
 				};
 			});
 		return [];
-	}, [data]);
+	}, [data, address]);
 
 	const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
 	const safePage = Math.min(currentPage, totalPages);
@@ -202,8 +230,22 @@ export default function PositionList() {
 												<Box className="w-40 shrink-0 text-right font-bold">
 													{item.tick ?? '--'}
 												</Box>
-												<Box className="w-80 shrink-0 text-right pr-8 font-bold">
-													{item.liquidity}
+												<Box className="w-80 shrink-0 font-bold">
+													{item.isOwner ? (
+														<Box className="flex items-center justify-center">
+															<Button>{t('swap.remove')}</Button>
+															<Button
+																disabled={isPending}
+																onClick={() =>
+																	void handleCollect(
+																		BigInt(item.id)
+																	)
+																}
+															>
+																{t('swap.collect')}
+															</Button>
+														</Box>
+													) : null}
 												</Box>
 											</Box>
 										);

@@ -138,6 +138,8 @@
         "pleaseInput": "请输入{type}数量",
         "selectToken": "请选择代币",
         "addAccount": "添加资金以兑换",
-        "insufficientFunds": "资金不足"
+        "insufficientFunds": "资金不足",
+        "remove": "移除",
+        "collect": "领取"
 	}
 }

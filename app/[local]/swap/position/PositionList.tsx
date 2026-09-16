@@ -113,6 +113,22 @@ export default function PositionList() {
 			console.error('Collect failed:', error);
 		}
 	};
+
+	const handleRemove = async (positionId: bigint) => {
+		if (!address || !positionsAddress) return;
+
+		try {
+			const result = await writeContractAsync({
+				address: positionsAddress,
+				abi: postionsAbi,
+				functionName: 'burn',
+				args: [positionId],
+			});
+			console.log('handleRemove result', result);
+		} catch (error) {
+			console.error('Remove failed:', error);
+		}
+	};
 	const ownerList = useMemo(() => {
 		const raw = Array.isArray(data) && data.length ? data : [];
 		return raw.filter((item) => item.owner === address);
@@ -233,7 +249,16 @@ export default function PositionList() {
 												<Box className="w-80 shrink-0 font-bold">
 													{item.isOwner ? (
 														<Box className="flex items-center justify-center">
-															<Button>{t('swap.remove')}</Button>
+															<Button
+																disabled={isPending}
+																onClick={() =>
+																	void handleRemove(
+																		BigInt(item.id)
+																	)
+																}
+															>
+																{t('swap.remove')}
+															</Button>
 															<Button
 																disabled={isPending}
 																onClick={() =>

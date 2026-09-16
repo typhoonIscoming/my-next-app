@@ -87,4 +87,46 @@ describe('PositionList', () => {
 			})
 		);
 	});
+
+	it('renders remove button for the current owner and triggers burn contract call', async () => {
+		(useReadPositions as jest.Mock).mockReturnValue({
+			isLoading: false,
+			data: [
+				{
+					id: 1n,
+					owner: '0x1234567890123456789012345678901234567890',
+					token0: '0x1111111111111111111111111111111111111111',
+					token1: '0x2222222222222222222222222222222222222222',
+					fee: 10000n,
+					tickLower: -100n,
+					tickUpper: 100n,
+					liquidity: 1000000000000000000n,
+				},
+			],
+			refetch: jest.fn(),
+		});
+
+		const writeContractAsync = jest.fn().mockResolvedValue('0xabc');
+		(jest.mocked(useAccount) as jest.Mock).mockReturnValue({
+			address: '0x1234567890123456789012345678901234567890',
+		} as any);
+		(jest.mocked(useWriteContract) as jest.Mock).mockReturnValue({
+			writeContractAsync,
+			isPending: false,
+		});
+
+		render(<PositionList />);
+
+		const removeButton = screen.getByRole('button', { name: 'swap.remove' });
+		expect(removeButton).toBeInTheDocument();
+
+		await userEvent.click(removeButton);
+
+		expect(writeContractAsync).toHaveBeenCalledWith(
+			expect.objectContaining({
+				functionName: 'burn',
+				args: [1n],
+			})
+		);
+	});
 });

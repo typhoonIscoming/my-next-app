@@ -32,13 +32,25 @@ import useBalance from '../../wagmi/hooks/useAccount';
 import { tokenList } from '@/lib/utils';
 import { useCreatePool } from '../hooks/useCreatePool';
 
+const Q96 = 2n ** 96n;
+
+const priceToTick = (price: number) => {
+	if (!Number.isFinite(price) || price <= 0) return 0n;
+	return BigInt(Math.floor(Math.log(price) / Math.log(1.0001)));
+};
+
+const priceToSqrtPriceX96 = (price: number) => {
+	if (!Number.isFinite(price) || price <= 0) return Q96;
+	return BigInt(Math.floor(Math.sqrt(price) * Number(Q96)));
+};
+
 const addPositionSchema = (maxEthAmount: number) =>
 	z
 		.object({
-			ethAmount: z.coerce
-				.number({ invalid_type_error: '请输入有效数量' })
-				.positive('数量必须大于 0')
-				.max(maxEthAmount, `ETH数量不能超过可用余额 ${maxEthAmount}`),
+			// ethAmount: z.coerce
+			// 	.number({ invalid_type_error: '请输入有效数量' })
+			// 	.positive('数量必须大于 0')
+			// 	.max(maxEthAmount, `ETH数量不能超过可用余额 ${maxEthAmount}`),
 			pair: z
 				.array(z.string().min(1, '请选择交易对'))
 				.length(2, '请选择两个代币组成交易对')
@@ -88,7 +100,6 @@ export const AddPositionForm = forwardRef<
 	const form = useForm<AddPositionFormValues>({
 		resolver: zodResolver(addPositionSchema(maxEthAmount)),
 		defaultValues: {
-			ethAmount: 0,
 			pair: [tokenList[0].address, tokenList[1].address],
 			amount: 0,
 			minPrice: 0,
@@ -115,14 +126,19 @@ export const AddPositionForm = forwardRef<
 
 		try {
 			const feeValue = Number(values.fee || 0);
+			const minPriceValue = Number(values.minPrice || 0);
+			const maxPriceValue = Number(values.maxPrice || 0);
 			const currentPriceValue = Number(values.currentPrice || 0);
-			const tickLower = -887272n;
-			const tickUpper = 887272n;
+
+			if (currentPriceValue < minPriceValue || currentPriceValue > maxPriceValue) {
+				toast.error('当前价格必须位于最低价和最高价之间');
+				return;
+			}
+
+			const tickLower = priceToTick(minPriceValue);
+			const tickUpper = priceToTick(maxPriceValue);
 			const fee = BigInt(Math.max(0, Math.round(feeValue * 10000)));
-			const sqrtPriceX96 =
-				currentPriceValue > 0
-					? BigInt(Math.floor(Math.sqrt(currentPriceValue) * Number(2n ** 96n)))
-					: 2n ** 96n;
+			const sqrtPriceX96 = priceToSqrtPriceX96(currentPriceValue);
 			const params = {
 				token0: values.pair[0] as Address,
 				token1: values.pair[1] as Address,
@@ -149,7 +165,11 @@ export const AddPositionForm = forwardRef<
 				console.log('123');
 				const isValid = await form.trigger();
 				console.log('isValid', isValid);
-				if (!isValid) return;
+				if (!isValid) {
+					const result = form.getFieldState('pair');
+					console.log('result', result);
+					return;
+				}
 				await handleSubmit(form.getValues());
 			},
 			reset: () => form.reset(),
@@ -164,7 +184,7 @@ export const AddPositionForm = forwardRef<
 			<FormField control={form.control} name="pair">
 				{({ value, onChange, onBlur, error }) => {
 					const pairValue = Array.isArray(value) ? value : [];
-
+					console.log('pairValue', pairValue, 'error', error);
 					return (
 						<FormItem className="p-3 rounded-xl border border-white/10 bg-[#0d1727] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
 							<FormLabel className="text-slate-200">交易对</FormLabel>

@@ -30,7 +30,7 @@ export function useCreatePool() {
 		const [sortedToken0, sortedToken1] = [token0, token1].sort((a, b) =>
 			a.toLowerCase() < b.toLowerCase() ? -1 : 1
 		) as Address[];
-
+		// console.log('Sorted tokens:', sortedToken0, sortedToken1);
 		return writeContractAsync({
 			address: poolManagerAddress,
 			abi: poolManagerAbi,

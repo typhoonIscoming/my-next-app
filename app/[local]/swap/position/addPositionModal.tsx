@@ -64,7 +64,7 @@ export default function AddPositionModal() {
 	const [open, setOpen] = useState(false);
 	const { addPosition, isPending } = useAddPosition();
 	const { data: pools = [] } = useReadPool();
-	console.log('pools', pools);
+	// console.log('pools', pools);
 	const form = useForm<AddPositionFormValues>({
 		resolver: zodResolver(addPositionSchema()),
 		defaultValues: {
@@ -86,7 +86,7 @@ export default function AddPositionModal() {
 	};
 	// 对fees进行去重
 	const uniqueFees = Array.from(new Set(fees));
-	// console.log('fee', fees);
+	console.log('fee', fees);
 	const handleSubmit = form.handleSubmit(async (values) => {
 		try {
 			const [token0, token1] = values.pair;

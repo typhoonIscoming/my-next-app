@@ -14,6 +14,9 @@ import SvgIcon from '@mui/material/SvgIcon';
 import PoolSvg from '@/app/assets/svgs/pool-water-swimming-svgrepo-com.svg';
 import Portfolio from '@/public/portfolio-svgrepo-com.svg';
 import { styled } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import Image from 'next/image';
+import { cn } from '@/lib/utils';
 
 const StyledDrawer = styled(Drawer)({
 	'.MuiPaper-root': {
@@ -106,7 +109,9 @@ export default function Header() {
 								account,
 								openAccountModal,
 								openConnectModal,
+								openChainModal,
 							}) => {
+								console.log('chain', chain);
 								const shortAddress = account
 									? `${account.address.slice(0, 4)}...${account.address.slice(-4)}`
 									: '';
@@ -118,9 +123,28 @@ export default function Header() {
 										{t('swap.connectWallet')}
 									</Button>
 								) : (
-									<Button onClick={openAccountModal} className="text-white!">
-										{shortAddress}
-									</Button>
+									<Box>
+										<Button
+											onClick={openChainModal}
+											className={cn(
+												'text-white! min-w-fit!',
+												chain?.iconUrl && 'pl-2'
+											)}
+										>
+											{chain?.iconUrl && (
+												<Image
+													src={chain.iconUrl}
+													alt={chain.name}
+													width={20}
+													height={20}
+												/>
+											)}
+											<span className="hidden md:inline">{chain?.name}</span>
+										</Button>
+										<Button onClick={openAccountModal} className="text-white!">
+											{shortAddress}
+										</Button>
+									</Box>
 								);
 							}}
 						</CustomConnectButton>

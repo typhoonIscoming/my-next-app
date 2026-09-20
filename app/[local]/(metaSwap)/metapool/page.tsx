@@ -112,7 +112,7 @@ export default function MetaPoolPage() {
 	}, []);
 
 	return (
-		<div className="max-w-[1440px] m-auto px-4 py-4 sm:px-6 lg:px-8 pt-0">
+		<div className="pool-container">
 			<div className="flex items-center justify-between">
 				<label>{t('swap.poolTitle')}</label>
 				<WhiteButton variant="contained" onClick={() => router.push('/liquidity')}>

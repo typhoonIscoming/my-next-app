@@ -109,7 +109,7 @@ export const usePositions = () => {
 			if (queryError) {
 				throw queryError;
 			}
-
+			console.log('liquidity data', data);
 			const processedPositions = ((data || []) as SupabasePositionRow[]).map((position) => {
 				const token0Info = position.token0_data || {
 					symbol: 'UNK',

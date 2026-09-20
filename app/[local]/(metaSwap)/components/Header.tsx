@@ -59,7 +59,7 @@ export default function Header() {
 	return (
 		<>
 			<header className="sticky top-0 z-999 border-b border-white/10 not-dark:bg-[#050816]! backdrop-blur-xl supports-backdrop-filter:bg-[#131313]/20">
-				<div className="mx-auto flex max-w-[1440px] items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+				<div className="mx-auto overflow-hidden flex max-w-[1440px] items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
 					<div className="flex items-center gap-3">
 						<div className="flex h-9 w-9 items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_30%,#b0a3ff,#5a5cff_40%,#1e1f5e_70%,#110d2c)] shadow-[0_0_30px_rgba(138,109,255,0.6)]">
 							<span className="text-sm font-black tracking-[-0.08em]">M</span>
@@ -73,13 +73,13 @@ export default function Header() {
 					</div>
 
 					<nav className="hidden items-center gap-8 text-sm font-medium text-zinc-300 md:flex">
-						<Link href="/swap" className={navItemClass(isSwap)}>
+						<Link href="/metaswap" className={navItemClass(isSwap)}>
 							{t('swap.navSwap')}
 						</Link>
-						<Link href="/swap/pool" className={navItemClass(isPool)}>
+						<Link href="/metapool" className={navItemClass(isPool)}>
 							{t('swap.navPool')}
 						</Link>
-						<Link href="/swap/position" className={navItemClass(isPosition)}>
+						<Link href="/metapositions" className={navItemClass(isPosition)}>
 							{t('swap.navPosition')}
 						</Link>
 					</nav>
@@ -101,9 +101,9 @@ export default function Header() {
 								{t('LanguageSwitcher.en')}
 							</button>
 						</div>
-
-						<CustomConnectButton>
-							{({
+						<div className="hidden md:block">
+							<CustomConnectButton>
+								{/* {({
 								connected,
 								chain,
 								account,
@@ -145,18 +145,22 @@ export default function Header() {
 										</Button>
 									</Box>
 								);
-							}}
-						</CustomConnectButton>
+							}} */}
+							</CustomConnectButton>
+						</div>
 					</div>
 				</div>
 			</header>
-			<StyledDrawer anchor={'bottom'} open={state} onClose={() => toggleDrawer(false)}>
+			<StyledDrawer anchor={'top'} open={state} onClose={() => toggleDrawer(false)}>
 				<div
-					className="h-full w-full bg-[#131313] text-white pb-8 rounded-t-2xl"
+					className="h-full w-full bg-[#131313] text-white pb-0 rounded-t-2xl"
 					role="presentation"
 					onClick={() => toggleDrawer(false)}
 					onKeyDown={() => toggleDrawer(false)}
 				>
+					<div className="px-4 pt-4 block md:hidden">
+						<CustomConnectButton />
+					</div>
 					<List>
 						<ListItem className="gap-4">
 							<InsertLinkIcon />
@@ -168,7 +172,7 @@ export default function Header() {
 						</ListItem>
 						<ListItem className="gap-4">
 							<SvgIcon component={Portfolio} inheritViewBox />
-							<Link href="/metaswap/position">{t('swap.navPosition')}</Link>
+							<Link href="/metapositions">{t('swap.navPosition')}</Link>
 						</ListItem>
 					</List>
 				</div>

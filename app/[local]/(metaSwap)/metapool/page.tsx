@@ -7,6 +7,7 @@ import { useRef, useEffect, useState, use } from 'react';
 import useIsMobile from '@/hooks/useIsMobile';
 import { cn, formatNumber } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useRouter } from 'next/navigation';
 
 const WhiteButton = styled(Button)({
 	color: 'white',
@@ -48,6 +49,7 @@ export default function MetaPoolPage() {
 	const tHeadRef = useRef<HTMLDivElement>(null);
 	const tBodyRef = useRef<HTMLDivElement>(null);
 	const isMobile = useIsMobile();
+	const router = useRouter();
 
 	const [pools, setPools] = useState<PoolData[]>([]);
 	const [loading, setLoading] = useState(false);
@@ -113,7 +115,9 @@ export default function MetaPoolPage() {
 		<div className="max-w-[1440px] m-auto px-4 py-4 sm:px-6 lg:px-8 pt-0">
 			<div className="flex items-center justify-between">
 				<label>{t('swap.poolTitle')}</label>
-				<WhiteButton variant="contained">{t('swap.createPool')}</WhiteButton>
+				<WhiteButton variant="contained" onClick={() => router.push('/liquidity')}>
+					{t('swap.createPool')}
+				</WhiteButton>
 			</div>
 			<div className="table-container relative">
 				<div className="table-header sticky top-15.75 z-99">
@@ -132,7 +136,7 @@ export default function MetaPoolPage() {
 								<div
 									className={cn(
 										'font-bold shrink-0 px-3 py-3 text-left border-r border-white/10',
-										isMobile ? 'sticky w-40 left-0 z-10 bg-[#131313]' : 'w-60'
+										isMobile ? 'sticky w-50 left-0 z-10 bg-[#131313]' : 'w-60'
 									)}
 								>
 									{t('swap.pair')}
@@ -195,7 +199,7 @@ const TableSkeleton = ({ rows = 10 }: { rows: number }) => {
 					<div
 						className={cn(
 							'shrink-0 border-r border-white/10 px-3 py-3',
-							isMobile ? 'w-40' : 'w-60'
+							isMobile ? 'w-50' : 'w-60'
 						)}
 					>
 						<Skeleton className="h-5 w-28 rounded-sm" />
@@ -232,7 +236,7 @@ const TableList = ({ data }: { data: PoolData[] }) => {
 					<div
 						className={cn(
 							'flex items-center font-bold shrink-0 px-3 py-3 text-left border-r border-white/10',
-							isMobile ? 'sticky w-40 left-0 z-10 bg-[#131313]' : 'w-60'
+							isMobile ? 'sticky w-50 left-0 z-10 bg-[#131313]' : 'w-60'
 						)}
 					>
 						<div className="flex -space-x-2 mr-3">
@@ -278,7 +282,7 @@ const TablePagenation = ({
 }) => {
 	const t = useTranslations();
 	return (
-		<div className="sticky bottom-0 z-30 mt-4 border-t border-white/10 bg-[#131313]/95 px-3 py-3 backdrop-blur-md">
+		<div className="sticky bottom-0 z-30 border-t border-white/10 bg-[#131313]/95 px-3 py-3 backdrop-blur-md">
 			<div className="flex items-center justify-end gap-2 text-sm text-zinc-300">
 				<button
 					type="button"

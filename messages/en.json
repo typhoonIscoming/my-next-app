@@ -143,6 +143,8 @@
         "tvl": "Total value locked",
         "apr": "APR",
         "remove": "Remove",
-        "collect": "Collect"
+        "collect": "Collect",
+        "reload": "Reload",
+        "loadFailed": "Load failed"
     }
 }

@@ -100,7 +100,7 @@
 		"seeAll": "查看全部",
 		"addLiquidity": "添加流动性",
 		"positionTitle": "你的流动性",
-		"newPosition": "新头寸",
+		"newPosition": "新建头寸",
 		"totalValue": "总价值",
 		"feesEarned": "已赚手续费",
 		"openPositions": "开放仓位",
@@ -143,6 +143,8 @@
         "tvl": "总锁仓量",
         "apr": "年化收益率",
         "remove": "移除",
-        "collect": "领取"
+        "collect": "领取",
+        "reload": "重新加载",
+        "loadFailed": "加载失败"
 	}
 }

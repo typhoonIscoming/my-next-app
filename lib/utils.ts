@@ -51,6 +51,15 @@ export const formatAddress = (address?: string) => {
 	return `${address.slice(0, 4)}...${address.slice(-4)}`;
 };
 
+// 格式化数字
+export function formatNumber(num: number): string {
+	if (num === 0) return '0';
+	if (num < 0.001) return '<0.001';
+	if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
+	if (num >= 1000) return (num / 1000).toFixed(2) + 'K';
+	return num.toFixed(3).replace(/\.?0+$/, '');
+}
+
 // 代币地址
 export const tokenA = process.env.NEXT_PUBLIC_MN_TOKEN_A as `0x${string}`;
 export const tokenB = process.env.NEXT_PUBLIC_MN_TOKEN_B as `0x${string}`;

@@ -11,10 +11,5 @@ export default async function MetaSwapPage({ params }: { params: Promise<{ local
 	const { local } = await params;
 	assertValidLocale(local);
 
-	return (
-		<>
-			<Header />
-			<main className="min-h-[150vh]">MetaSwap Page</main>
-		</>
-	);
+	return <div className="min-h-[150vh]">MetaSwap Page</div>;
 }

@@ -111,7 +111,6 @@ export default function Header() {
 								openConnectModal,
 								openChainModal,
 							}) => {
-								console.log('chain', chain);
 								const shortAddress = account
 									? `${account.address.slice(0, 4)}...${account.address.slice(-4)}`
 									: '';
@@ -163,14 +162,14 @@ export default function Header() {
 							<InsertLinkIcon />
 							<Link href="/metaswap">{t('swap.navSwap')}</Link>
 						</ListItem>
-						{/* <ListItem className="gap-4">
-                            <SvgIcon component={PoolSvg} inheritViewBox />
-                            <Link href="/swap/pool">{t('swap.navPool')}</Link>
-                        </ListItem>
-                        <ListItem className="gap-4">
-                            <SvgIcon component={Portfolio} inheritViewBox />
-                            <Link href="/swap/position">{t('swap.navPosition')}</Link>
-                        </ListItem> */}
+						<ListItem className="gap-4">
+							<SvgIcon component={PoolSvg} inheritViewBox />
+							<Link href="/metapool">{t('swap.navPool')}</Link>
+						</ListItem>
+						<ListItem className="gap-4">
+							<SvgIcon component={Portfolio} inheritViewBox />
+							<Link href="/metaswap/position">{t('swap.navPosition')}</Link>
+						</ListItem>
 					</List>
 				</div>
 			</StyledDrawer>

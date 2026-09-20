@@ -139,6 +139,9 @@
         "selectToken": "Select a token",
         "addAccount": "Add funds to swap",
         "insufficientFunds": "Insufficient funds",
+        "pair": "Pair",
+        "tvl": "Total value locked",
+        "apr": "APR",
         "remove": "Remove",
         "collect": "Collect"
     }

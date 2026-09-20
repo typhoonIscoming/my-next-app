@@ -139,6 +139,9 @@
         "selectToken": "请选择代币",
         "addAccount": "添加资金以兑换",
         "insufficientFunds": "资金不足",
+        "pair": "交易对",
+        "tvl": "总锁仓量",
+        "apr": "年化收益率",
         "remove": "移除",
         "collect": "领取"
 	}

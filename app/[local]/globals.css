@@ -140,6 +140,20 @@
 
 @layer 是 Tailwind 的一种“分层”语法，用来把样式按不同优先级组织起来
 */
+@keyframes shimmer {
+	0% {
+		transform: translateX(-100%);
+		opacity: 0;
+	}
+	20% {
+		opacity: 1;
+	}
+	100% {
+		transform: translateX(100%);
+		opacity: 0;
+	}
+}
+
 @layer base {
 	* {
 		@apply border-border outline-ring/50;

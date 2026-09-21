@@ -118,3 +118,23 @@ export const tokens = {
 		decimals: 18,
 	},
 } as const;
+
+// 费率选项
+export const feeTiers = [500, 3000, 10000]; // 0.05%, 0.3%, 1%
+
+// 合约地址配置
+export const contracts = {
+	POOL_MANAGER: '0x1a1a6d0ef39908aa8b8dd0b7052dc05b07b64735',
+	POSITION_MANAGER: '0xa7e9e22cc2cfe5831e683b531ab636dca545acf5',
+	SWAP_ROUTER: '0xbdc9b8f2ab20989198ab8f47fdbb2992f219726d',
+	META_NODE_MANAGER: '0x8da623dcb3cd359d05682a2aac9bcb7a8eef3baf',
+	LIQUIDITY_MANAGER: '0xa7e9e22cc2cfe5831e683b531ab636dca545acf5', // 使用Position Manager作为流动性管理器
+} as const;
+
+export function isNativeTokenAddress(address?: string | null): boolean {
+	return !!address && address.toLowerCase() === tokens.ETH.address.toLowerCase();
+}
+
+export function toChainTokenAddress(address: string): string {
+	return isNativeTokenAddress(address) ? (tokens.ETH.wrappedAddress as string) : address;
+}

@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import Button from '@mui/material/Button';
 import { useLocale, useTranslations } from 'next-intl';
 import { styled } from '@mui/material';
-import { useRef, useEffect, useState, use } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import useIsMobile from '@/hooks/useIsMobile';
 import { cn, formatNumber } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';

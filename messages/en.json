@@ -154,6 +154,13 @@
         "pending": "Pending wallet confirmation...",
         "hash": "Transaction hash",
         "connected": "Connected",
-        "selectPair": "Select a pair"
+        "selectPair": "Select a pair",
+        "tokenAddress": "Token {pair} address",
+        "chain": "Chain ID",
+        "current": "Current",
+        "different": "different",
+        "selectTwoAddress": "Please select two {type} token addresses",
+        "searchPool": "Search pool",
+        "searching": "Searching"
     }
 }

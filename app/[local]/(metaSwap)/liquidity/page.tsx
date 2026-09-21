@@ -16,7 +16,7 @@ export default function LiquidityPage() {
 		setStep('select');
 	};
 	return (
-		<div className="liquidity-container max-w-245 m-auto">
+		<div className="liquidity-container max-w-150 m-auto">
 			<div className="bg-white border border-border rounded-2xl shadow-lg p-4">
 				<div className="flex items-center justify-between mb-6">
 					<h2 className="text-xl font-semibold text-gray-600">添加流动性</h2>

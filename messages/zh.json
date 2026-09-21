@@ -154,6 +154,13 @@
         "pending": "等待钱包确认...",
         "hash": "交易哈希",
         "connected": "已连接",
-        "selectPair": "选择交易对"
+        "selectPair": "选择交易对",
+        "tokenAddress": "代币{pair}地址",
+        "chain": "链 ID",
+        "current": "当前",
+        "different": "不同的",
+        "selectTwoAddress": "请选择两个{type}代币地址",
+        "searchPool": "搜索资金池",
+        "searching": "搜索中"
 	}
 }

@@ -145,6 +145,13 @@
         "remove": "Remove",
         "collect": "Collect",
         "reload": "Reload",
-        "loadFailed": "Load failed"
+        "loadFailed": "Load failed",
+        "approve": "Approve",
+        "wrapETH": "Wrap ETH",
+        "transaction": "Transaction",
+        "success": "Success",
+        "confirmed": "Confirmed",
+        "pending": "Pending wallet confirmation...",
+        "hash": "Transaction hash"
     }
 }

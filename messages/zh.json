@@ -161,6 +161,18 @@
         "different": "不同的",
         "selectTwoAddress": "请选择两个{type}代币地址",
         "searchPool": "搜索资金池",
-        "searching": "搜索中"
+        "searching": "搜索中",
+        "searchingPool": "正在搜索资金池...",
+        "noPoolFound": "未找到池子",
+        "noPoolFoundDesc": "未找到匹配的资金池",
+        "createNewPool": "创建新池子",
+        "createNewPoolDesc": "将创建新的资金池",
+        "poolAddress": "池子地址",
+        "poolExists": "已存在",
+        "poolNotExists": "未创建",
+        "checking": "检查中",
+        "poolStatus": "池子状态",
+        "originalTokenDesc": "如果你选择了原生 ETH，本页会先引导你把所需数量包装成 WETH，然后再执行授权和添加流动性。",
+        "invalidPrice": "请输入有效的价格"
 	}
 }

@@ -161,6 +161,18 @@
         "different": "different",
         "selectTwoAddress": "Please select two {type} token addresses",
         "searchPool": "Search pool",
-        "searching": "Searching"
+        "searching": "Searching",
+        "searchingPool": "Searching for the funding pool...",
+        "noPoolFound": "No pool found",
+        "noPoolFoundDesc": "No matching funding pool found",
+        "createNewPool": "Create new pool",
+        "createNewPoolDesc": "A new funding pool will be created",
+        "poolAddress": "Pool address",
+        "poolExists": "Exists",
+        "poolNotExists": "Not created",
+        "checking": "Checking",
+        "poolStatus": "Pool status",
+        "originalTokenDesc": "If you select native ETH, this page will first guide you to wrap the required amount into WETH, and then proceed with approval and adding liquidity.",
+        "invalidPrice": "Please enter a valid price"
     }
 }

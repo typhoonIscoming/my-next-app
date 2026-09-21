@@ -138,3 +138,33 @@ export function isNativeTokenAddress(address?: string | null): boolean {
 export function toChainTokenAddress(address: string): string {
 	return isNativeTokenAddress(address) ? (tokens.ETH.wrappedAddress as string) : address;
 }
+
+// 解析输入数量
+export function parseInputAmount(input: string): string {
+	// 移除非数字字符（除了小数点）
+	const cleaned = input.replace(/[^0-9.]/g, '');
+
+	// 确保只有一个小数点
+	const parts = cleaned.split('.');
+	if (parts.length > 2) {
+		return parts[0] + '.' + parts.slice(1).join('');
+	}
+
+	return cleaned;
+}
+
+export function getTokenByAddress(address?: string | null) {
+	if (!address) return undefined;
+
+	return Object.values(tokens).find((token) => {
+		if (token.address.toLowerCase() === address.toLowerCase()) {
+			return true;
+		}
+
+		return (
+			'wrappedAddress' in token &&
+			typeof token.wrappedAddress === 'string' &&
+			token.wrappedAddress.toLowerCase() === address.toLowerCase()
+		);
+	});
+}

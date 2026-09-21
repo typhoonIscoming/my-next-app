@@ -152,6 +152,8 @@
         "success": "成功",
         "confirmed": "已确认",
         "pending": "等待钱包确认...",
-        "hash": "交易哈希"
+        "hash": "交易哈希",
+        "connected": "已连接",
+        "selectPair": "选择交易对"
 	}
 }

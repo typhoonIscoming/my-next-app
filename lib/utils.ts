@@ -82,3 +82,39 @@ export const getToken = (address: `0x${string}`) => {
 	if (address) return formatAddress(address);
 	return null;
 };
+const WETH_ADDRESS = process.env.NEXT_PUBLIC_WETH9_ADDRESS || process.env.NEXT_PUBLIC_WETH_ADDRESS;
+// 测试代币地址
+export const tokens = {
+	ETH: {
+		address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', // 原生ETH的特殊地址
+		wrappedAddress: WETH_ADDRESS, // 通过环境变量注入 WETH 地址
+		symbol: 'ETH',
+		name: 'Ethereum',
+		decimals: 18,
+		isNative: true,
+	},
+	MNTokenA: {
+		address: tokenA,
+		symbol: 'MNA',
+		name: 'MetaNode Token A',
+		decimals: 18,
+	},
+	MNTokenB: {
+		address: tokenB,
+		symbol: 'MNB',
+		name: 'MetaNode Token B',
+		decimals: 18,
+	},
+	MNTokenC: {
+		address: tokenC,
+		symbol: 'MNC',
+		name: 'MetaNode Token C',
+		decimals: 18,
+	},
+	MNTokenD: {
+		address: tokenD,
+		symbol: 'MND',
+		name: 'MetaNode Token D',
+		decimals: 18,
+	},
+} as const;

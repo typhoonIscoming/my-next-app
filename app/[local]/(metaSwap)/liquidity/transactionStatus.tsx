@@ -1,6 +1,8 @@
 import { useTranslations } from 'next-intl';
 import { ChevronDown, Clock, CheckCircle, AlertCircle, ArrowUpDown, Info } from 'lucide-react';
-import { formatAddress } from '@/lib/utils';
+import { formatAddress, cn } from '@/lib/utils';
+import { useAccount } from 'wagmi';
+import useIsMobile from '@/hooks/useIsMobile';
 import { type TransactionStatusProps } from './types';
 
 export default function TransactionStatus({
@@ -13,6 +15,8 @@ export default function TransactionStatus({
 	hash: TransactionStatusProps['hash'];
 }) {
 	const t = useTranslations();
+	const { address, isConnected } = useAccount();
+	const isMobile = useIsMobile();
 	const isPending = status === 'pending';
 	const isConfirmed = status === 'confirmed';
 	const isSuccess = status === 'success';
@@ -29,7 +33,12 @@ export default function TransactionStatus({
 						: t('swap.transaction');
 	return (
 		<div className="transaction-status-container">
-			<div className="flex flex-col items-center space-y-2">
+			<div
+				className={cn(
+					'flex flex-col items-center',
+					!isMobile ? 'flex-row justify-center space-x-2' : 'space-y-2'
+				)}
+			>
 				{isPending && (
 					<>
 						<Clock className="w-5 h-5 text-primary animate-spin" />
@@ -57,10 +66,17 @@ export default function TransactionStatus({
 						</span>
 					</>
 				)}
-				<div className="text-sm text-primary">
-					{t('swap.hash')}: {formatAddress(hash)}
-				</div>
 			</div>
+			<div className="text-sm mt-2 text-center text-primary">
+				{t('swap.hash')}: {formatAddress(hash)}
+			</div>
+			{isConnected && address && (
+				<div className="mt-4 text-center p-3 bg-primary/10 rounded-lg">
+					<div className="text-sm text-primary">
+						{t('swap.connected')}: {formatAddress(address)}
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }

@@ -10,3 +10,18 @@ export type TransactionStatusProps = {
 };
 
 export type Step = 'select' | 'searching' | 'found' | 'notFound' | 'addLiquidity';
+
+export type Token = {
+	address: string;
+	symbol: string;
+	name: string;
+	decimals: number;
+};
+
+export interface TokenSelectorProps {
+	selectedToken: Token | null;
+	tokenList: Token[];
+	onSelect: (token: Token) => void;
+	label: string;
+	otherToken: Token | null;
+}

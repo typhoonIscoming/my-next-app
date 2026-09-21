@@ -152,6 +152,8 @@
         "success": "Success",
         "confirmed": "Confirmed",
         "pending": "Pending wallet confirmation...",
-        "hash": "Transaction hash"
+        "hash": "Transaction hash",
+        "connected": "Connected",
+        "selectPair": "Select a pair"
     }
 }

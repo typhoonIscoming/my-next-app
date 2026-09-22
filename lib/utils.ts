@@ -168,3 +168,5 @@ export function getTokenByAddress(address?: string | null) {
 		);
 	});
 }
+
+export const GAS_LIMIT_CAP = 16_000_000n;

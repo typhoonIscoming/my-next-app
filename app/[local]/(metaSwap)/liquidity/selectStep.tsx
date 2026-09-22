@@ -37,6 +37,7 @@ export default function SelectStep({ onSetStep }: SelectStepProps) {
 	const chainName = useMemo(() => {
 		if (!isMounted || chains.length === 0) return 'Loading...';
 		const chain = chains.find((c) => c.id === selectedChainId);
+		setOtherValues({ chainId: selectedChainId });
 		return chain ? chain.name : 'Unknown';
 	}, [isMounted, selectedChainId, chains]);
 

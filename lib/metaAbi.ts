@@ -568,3 +568,20 @@ export const contractConfig = {
 		abi: META_NODE_MANAGER_ABI,
 	},
 };
+
+export const ERC20_PERMIT_ABI = [
+	{
+		type: 'function',
+		name: 'nonces',
+		stateMutability: 'view',
+		inputs: [{ name: 'owner', type: 'address' }],
+		outputs: [{ name: '', type: 'uint256' }],
+	},
+	{
+		type: 'function',
+		name: 'DOMAIN_SEPARATOR',
+		stateMutability: 'view',
+		inputs: [],
+		outputs: [{ name: '', type: 'bytes32' }],
+	},
+] as const;

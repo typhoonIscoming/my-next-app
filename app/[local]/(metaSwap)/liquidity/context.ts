@@ -10,6 +10,7 @@ interface LiquidityContextType {
 	fee: number | null;
 	token0: Token | null;
 	token1: Token | null;
+	chainId: number | null;
 	setOtherValues: (otherValues: Partial<LiquidityContextType>) => void;
 }
 
@@ -21,6 +22,7 @@ export const initialLiquidity = {
 	fee: null,
 	token0: null,
 	token1: null,
+	chainId: null,
 };
 
 export default createContext<LiquidityContextType>({

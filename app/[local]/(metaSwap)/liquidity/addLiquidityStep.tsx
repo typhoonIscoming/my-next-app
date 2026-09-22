@@ -2,18 +2,21 @@
 import { cn, tokens } from '@/lib/utils';
 import { useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { parseUnits, BaseError } from 'viem';
+import { parseUnits, BaseError, formatUnits, encodeFunctionData } from 'viem';
 import { useBalance, useAccount, usePublicClient, useWriteContract } from 'wagmi';
 import { useWaitForTransactionReceipt } from 'wagmi';
 import LiquidityContext from './context';
 import { formatAddress, feeTiers, isNativeTokenAddress, parseInputAmount } from '@/lib/utils';
-import { toChainTokenAddress, formatNumber, contracts } from '@/lib/utils';
+import { toChainTokenAddress, formatNumber, contracts, GAS_LIMIT_CAP } from '@/lib/utils';
 import { Info, AlertCircle, Clock } from 'lucide-react';
 import type { Token, ContractWriteParams, Step, TransactionAction } from './types';
 import { Input } from '@/components/ui/input';
-import { ERC20_ABI } from '@/lib/metaAbi';
+import { ERC20_ABI, contractConfig } from '@/lib/metaAbi';
+import useBuildPermitCalldata from '../hooks/useBuildPermitCalldata';
+import useWriteContractEstimatedGas from '../hooks/useWriteContractEstimatedGas';
+import useWriteMulticall from '../hooks/usewriteMulticall';
+import useCreateOrAddliquidity from '../hooks/useCreateOrAddliquidity';
 
-const GAS_LIMIT_CAP = 16_000_000n;
 const WETH_ABI = [
 	{
 		type: 'function',
@@ -34,8 +37,21 @@ export default function AddLiquidityStep({
 	const { address, isConnected } = useAccount();
 	const publicClient = usePublicClient();
 	const t = useTranslations();
-	const { poolExists, isCheckingPool, currentPool, fee, token0, token1 } =
-		useContext(LiquidityContext);
+	const {
+		poolExists,
+		isCheckingPool,
+		currentPool,
+		fee,
+		token0,
+		token1,
+		chainId,
+		setOtherValues,
+	} = useContext(LiquidityContext);
+	const buildPermitCalldata = useBuildPermitCalldata({ chainId });
+	// 使用预估汽油费写合约的hook
+	// const writeContractEstimatedGas = useWriteContractEstimatedGas();
+	const writeMetaNodeManagerMulticall = useWriteMulticall();
+
 	const [initialPrice, setInitialPrice] = useState('');
 	const [priceError, setPriceError] = useState<any>(null);
 	const [transactionError, setTransactionError] = useState<string | null>(null);
@@ -49,6 +65,8 @@ export default function AddLiquidityStep({
 	// 是否正在授权
 	const [isCheckingAllowance, setIsCheckingAllowance] = useState(false);
 	const [permitSupportMap, setPermitSupportMap] = useState<Record<string, boolean>>({});
+
+	const [poolIndex, setPoolIndex] = useState<number | null>(null);
 
 	const { writeContract, data: hash, isPending } = useWriteContract();
 	const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
@@ -130,6 +148,17 @@ export default function AddLiquidityStep({
 			return false;
 		}
 	}, [token1, token1Balance, amount1]);
+
+	const createPoolAndAddLiquidity = useCreateOrAddliquidity({
+		amount0,
+		amount1,
+		token0,
+		token1,
+		selectedFee: fee,
+		initialPrice,
+		token0SupportsPermit,
+		token1SupportsPermit,
+	});
 
 	const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const value = parseInputAmount(e.target.value);
@@ -437,6 +466,253 @@ export default function AddLiquidityStep({
 			setIsCheckingAllowance(false);
 		}
 	}, [address, token0, token1, amount0, amount1, token0SupportsPermit, token1SupportsPermit]);
+
+	const applyPoolStatus = useCallback(
+		(response: { exists: boolean; poolAddress?: string; poolIndex?: number }) => {
+			if (response.exists) {
+				setOtherValues({ poolExists: true, currentPool: response.poolAddress || null });
+				setPoolIndex(response.poolIndex ?? null);
+				return;
+			}
+
+			setOtherValues({ poolExists: false, currentPool: null });
+			setPoolIndex(null);
+		},
+		[]
+	);
+	const assertBalanceAndAllowance = useCallback(
+		async ({
+			tokenAddress,
+			amountRequired,
+			tokenSymbol,
+			tokenDecimals,
+		}: {
+			tokenAddress: `0x${string}`;
+			amountRequired: bigint;
+			tokenSymbol: string;
+			tokenDecimals: number;
+		}) => {
+			if (!address || !publicClient || amountRequired <= 0n) return;
+
+			const bytecode = await publicClient.getBytecode({
+				address: tokenAddress,
+			});
+			if (!bytecode || bytecode === '0x') {
+				throw new Error(
+					`${tokenSymbol} 合约地址在当前网络不存在：${tokenAddress}。请确认钱包已切换到 Sepolia，且 WETH 地址配置正确。`
+				);
+			}
+
+			let balance: bigint;
+			let allowance: bigint;
+			try {
+				[balance, allowance] = await Promise.all([
+					publicClient.readContract({
+						address: tokenAddress,
+						abi: ERC20_ABI,
+						functionName: 'balanceOf',
+						args: [address],
+					}),
+					publicClient.readContract({
+						address: tokenAddress,
+						abi: ERC20_ABI,
+						functionName: 'allowance',
+						args: [address, contracts.META_NODE_MANAGER as `0x${string}`],
+					}),
+				]);
+			} catch (error) {
+				if (error instanceof BaseError) {
+					throw new Error(
+						`${tokenSymbol} 读取余额/授权失败，请确认当前网络与代币地址匹配（${tokenAddress}）。${error.shortMessage ?? ''}`.trim()
+					);
+				}
+				throw error;
+			}
+
+			if (balance < amountRequired) {
+				throw new Error(
+					`${tokenSymbol} 余额不足（需要 ${formatUnits(amountRequired, tokenDecimals)}，当前 ${formatUnits(balance, tokenDecimals)}）`
+				);
+			}
+
+			if (allowance < amountRequired) {
+				throw new Error(
+					`${tokenSymbol} 授权不足（需要 ${formatUnits(amountRequired, tokenDecimals)}，当前 ${formatUnits(allowance, tokenDecimals)}）`
+				);
+			}
+		},
+		[address, publicClient]
+	);
+	const fetchPoolStatus = useCallback(async () => {
+		if (!token0 || !token1 || !fee) return;
+		const response = await fetch('/api/pools/check', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				token0: toChainTokenAddress(token0.address),
+				token1: toChainTokenAddress(token1.address),
+				fee: fee,
+			}),
+		}).then((res) => res.json());
+
+		if (!response.success) {
+			throw new Error(response.error || '搜索池子失败');
+		}
+
+		return response;
+	}, [token0, token1, fee]);
+	// 添加流动性到已存在的池子
+	const addLiquidity = useCallback(async () => {
+		if (
+			!address ||
+			!amount0 ||
+			!amount1 ||
+			!token0 ||
+			!token1 ||
+			!currentPool ||
+			poolIndex === null
+		)
+			return;
+
+		try {
+			const latestPoolStatus = await fetchPoolStatus();
+			applyPoolStatus(latestPoolStatus);
+
+			if (!latestPoolStatus.exists || latestPoolStatus.poolIndex === undefined) {
+				throw new Error('当前费率下未找到可用池子，请重新搜索资金池');
+			}
+
+			const amountWei0 = parseUnits(amount0, token0.decimals);
+			const amountWei1 = parseUnits(amount1, token1.decimals);
+			const actualToken0Address = toChainTokenAddress(token0.address);
+			const actualToken1Address = toChainTokenAddress(token1.address);
+
+			// 确保 token0 地址小于 token1 地址，并同步对应 metadata（name/permit）
+			let sortedToken0Address = actualToken0Address;
+			let sortedToken1Address = actualToken1Address;
+			let sortedAmount0 = amountWei0;
+			let sortedAmount1 = amountWei1;
+			let sortedToken0Name = token0.name;
+			let sortedToken1Name = token1.name;
+			let sortedToken0SupportsPermit = token0SupportsPermit;
+			let sortedToken1SupportsPermit = token1SupportsPermit;
+
+			if (BigInt(actualToken0Address) > BigInt(actualToken1Address)) {
+				sortedToken0Address = actualToken1Address;
+				sortedToken1Address = actualToken0Address;
+				sortedAmount0 = amountWei1;
+				sortedAmount1 = amountWei0;
+				sortedToken0Name = token1.name;
+				sortedToken1Name = token0.name;
+				sortedToken0SupportsPermit = token1SupportsPermit;
+				sortedToken1SupportsPermit = token0SupportsPermit;
+			}
+
+			const sortedToken0Decimals =
+				BigInt(actualToken0Address) > BigInt(actualToken1Address)
+					? token1.decimals
+					: token0.decimals;
+			const sortedToken1Decimals =
+				BigInt(actualToken0Address) > BigInt(actualToken1Address)
+					? token0.decimals
+					: token1.decimals;
+
+			await assertBalanceAndAllowance({
+				tokenAddress: sortedToken0Address as `0x${string}`,
+				amountRequired: sortedAmount0,
+				tokenSymbol: sortedToken0Name,
+				tokenDecimals: sortedToken0Decimals,
+			});
+			await assertBalanceAndAllowance({
+				tokenAddress: sortedToken1Address as `0x${string}`,
+				amountRequired: sortedAmount1,
+				tokenSymbol: sortedToken1Name,
+				tokenDecimals: sortedToken1Decimals,
+			});
+
+			const deadline = BigInt(Math.floor(Date.now() / 1000) + 1200);
+			const multicallData: `0x${string}`[] = [];
+
+			if (
+				ENABLE_PERMIT_LIQUIDITY &&
+				sortedToken0SupportsPermit &&
+				!isNativeTokenAddress(sortedToken0Address)
+			) {
+				multicallData.push(
+					await buildPermitCalldata({
+						tokenAddress: sortedToken0Address as `0x${string}`,
+						tokenName: sortedToken0Name,
+						value: sortedAmount0,
+						deadline,
+					})
+				);
+			}
+
+			if (
+				ENABLE_PERMIT_LIQUIDITY &&
+				sortedToken1SupportsPermit &&
+				!isNativeTokenAddress(sortedToken1Address)
+			) {
+				multicallData.push(
+					await buildPermitCalldata({
+						tokenAddress: sortedToken1Address as `0x${string}`,
+						tokenName: sortedToken1Name,
+						value: sortedAmount1,
+						deadline,
+					})
+				);
+			}
+
+			const addLiquidityCalldata = encodeFunctionData({
+				abi: contractConfig.metaNodeManager.abi,
+				functionName: 'addLiquidity',
+				args: [
+					{
+						token0: sortedToken0Address as `0x${string}`,
+						token1: sortedToken1Address as `0x${string}`,
+						index: latestPoolStatus.poolIndex,
+						amount0Desired: sortedAmount0,
+						amount1Desired: sortedAmount1,
+						recipient: address,
+						deadline,
+					},
+				],
+			});
+			multicallData.push(addLiquidityCalldata);
+
+			// 通过 MetaNodeManager.multicall 执行「permit(可选) + 添加流动性」
+			setTransactionAction('addLiquidity');
+			setTransactionError(null);
+			await writeMetaNodeManagerMulticall({
+				calldatas: multicallData,
+				contractAddress: contracts.META_NODE_MANAGER,
+				abi: contractConfig.metaNodeManager.abi,
+				args: [multicallData],
+			});
+		} catch (error) {
+			console.error('添加流动性失败:', error);
+			setTransactionAction(null);
+			setTransactionError(getErrorMessage(error));
+		}
+	}, [
+		address,
+		amount0,
+		amount1,
+		token0,
+		token1,
+		currentPool,
+		poolIndex,
+		fetchPoolStatus,
+		applyPoolStatus,
+		writeMetaNodeManagerMulticall,
+		getErrorMessage,
+		token0SupportsPermit,
+		token1SupportsPermit,
+		buildPermitCalldata,
+		assertBalanceAndAllowance,
+	]);
 
 	useEffect(() => {
 		checkAllowance();
@@ -782,7 +1058,54 @@ export default function AddLiquidityStep({
 											? '检查授权中...'
 											: `授权 ${token1.symbol}`}
 								</button>
-							) : null}
+							) : (
+								<button
+									onClick={poolExists ? addLiquidity : createPoolAndAddLiquidity}
+									disabled={
+										!amount0 ||
+										!amount1 ||
+										hasInsufficientBalance0 ||
+										hasInsufficientBalance1 ||
+										isPending ||
+										isConfirming ||
+										isCalculating ||
+										isCheckingPool ||
+										isCheckingAllowance ||
+										!!priceError ||
+										!token0 ||
+										!token1
+									}
+									className={cn(
+										'w-full py-4 rounded-lg font-medium text-lg transition-colors',
+										!amount0 ||
+											!amount1 ||
+											hasInsufficientBalance0 ||
+											hasInsufficientBalance1 ||
+											isPending ||
+											isConfirming ||
+											isCalculating ||
+											isCheckingPool ||
+											isCheckingAllowance ||
+											!!priceError ||
+											!token0 ||
+											!token1
+											? 'bg-muted text-muted-foreground cursor-not-allowed'
+											: 'bg-primary hover:bg-primary/90 text-primary-foreground'
+									)}
+								>
+									{isPending || isConfirming
+										? '处理中...'
+										: isCalculating
+											? '计算中...'
+											: isCheckingPool
+												? '检查池子中...'
+												: isCheckingAllowance
+													? '检查授权中...'
+													: poolExists
+														? '添加流动性'
+														: '创建池子并添加流动性'}
+								</button>
+							)}
 						</div>
 					</div>
 				</div>

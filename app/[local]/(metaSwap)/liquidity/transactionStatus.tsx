@@ -1,3 +1,4 @@
+'use client';
 import { useTranslations } from 'next-intl';
 import { ChevronDown, Clock, CheckCircle, AlertCircle, ArrowUpDown, Info } from 'lucide-react';
 import { formatAddress, cn } from '@/lib/utils';

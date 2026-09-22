@@ -1,3 +1,4 @@
+'use client';
 import { useTranslations } from 'next-intl';
 import { useState, useMemo, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
@@ -7,16 +8,18 @@ import type { Token, Step } from './types';
 import { useChainId, useChains } from 'wagmi';
 import { AlertCircle, Clock } from 'lucide-react';
 import { useContext } from 'react';
+import useIsMounted from '@/hooks/useIsMounted';
 import LiquidityContext from './context';
 
 interface SelectStepProps {
 	onSetStep: (step: Step) => void;
 }
 export default function SelectStep({ onSetStep }: SelectStepProps) {
+	const isMounted = useIsMounted();
 	const { setOtherValues, fee } = useContext(LiquidityContext);
 	const t = useTranslations();
 	const chainId = useChainId();
-	const selectedChainId = chainId || 11155111;
+	const selectedChainId = chainId ?? 11155111;
 	const chains = useChains();
 	const [selectedToken0Address, setSelectedToken0Address] = useState('');
 	const [token0, setToken0] = useState<Token | null>(null);
@@ -32,9 +35,10 @@ export default function SelectStep({ onSetStep }: SelectStepProps) {
 	const tokenList = Object.values(tokens);
 
 	const chainName = useMemo(() => {
+		if (!isMounted || chains.length === 0) return 'Loading...';
 		const chain = chains.find((c) => c.id === selectedChainId);
 		return chain ? chain.name : 'Unknown';
-	}, [chainId, chains]);
+	}, [isMounted, selectedChainId, chains]);
 
 	const setStep = (step: Step) => {
 		onSetStep(step);
@@ -124,7 +128,15 @@ export default function SelectStep({ onSetStep }: SelectStepProps) {
 			setIsCheckingPool(false);
 		}
 	}, [selectedToken0Address, selectedToken1Address, fetchPoolStatus, applyPoolStatus]);
-
+	if (!isMounted) {
+		return (
+			<div className="select-step-container text-blue-600">
+				<div className="mb-4 animate-pulse rounded-lg border border-border bg-(--muted-primary) p-4 text-sm">
+					加载链信息中...
+				</div>
+			</div>
+		);
+	}
 	return (
 		<div className="select-step-container text-gray-600">
 			<h3 className="mb-4">{t('swap.selectPair')}</h3>

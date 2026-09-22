@@ -16,6 +16,7 @@ import useBuildPermitCalldata from '../hooks/useBuildPermitCalldata';
 import useWriteContractEstimatedGas from '../hooks/useWriteContractEstimatedGas';
 import useWriteMulticall from '../hooks/usewriteMulticall';
 import useCreateOrAddliquidity from '../hooks/useCreateOrAddliquidity';
+import useBalanceAndAllowance from '../hooks/useBalanceAndAllowance';
 
 const WETH_ABI = [
 	{
@@ -51,6 +52,7 @@ export default function AddLiquidityStep({
 	// 使用预估汽油费写合约的hook
 	// const writeContractEstimatedGas = useWriteContractEstimatedGas();
 	const writeMetaNodeManagerMulticall = useWriteMulticall();
+	const assertBalanceAndAllowance = useBalanceAndAllowance();
 
 	const [initialPrice, setInitialPrice] = useState('');
 	const [priceError, setPriceError] = useState<any>(null);
@@ -480,69 +482,7 @@ export default function AddLiquidityStep({
 		},
 		[]
 	);
-	const assertBalanceAndAllowance = useCallback(
-		async ({
-			tokenAddress,
-			amountRequired,
-			tokenSymbol,
-			tokenDecimals,
-		}: {
-			tokenAddress: `0x${string}`;
-			amountRequired: bigint;
-			tokenSymbol: string;
-			tokenDecimals: number;
-		}) => {
-			if (!address || !publicClient || amountRequired <= 0n) return;
 
-			const bytecode = await publicClient.getBytecode({
-				address: tokenAddress,
-			});
-			if (!bytecode || bytecode === '0x') {
-				throw new Error(
-					`${tokenSymbol} 合约地址在当前网络不存在：${tokenAddress}。请确认钱包已切换到 Sepolia，且 WETH 地址配置正确。`
-				);
-			}
-
-			let balance: bigint;
-			let allowance: bigint;
-			try {
-				[balance, allowance] = await Promise.all([
-					publicClient.readContract({
-						address: tokenAddress,
-						abi: ERC20_ABI,
-						functionName: 'balanceOf',
-						args: [address],
-					}),
-					publicClient.readContract({
-						address: tokenAddress,
-						abi: ERC20_ABI,
-						functionName: 'allowance',
-						args: [address, contracts.META_NODE_MANAGER as `0x${string}`],
-					}),
-				]);
-			} catch (error) {
-				if (error instanceof BaseError) {
-					throw new Error(
-						`${tokenSymbol} 读取余额/授权失败，请确认当前网络与代币地址匹配（${tokenAddress}）。${error.shortMessage ?? ''}`.trim()
-					);
-				}
-				throw error;
-			}
-
-			if (balance < amountRequired) {
-				throw new Error(
-					`${tokenSymbol} 余额不足（需要 ${formatUnits(amountRequired, tokenDecimals)}，当前 ${formatUnits(balance, tokenDecimals)}）`
-				);
-			}
-
-			if (allowance < amountRequired) {
-				throw new Error(
-					`${tokenSymbol} 授权不足（需要 ${formatUnits(amountRequired, tokenDecimals)}，当前 ${formatUnits(allowance, tokenDecimals)}）`
-				);
-			}
-		},
-		[address, publicClient]
-	);
 	const fetchPoolStatus = useCallback(async () => {
 		if (!token0 || !token1 || !fee) return;
 		const response = await fetch('/api/pools/check', {

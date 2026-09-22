@@ -4,6 +4,24 @@ import { parseUnits } from 'viem';
 import { toChainTokenAddress } from '@/lib/utils';
 import type { Token } from '../liquidity/types';
 
+const calculateSqrtPriceX96 = (price: string): bigint => {
+	try {
+		const priceRatio = parseFloat(price);
+		if (priceRatio <= 0 || !isFinite(priceRatio)) {
+			return BigInt(0);
+		}
+
+		// sqrtPriceX96 = sqrt(price) * 2^96
+		// price = reserve1 / reserve0
+		// 使用简化的计算方式
+		const Q96 = BigInt(2) ** BigInt(96);
+		const sqrtPrice = Math.sqrt(priceRatio);
+		return BigInt(Math.floor(sqrtPrice * Number(Q96)));
+	} catch {
+		return BigInt(0);
+	}
+};
+
 export default function useCreateOrAddliquidity({
 	amount0,
 	amount1,

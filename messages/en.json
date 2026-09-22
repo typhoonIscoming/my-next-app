@@ -173,6 +173,9 @@
         "checking": "Checking",
         "poolStatus": "Pool status",
         "originalTokenDesc": "If you select native ETH, this page will first guide you to wrap the required amount into WETH, and then proceed with approval and adding liquidity.",
-        "invalidPrice": "Please enter a valid price"
+        "invalidPrice": "Please enter a valid price",
+        "max": "Max",
+        "calculating": "Calculating...",
+        "token": "Token {index}"
     }
 }

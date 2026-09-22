@@ -1,7 +1,7 @@
 export type TransactionStatus = 'pending' | 'confirmed' | 'success';
 
 export type TransactionAction =
-	'approve0' | 'approve1' | 'wrap0' | 'wrap1' | 'createPool' | 'addLiquidity';
+	'approve0' | 'approve1' | 'wrap0' | 'wrap1' | 'createPool' | 'addLiquidity' | null;
 
 export type TransactionStatusProps = {
 	status: TransactionStatus;
@@ -25,3 +25,11 @@ export interface TokenSelectorProps {
 	label: string;
 	otherToken: Token | null;
 }
+
+export type ContractWriteParams = {
+	address: `0x${string}`;
+	abi: readonly unknown[];
+	functionName: string;
+	args: readonly unknown[] | [unknown];
+	value?: bigint;
+};

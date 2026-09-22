@@ -62,7 +62,11 @@ export default function LiquidityPage() {
 					{step === 'notFound' && (
 						<NoPoolFound onSetStep={(type: Step) => setStep(type)} />
 					)}
-					{step === 'addLiquidity' && <AddLiquidityStep />}
+					{step === 'addLiquidity' && (
+						<AddLiquidityStep
+							onSetStep={(type: TransactionAction) => setTransactionAction(type)}
+						/>
+					)}
 				</div>
 			</div>
 		</LiquidityContext.Provider>

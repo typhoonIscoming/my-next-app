@@ -151,16 +151,26 @@ export default function AddLiquidityStep({
 		}
 	}, [token1, token1Balance, amount1]);
 
-	const createPoolAndAddLiquidity = useCreateOrAddliquidity({
+	const {
+		createPoolAndAddLiquidity: initCreateOrAddliquidity,
+		action,
+		transactionError: tsError,
+	} = useCreateOrAddliquidity({
 		amount0,
 		amount1,
 		token0,
 		token1,
-		selectedFee: fee,
+		selectedFee: fee as number,
 		initialPrice,
 		token0SupportsPermit,
 		token1SupportsPermit,
+		chainId,
+		enablePermitLiquidity: ENABLE_PERMIT_LIQUIDITY,
 	});
+
+	const createPoolAndAddLiquidity = async () => {
+		const result = await initCreateOrAddliquidity();
+	};
 
 	const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const value = parseInputAmount(e.target.value);

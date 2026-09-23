@@ -6,6 +6,7 @@ interface LiquidityContextType {
 	poolExists: boolean;
 	isCheckingPool: boolean;
 	currentPool: string | null;
+	poolIndex: number | null;
 
 	fee: number | null;
 	token0: Token | null;
@@ -18,6 +19,7 @@ export const initialLiquidity = {
 	poolExists: false,
 	isCheckingPool: false,
 	currentPool: null,
+	poolIndex: null,
 
 	fee: null,
 	token0: null,

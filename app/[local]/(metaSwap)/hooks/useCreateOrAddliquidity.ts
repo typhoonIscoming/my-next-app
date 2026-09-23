@@ -1,9 +1,9 @@
 import { useCallback, useState } from 'react';
 import { useAccount } from 'wagmi';
 import { parseUnits, encodeFunctionData } from 'viem';
-import { toChainTokenAddress, isNativeTokenAddress, contracts } from '@/lib/utils';
+import { toChainTokenAddress, isNativeTokenAddress, contracts, getErrorMessage } from '@/lib/utils';
 import { contractConfig } from '@/lib/metaAbi';
-import type { Token } from '../liquidity/types';
+import type { Token, TransactionAction } from '../liquidity/types';
 import useBalanceAndAllowance from './useBalanceAndAllowance';
 import useBuildPermitCalldata from './useBuildPermitCalldata';
 import useWriteMulticall from './usewriteMulticall';
@@ -53,8 +53,10 @@ export default function useCreateOrAddliquidity({
 	const assertBalanceAndAllowance = useBalanceAndAllowance();
 	const buildPermitCalldata = useBuildPermitCalldata({ chainId });
 	const [transactionError, setTransactionError] = useState<string | null>(null);
-	const [action, setTransactionAction] = useState<string | null>(null);
+	const [action, setTransactionAction] = useState<TransactionAction | null>(null);
+	const [priceError, setPriceError] = useState<string | null>(null);
 	const writeMetaNodeManagerMulticall = useWriteMulticall();
+
 	const createPoolAndAddLiquidity = useCallback(async () => {
 		if (!address || !amount0 || !amount1 || !token0 || !token1) return;
 		try {
@@ -105,7 +107,8 @@ export default function useCreateOrAddliquidity({
 			});
 			const priceRatio = parseFloat(initialPrice);
 			if (priceRatio <= 0 || !isFinite(priceRatio)) {
-				return new Error('请输入有效的价格比率');
+				setPriceError('请输入有效的价格比率');
+				return;
 			}
 			const actualPrice =
 				BigInt(actualToken0Address) < BigInt(actualToken1Address)
@@ -114,8 +117,10 @@ export default function useCreateOrAddliquidity({
 
 			const sqrtPriceX96 = calculateSqrtPriceX96(actualPrice.toString());
 			if (sqrtPriceX96 === BigInt(0)) {
-				return new Error('价格计算失败，请检查输入');
+				setPriceError('价格计算失败，请检查输入');
+				return;
 			}
+			setPriceError(null);
 
 			const deadline = BigInt(Math.floor(Date.now() / 1000) + 1200);
 			const multicallData: `0x${string}`[] = [];
@@ -185,8 +190,9 @@ export default function useCreateOrAddliquidity({
 				args: [multicallData],
 			});
 		} catch (error) {
-			console.error(error);
-			return new Error(error as string);
+			setTransactionAction(null);
+			setPriceError(getErrorMessage(error));
+			return;
 		}
 	}, [
 		address,
@@ -203,6 +209,7 @@ export default function useCreateOrAddliquidity({
 	return {
 		createPoolAndAddLiquidity,
 		action,
+		priceError,
 		transactionError,
 	};
 }

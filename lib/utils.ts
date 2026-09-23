@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { type Address } from 'viem';
+import { BaseError } from 'viem';
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -170,3 +171,15 @@ export function getTokenByAddress(address?: string | null) {
 }
 
 export const GAS_LIMIT_CAP = 16_000_000n;
+
+export const getErrorMessage = (error: unknown) => {
+	if (error instanceof BaseError) {
+		return error.shortMessage || error.message;
+	}
+
+	if (error instanceof Error) {
+		return error.message;
+	}
+
+	return '交易提交失败';
+};

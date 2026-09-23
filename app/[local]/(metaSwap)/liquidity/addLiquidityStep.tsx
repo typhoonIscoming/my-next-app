@@ -6,7 +6,13 @@ import { parseUnits, BaseError, formatUnits, encodeFunctionData } from 'viem';
 import { useBalance, useAccount, usePublicClient, useWriteContract } from 'wagmi';
 import { useWaitForTransactionReceipt } from 'wagmi';
 import LiquidityContext from './context';
-import { formatAddress, feeTiers, isNativeTokenAddress, parseInputAmount } from '@/lib/utils';
+import {
+	formatAddress,
+	feeTiers,
+	isNativeTokenAddress,
+	parseInputAmount,
+	getErrorMessage,
+} from '@/lib/utils';
 import { toChainTokenAddress, formatNumber, contracts, GAS_LIMIT_CAP } from '@/lib/utils';
 import { Info, AlertCircle, Clock } from 'lucide-react';
 import type { Token, ContractWriteParams, Step, TransactionAction } from './types';
@@ -17,6 +23,7 @@ import useWriteContractEstimatedGas from '../hooks/useWriteContractEstimatedGas'
 import useWriteMulticall from '../hooks/usewriteMulticall';
 import useCreateOrAddliquidity from '../hooks/useCreateOrAddliquidity';
 import useBalanceAndAllowance from '../hooks/useBalanceAndAllowance';
+import useCalculateAmount from '../hooks/useCalculateAmount';
 
 const WETH_ABI = [
 	{
@@ -59,7 +66,6 @@ export default function AddLiquidityStep({
 	const [transactionError, setTransactionError] = useState<string | null>(null);
 	const [amount0, setAmount0] = useState('');
 	const [amount1, setAmount1] = useState('');
-	const [isCalculating, setIsCalculating] = useState(false);
 	// token0是否需要授权
 	const [needsApproval0, setNeedsApproval0] = useState(false);
 	// token1是否需要授权
@@ -97,6 +103,29 @@ export default function AddLiquidityStep({
 			enabled: Boolean(address && isConnected),
 		},
 	});
+	// calculateAmount计算对应数量
+	const {
+		priceError: calculatePriceError,
+		calculateAmount,
+		amount0: calculatedAmount0,
+		amount1: calculatedAmount1,
+		isCalculating,
+	} = useCalculateAmount({
+		poolExists: Boolean(poolIndex !== null),
+		currentPool: poolIndex !== null ? poolIndex.toString() : null,
+		token0,
+		token1,
+		initialPrice,
+	});
+	useEffect(() => {
+		setAmount0(calculatedAmount0);
+		setAmount1(calculatedAmount1);
+		setPriceError(calculatePriceError);
+	}, [calculatedAmount0, calculatedAmount1, calculatePriceError]);
+
+	const setTransactionAction = (action: TransactionAction) => {
+		onSetStep(action);
+	};
 
 	const token0SupportsPermit = Boolean(
 		token0 &&
@@ -155,6 +184,7 @@ export default function AddLiquidityStep({
 		createPoolAndAddLiquidity: initCreateOrAddliquidity,
 		action,
 		transactionError: tsError,
+		priceError: hookPriceError,
 	} = useCreateOrAddliquidity({
 		amount0,
 		amount1,
@@ -167,6 +197,12 @@ export default function AddLiquidityStep({
 		chainId,
 		enablePermitLiquidity: ENABLE_PERMIT_LIQUIDITY,
 	});
+
+	useEffect(() => {
+		setTransactionError(tsError);
+		setTransactionAction(action);
+		setPriceError(hookPriceError);
+	}, [tsError, action, hookPriceError]);
 
 	const createPoolAndAddLiquidity = async () => {
 		const result = await initCreateOrAddliquidity();
@@ -189,120 +225,6 @@ export default function AddLiquidityStep({
 		return token.symbol;
 	}, []);
 
-	// 计算对应数量
-	const calculateAmount = useCallback(
-		async (inputToken: 'token0' | 'token1', amount: string) => {
-			if (!amount || parseFloat(amount) === 0) {
-				if (inputToken === 'token0') {
-					setAmount1('');
-				} else {
-					setAmount0('');
-				}
-				setPriceError(null);
-				return;
-			}
-
-			setIsCalculating(true);
-			setPriceError(null);
-
-			try {
-				if (poolExists && currentPool && token0 && token1) {
-					// 如果池子存在，使用池子价格计算
-					const response = await fetch('/api/pools/price', {
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json',
-						},
-						body: JSON.stringify({
-							poolAddress: currentPool,
-							inputToken: inputToken === 'token0' ? token0.address : token1.address,
-							inputAmount: amount,
-						}),
-					});
-
-					const data = await response.json();
-
-					if (!response.ok || !data.success) {
-						const errorMsg = data.msg || data.error || '计算价格失败';
-						setPriceError(errorMsg);
-						// 如果计算失败，清空对应的输出金额
-						if (inputToken === 'token0') {
-							setAmount1('');
-						} else {
-							setAmount0('');
-						}
-						return;
-					}
-
-					// 成功计算
-					if (inputToken === 'token0') {
-						setAmount1(data.outputAmount);
-					} else {
-						setAmount0(data.outputAmount);
-					}
-					setPriceError(null);
-				} else {
-					// 如果池子不存在，使用初始价格比率计算
-					const priceRatio = parseFloat(initialPrice);
-					if (priceRatio > 0 && isFinite(priceRatio)) {
-						try {
-							if (inputToken === 'token0') {
-								const calculated = parseFloat(amount) * priceRatio;
-								setAmount1(isNaN(calculated) ? '' : calculated.toString());
-							} else {
-								const calculated = parseFloat(amount) / priceRatio;
-								setAmount0(isNaN(calculated) ? '' : calculated.toString());
-							}
-							setPriceError(null);
-						} catch (calcError) {
-							console.error('价格计算错误:', calcError);
-							setPriceError('价格计算失败，请检查输入');
-							if (inputToken === 'token0') {
-								setAmount1('');
-							} else {
-								setAmount0('');
-							}
-						}
-					} else {
-						// 默认 1:1
-						if (inputToken === 'token0') {
-							setAmount1(amount);
-						} else {
-							setAmount0(amount);
-						}
-						setPriceError(null);
-					}
-				}
-			} catch (error) {
-				console.error('计算数量失败:', error);
-				const errorMsg = error instanceof Error ? error.message : '计算价格失败';
-				setPriceError(errorMsg);
-				// 清空对应的输出金额
-				if (inputToken === 'token0') {
-					setAmount1('');
-				} else {
-					setAmount0('');
-				}
-			} finally {
-				setIsCalculating(false);
-			}
-		},
-		[poolExists, currentPool, token0, token1, initialPrice]
-	);
-	const getErrorMessage = useCallback((error: unknown) => {
-		if (error instanceof BaseError) {
-			return error.shortMessage || error.message;
-		}
-
-		if (error instanceof Error) {
-			return error.message;
-		}
-
-		return '交易提交失败';
-	}, []);
-	const setTransactionAction = (action: TransactionAction) => {
-		onSetStep(action);
-	};
 	// 获取预估Gas费
 	const writeContractWithEstimatedGas = useCallback(
 		async ({

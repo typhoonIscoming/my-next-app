@@ -68,15 +68,15 @@ export default function SelectStep({ onSetStep }: SelectStepProps) {
 	const applyPoolStatus = useCallback(
 		(response: { exists: boolean; poolAddress?: string; poolIndex?: number }) => {
 			if (response.exists) {
-				setPoolExists(true);
-				setCurrentPool(response.poolAddress || null);
-				setPoolIndex(response.poolIndex ?? null);
+				setOtherValues({
+					poolExists: true,
+					currentPool: response.poolAddress || null,
+					poolIndex: response.poolIndex ?? null,
+				});
 				return;
 			}
 
-			setPoolExists(false);
-			setCurrentPool(null);
-			setPoolIndex(null);
+			setOtherValues({ poolExists: false, currentPool: null, poolIndex: null });
 		},
 		[]
 	);
@@ -104,13 +104,9 @@ export default function SelectStep({ onSetStep }: SelectStepProps) {
 			setStep(response.exists ? 'found' : 'notFound');
 			setOtherValues({ poolExists: response.exists });
 		} catch (error) {
-			console.error('搜索池子失败:', error);
 			setSearchError(error instanceof Error ? error.message : '搜索池子失败');
-			setPoolExists(false);
-			setCurrentPool(null);
-			setPoolIndex(null);
+			setOtherValues({ poolExists: false, currentPool: null, poolIndex: null });
 			setStep('notFound');
-			setOtherValues({ poolExists: false });
 		} finally {
 			setIsCheckingPool(false);
 		}

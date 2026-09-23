@@ -8,6 +8,7 @@ import SelectStep, { SearchingPool, NoPoolFound } from './selectStep';
 import type { TransactionAction, Step } from './types';
 import LiquidityContext, { initialLiquidity } from './context';
 import AddLiquidityStep from './addLiquidityStep';
+import FoundPair from './foundPair';
 
 export default function LiquidityPage() {
 	// 步骤状态
@@ -59,6 +60,7 @@ export default function LiquidityPage() {
 					)}
 					{step === 'select' && <SelectStep onSetStep={(type: Step) => setStep(type)} />}
 					{step === 'searching' && <SearchingPool />}
+					{step === 'found' && <FoundPair onSetStep={(type: Step) => setStep(type)} />}
 					{step === 'notFound' && (
 						<NoPoolFound onSetStep={(type: Step) => setStep(type)} />
 					)}

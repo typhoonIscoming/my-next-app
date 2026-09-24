@@ -52,11 +52,7 @@ export default function LiquidityPage() {
 						)}
 					</div>
 					{step === 'addLiquidity' && (
-						<TransactionStatus
-							status="pending"
-							action={transactionAction}
-							hash="0x1234567890abcdef"
-						/>
+						<TransactionStatus status="pending" action={transactionAction} />
 					)}
 					{step === 'select' && <SelectStep onSetStep={(type: Step) => setStep(type)} />}
 					{step === 'searching' && <SearchingPool />}

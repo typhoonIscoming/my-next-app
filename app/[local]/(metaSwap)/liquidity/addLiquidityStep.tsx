@@ -1,6 +1,6 @@
 'use client';
 import { cn, tokens } from '@/lib/utils';
-import { useContext, useState, useCallback, useMemo, useEffect } from 'react';
+import { useContext, useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { parseUnits, BaseError, formatUnits, encodeFunctionData } from 'viem';
 import { useBalance, useAccount, usePublicClient, useWriteContract } from 'wagmi';
@@ -75,6 +75,7 @@ export default function AddLiquidityStep({
 	const [permitSupportMap, setPermitSupportMap] = useState<Record<string, boolean>>({});
 
 	const [poolIndex, setPoolIndex] = useState<number | null>(null);
+	const calculateAmountTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	const { writeContract, data: hash, isPending } = useWriteContract();
 	const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
@@ -107,21 +108,23 @@ export default function AddLiquidityStep({
 	const {
 		priceError: calculatePriceError,
 		calculateAmount,
-		amount0: calculatedAmount0,
 		amount1: calculatedAmount1,
 		isCalculating,
 	} = useCalculateAmount({
-		poolExists: Boolean(poolIndex !== null),
-		currentPool: poolIndex !== null ? poolIndex.toString() : null,
+		poolExists: poolExists,
+		currentPool: currentPool,
 		token0,
 		token1,
 		initialPrice,
 	});
 	useEffect(() => {
-		setAmount0(calculatedAmount0);
-		setAmount1(calculatedAmount1);
+		if (calculatedAmount1 !== '') {
+			setAmount1(calculatedAmount1);
+		} else if (amount1 !== '') {
+			setAmount1('');
+		}
 		setPriceError(calculatePriceError);
-	}, [calculatedAmount0, calculatedAmount1, calculatePriceError]);
+	}, [calculatedAmount1, calculatePriceError]);
 
 	const setTransactionAction = (action: TransactionAction) => {
 		onSetStep(action);
@@ -320,10 +323,30 @@ export default function AddLiquidityStep({
 		[address, token0?.address, writeContractWithEstimatedGas, getErrorMessage]
 	);
 
+	useEffect(() => {
+		return () => {
+			if (calculateAmountTimerRef.current) {
+				clearTimeout(calculateAmountTimerRef.current);
+			}
+		};
+	}, []);
+
 	const handleAmount0Change = (value: string) => {
 		const parsed = parseInputAmount(value);
 		setAmount0(parsed);
-		calculateAmount('token0', parsed);
+		if (calculateAmountTimerRef.current) {
+			clearTimeout(calculateAmountTimerRef.current);
+		}
+
+		if (!parsed || parsed === '.' || !/^\d*\.?\d+$/.test(parsed)) {
+			setAmount1('');
+			setPriceError(null);
+			return;
+		}
+
+		calculateAmountTimerRef.current = setTimeout(() => {
+			calculateAmount('token0', parsed);
+		}, 250);
 	};
 
 	const handleMaxAmount0 = () => {
@@ -365,7 +388,7 @@ export default function AddLiquidityStep({
 					spender: contracts.META_NODE_MANAGER,
 				}),
 			}).then((res) => res.json());
-
+			console.log('allowance0Response', allowance0Response);
 			const allowance1Response = await fetch('/api/allowance', {
 				method: 'POST',
 				headers: {
@@ -377,19 +400,24 @@ export default function AddLiquidityStep({
 					spender: contracts.META_NODE_MANAGER,
 				}),
 			}).then((res) => res.json());
-
+			console.log('allowance1Response', allowance1Response);
 			if (allowance0Response.success && allowance1Response.success) {
 				const amountWei0 = parseUnits(amount0, token0.decimals);
 				const amountWei1 = parseUnits(amount1, token1.decimals);
 				const canSkipApprove0 = ENABLE_PERMIT_LIQUIDITY && token0SupportsPermit;
 				const canSkipApprove1 = ENABLE_PERMIT_LIQUIDITY && token1SupportsPermit;
-
-				setNeedsApproval0(
-					!canSkipApprove0 && BigInt(allowance0Response.allowance) < amountWei0
+				const allowance0 = BigInt(allowance0Response.allowance);
+				const allowance1 = BigInt(allowance1Response.allowance);
+				console.log(
+					'allowance0',
+					canSkipApprove0,
+					allowance0,
+					'allowance1',
+					canSkipApprove1,
+					allowance1
 				);
-				setNeedsApproval1(
-					!canSkipApprove1 && BigInt(allowance1Response.allowance) < amountWei1
-				);
+				setNeedsApproval0(!canSkipApprove0 && allowance0 < amountWei0);
+				setNeedsApproval1(!canSkipApprove1 && allowance1 < amountWei1);
 			}
 		} catch (error) {
 			console.error('检查授权失败:', error);

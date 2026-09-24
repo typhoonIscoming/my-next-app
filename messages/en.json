@@ -176,6 +176,7 @@
         "invalidPrice": "Please enter a valid price",
         "max": "Max",
         "calculating": "Calculating...",
-        "token": "Token {index}"
+        "token": "Token {index}",
+        "selectFee": "Please select a fee tier"
     }
 }

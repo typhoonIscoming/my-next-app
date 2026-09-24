@@ -47,7 +47,7 @@ export const positionsAddress = process.env.NEXT_PUBLIC_POSITION_MANAGER_ADDRESS
 // swap合约地址
 export const swapAddress = process.env.NEXT_PUBLIC_SWAP_ROUTER_ADDRESS as `0x${string}`;
 
-export const formatAddress = (address?: string) => {
+export const formatAddress = (address: string | null) => {
 	if (!address) return 'UNKNOWN';
 	return `${address.slice(0, 4)}...${address.slice(-4)}`;
 };

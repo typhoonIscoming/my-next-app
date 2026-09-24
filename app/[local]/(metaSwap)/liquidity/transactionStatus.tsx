@@ -1,23 +1,24 @@
 'use client';
+import { useContext } from 'react';
 import { useTranslations } from 'next-intl';
-import { ChevronDown, Clock, CheckCircle, AlertCircle, ArrowUpDown, Info } from 'lucide-react';
+import { Clock, CheckCircle } from 'lucide-react';
 import { formatAddress, cn } from '@/lib/utils';
 import { useAccount } from 'wagmi';
 import useIsMobile from '@/hooks/useIsMobile';
 import { type TransactionStatusProps } from './types';
+import liquidityContext from './context';
 
 export default function TransactionStatus({
 	status,
 	action,
-	hash,
 }: {
 	status: TransactionStatusProps['status'];
 	action: TransactionStatusProps['action'] | null;
-	hash: TransactionStatusProps['hash'];
 }) {
 	const t = useTranslations();
 	const { address, isConnected } = useAccount();
 	const isMobile = useIsMobile();
+	const { hash } = useContext(liquidityContext);
 	const isPending = status === 'pending';
 	const isConfirmed = status === 'confirmed';
 	const isSuccess = status === 'success';

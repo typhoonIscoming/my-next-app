@@ -1,5 +1,10 @@
 import { useState, useCallback } from 'react';
 
+const isValidNumericInput = (value: string) => {
+	if (!value || value === '.') return false;
+	return /^\d*\.?\d+$/.test(value);
+};
+
 export default function useCalculateAmount({
 	poolExists,
 	currentPool,
@@ -20,7 +25,17 @@ export default function useCalculateAmount({
 
 	const calculateAmount = useCallback(
 		async (inputToken: 'token0' | 'token1', amount: string) => {
-			if (!amount || parseFloat(amount) === 0) {
+			if (!isValidNumericInput(amount) || Number(amount) < 0) {
+				if (inputToken === 'token0') {
+					setAmount1('');
+				} else {
+					setAmount0('');
+				}
+				setPriceError(null);
+				return;
+			}
+
+			if (parseFloat(amount) === 0) {
 				if (inputToken === 'token0') {
 					setAmount1('');
 				} else {
@@ -91,13 +106,13 @@ export default function useCalculateAmount({
 							}
 						}
 					} else {
-						// 默认 1:1
+						// 没有有效初始价格时，不直接复制输入值，避免 token1 和 token0 一样
 						if (inputToken === 'token0') {
-							setAmount1(amount);
+							setAmount1('');
 						} else {
-							setAmount0(amount);
+							setAmount0('');
 						}
-						setPriceError(null);
+						setPriceError('请先填写有效的初始价格');
 					}
 				}
 			} catch (error) {

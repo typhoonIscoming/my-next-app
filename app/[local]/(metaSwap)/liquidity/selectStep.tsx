@@ -89,6 +89,10 @@ export default function SelectStep({ onSetStep }: SelectStepProps) {
 			setSearchError(t('swap.selectTwoAddress', { type: t('swap.different') }));
 			return;
 		}
+		if (!fee) {
+			setSearchError(t('swap.selectFee'));
+			return;
+		}
 
 		setStep('searching');
 		setIsCheckingPool(true);
@@ -99,7 +103,6 @@ export default function SelectStep({ onSetStep }: SelectStepProps) {
 			applyPoolStatus(response);
 			console.log('Pool status response:', response);
 			setStep(response.exists ? 'found' : 'notFound');
-			setOtherValues({ poolExists: response.exists });
 		} catch (error) {
 			setSearchError(error instanceof Error ? error.message : '搜索池子失败');
 			setOtherValues({ poolExists: false, currentPool: null, poolIndex: null });
@@ -107,7 +110,7 @@ export default function SelectStep({ onSetStep }: SelectStepProps) {
 		} finally {
 			setIsCheckingPool(false);
 		}
-	}, [selectedToken0Address, selectedToken1Address, fetchPoolStatus, applyPoolStatus]);
+	}, [selectedToken0Address, selectedToken1Address, fee, fetchPoolStatus, applyPoolStatus]);
 
 	const refreshPoolStatus = useCallback(async () => {
 		if (!selectedToken0Address || !selectedToken1Address) return;
@@ -245,10 +248,12 @@ export default function SelectStep({ onSetStep }: SelectStepProps) {
 			)}
 			<button
 				onClick={searchPool}
-				disabled={!selectedToken0Address || !selectedToken1Address || isCheckingPool}
+				disabled={
+					!selectedToken0Address || !selectedToken1Address || !fee || isCheckingPool
+				}
 				className={cn(
 					'w-full py-4 cursor-pointer rounded-lg font-medium text-lg transition-colors',
-					!selectedToken0Address || !selectedToken1Address || isCheckingPool
+					!selectedToken0Address || !selectedToken1Address || !fee || isCheckingPool
 						? 'bg-muted text-muted-foreground cursor-not-allowed'
 						: 'bg-primary hover:bg-primary/90 text-primary-foreground'
 				)}

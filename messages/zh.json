@@ -176,6 +176,7 @@
         "invalidPrice": "请输入有效的价格",
         "max": "最大",
         "calculating": "计算中...",
-        "token": "代币{index}"
+        "token": "代币{index}",
+        "selectFee": "请选择费率"
 	}
 }

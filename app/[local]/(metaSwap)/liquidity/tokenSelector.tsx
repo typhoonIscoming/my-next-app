@@ -7,6 +7,7 @@ import { styled } from '@mui/material/styles';
 const StyledButton = styled(Button)({
 	minWidth: 'auto',
 	paddingRight: 0,
+	paddingLeft: 0,
 });
 
 import type { TokenSelectorProps } from './types';

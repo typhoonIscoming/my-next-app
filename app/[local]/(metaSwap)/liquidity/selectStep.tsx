@@ -1,6 +1,6 @@
 'use client';
 import { useTranslations } from 'next-intl';
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import TokenSelector from './tokenSelector';
 import { tokens, feeTiers, cn } from '@/lib/utils';
@@ -27,19 +27,17 @@ export default function SelectStep({ onSetStep }: SelectStepProps) {
 	const [token1, setToken1] = useState<Token | null>(null);
 	const [searchError, setSearchError] = useState<string | null>(null);
 	const [isCheckingPool, setIsCheckingPool] = useState(false);
-	const [transactionError, setTransactionError] = useState<string | null>(null);
-	const [poolExists, setPoolExists] = useState(false);
-	const [currentPool, setCurrentPool] = useState<string | null>(null);
-	const [poolIndex, setPoolIndex] = useState<number | null>(null);
 
 	const tokenList = Object.values(tokens);
 
 	const chainName = useMemo(() => {
 		if (!isMounted || chains.length === 0) return 'Loading...';
 		const chain = chains.find((c) => c.id === selectedChainId);
-		setOtherValues({ chainId: selectedChainId });
 		return chain ? chain.name : 'Unknown';
 	}, [isMounted, selectedChainId, chains]);
+	useEffect(() => {
+		setOtherValues({ chainId: selectedChainId });
+	}, [selectedChainId]);
 
 	const setStep = (step: Step) => {
 		onSetStep(step);
@@ -95,7 +93,6 @@ export default function SelectStep({ onSetStep }: SelectStepProps) {
 		setStep('searching');
 		setIsCheckingPool(true);
 		setSearchError(null);
-		setTransactionError(null);
 
 		try {
 			const response = await fetchPoolStatus();

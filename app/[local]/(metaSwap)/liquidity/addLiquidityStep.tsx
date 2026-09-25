@@ -49,6 +49,7 @@ export default function AddLiquidityStep({
 		poolExists,
 		isCheckingPool,
 		currentPool,
+		poolIndex,
 		fee,
 		token0,
 		token1,
@@ -74,7 +75,6 @@ export default function AddLiquidityStep({
 	const [isCheckingAllowance, setIsCheckingAllowance] = useState(false);
 	const [permitSupportMap, setPermitSupportMap] = useState<Record<string, boolean>>({});
 
-	const [poolIndex, setPoolIndex] = useState<number | null>(null);
 	const calculateAmountTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	const { writeContract, data: hash, isPending } = useWriteContract();
@@ -432,13 +432,15 @@ export default function AddLiquidityStep({
 	const applyPoolStatus = useCallback(
 		(response: { exists: boolean; poolAddress?: string; poolIndex?: number }) => {
 			if (response.exists) {
-				setOtherValues({ poolExists: true, currentPool: response.poolAddress || null });
-				setPoolIndex(response.poolIndex ?? null);
+				setOtherValues({
+					poolIndex: response.poolIndex,
+					poolExists: true,
+					currentPool: response.poolAddress || null,
+				});
 				return;
 			}
 
-			setOtherValues({ poolExists: false, currentPool: null });
-			setPoolIndex(null);
+			setOtherValues({ poolIndex: null, poolExists: false, currentPool: null });
 		},
 		[]
 	);
@@ -465,6 +467,16 @@ export default function AddLiquidityStep({
 	}, [token0, token1, fee]);
 	// 添加流动性到已存在的池子
 	const addLiquidity = useCallback(async () => {
+		console.log(
+			'addLiquidity',
+			address,
+			amount0,
+			amount1,
+			token0,
+			token1,
+			currentPool,
+			poolIndex
+		);
 		if (
 			!address ||
 			!amount0 ||
@@ -613,7 +625,7 @@ export default function AddLiquidityStep({
 		buildPermitCalldata,
 		assertBalanceAndAllowance,
 	]);
-
+	console.log('needsApproval0', needsApproval0, 'needsApproval1', needsApproval1);
 	useEffect(() => {
 		checkAllowance();
 	}, [amount0, amount1, token0, token1, address, checkAllowance]);

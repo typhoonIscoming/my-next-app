@@ -16,6 +16,7 @@ export type Token = {
 	symbol: string;
 	name: string;
 	decimals: number;
+	supportsPermit?: boolean;
 };
 
 export interface TokenSelectorProps {

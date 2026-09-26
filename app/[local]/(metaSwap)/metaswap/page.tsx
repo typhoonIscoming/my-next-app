@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useMemo } from 'react';
 import { cn, formatNumber, toChainTokenAddress } from '@/lib/utils';
 import { notFound } from 'next/navigation';
 import { ChevronDown, Settings } from 'lucide-react';
@@ -7,11 +7,32 @@ import { useTranslations } from 'next-intl';
 import { useAccount, useBalance } from 'wagmi';
 import { formatAddress, tokens } from '@/lib/utils';
 import type { Token } from '../liquidity/types';
+import TokenSelector from '../liquidity/tokenSelector';
+import useGetTokenOptions from './hooks/useGetTokenOptions';
 
+const ETH_TOKEN: Token = {
+	address: tokens.ETH.address,
+	symbol: tokens.ETH.symbol,
+	name: tokens.ETH.name,
+	decimals: tokens.ETH.decimals,
+	supportsPermit: false,
+};
 const ETH_ADDRESS_LOWER = tokens.ETH.address.toLowerCase();
 const WETH_ADDRESS_LOWER = (tokens.ETH.wrappedAddress as string).toLowerCase();
 const LEGACY_WETH_ADDRESS_LOWER = '0xfff9976782d46cc05630d1f6ebab18b2324d6b14';
 const WRAPPED_ETH_ALIASES = new Set<string>([WETH_ADDRESS_LOWER, LEGACY_WETH_ADDRESS_LOWER]);
+const FALLBACK_TOKEN_LIST: Token[] = [
+	ETH_TOKEN,
+	...Object.values(tokens)
+		.filter((token) => !('isNative' in token && token.isNative))
+		.map((token) => ({
+			address: token.address,
+			symbol: token.symbol,
+			name: token.name,
+			decimals: token.decimals,
+			supportsPermit: false,
+		})),
+];
 
 export default function MetaSwapPage() {
 	const { address, isConnected } = useAccount();
@@ -26,6 +47,10 @@ export default function MetaSwapPage() {
 	const [showSettings, setShowSettings] = useState(false);
 	const [slippage, setSlippage] = useState(0.5);
 	const [fromToken, setFromToken] = useState<Token | null>(null);
+	const [fromAmount, setFromAmount] = useState('');
+	const [toToken, setToToken] = useState<Token>(FALLBACK_TOKEN_LIST[1] ?? FALLBACK_TOKEN_LIST[0]);
+
+	const { fromTokenOptions } = useGetTokenOptions(toToken);
 
 	const isEthLikeAddress = useCallback((tokenAddress: string) => {
 		const normalized = tokenAddress.toLowerCase();
@@ -49,6 +74,10 @@ export default function MetaSwapPage() {
 
 	const displayedFromBalance =
 		!fromToken || isEthLikeAddress(fromToken.address) ? nativeBalance : fromTokenBalance;
+
+	const handleFromAmountChange = useCallback((value: string) => {
+		setFromAmount(value);
+	}, []);
 
 	return (
 		<div className="min-h-[150vh]">
@@ -112,6 +141,22 @@ export default function MetaSwapPage() {
 									</button>
 								)}
 						</div>
+					</div>
+					<div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+						<input
+							type="text"
+							value={fromAmount}
+							onChange={(e) => handleFromAmountChange(e.target.value)}
+							placeholder="0"
+							className="text-2xl font-medium bg-transparent outline-none flex-1 text-foreground placeholder:text-muted-foreground"
+						/>
+						<TokenSelector
+							selectedToken={fromToken}
+							onSelect={setFromToken}
+							label="选择代币"
+							tokenList={fromTokenOptions}
+							otherToken={null}
+						/>
 					</div>
 				</div>
 			</div>

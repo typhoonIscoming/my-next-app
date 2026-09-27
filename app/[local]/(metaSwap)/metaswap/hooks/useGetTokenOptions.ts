@@ -29,7 +29,13 @@ const FALLBACK_TOKEN_LIST: Token[] = [
 		})),
 ];
 
-export default function useGetTokenOptions(toToken: Token) {
+export default function useGetTokenOptions({
+	toToken,
+	fromToken,
+}: {
+	toToken: Token;
+	fromToken: Token;
+}) {
 	const { pools } = usePools();
 	const [tokenList, setTokenList] = useState<Token[]>(FALLBACK_TOKEN_LIST);
 	const poolAdjacency = useMemo(() => {
@@ -96,5 +102,10 @@ export default function useGetTokenOptions(toToken: Token) {
 	const fromTokenOptions = useMemo(() => {
 		return getLinkedTokenOptions(toToken.address, toToken.address);
 	}, [toToken, getLinkedTokenOptions]);
-	return { fromTokenOptions };
+
+	const toTokenOptions = useMemo(() => {
+		return getLinkedTokenOptions(fromToken.address, fromToken.address);
+	}, [fromToken.address, getLinkedTokenOptions]);
+
+	return { fromTokenOptions, toTokenOptions };
 }

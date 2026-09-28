@@ -2,7 +2,7 @@
 import { useCallback, useState, useMemo, useRef, useEffect } from 'react';
 import { cn, formatNumber, toChainTokenAddress } from '@/lib/utils';
 import { notFound } from 'next/navigation';
-import { ArrowUpDown, Settings, Clock } from 'lucide-react';
+import { ArrowUpDown, Settings, Clock, CheckCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAccount, useBalance } from 'wagmi';
 import { parseUnits } from 'viem';
@@ -284,6 +284,38 @@ export default function MetaSwapPage() {
 		slippage,
 		primaryPoolIndex,
 	]);
+
+	// 交易状态显示
+	const TransactionStatus = () => {
+		if (!hash) return null;
+
+		return (
+			<div className="mb-6 p-4 bg-primary/10 border border-primary/20 rounded-lg">
+				<div className="flex items-center space-x-2">
+					{isPending && (
+						<>
+							<Clock className="w-5 h-5 text-primary animate-spin" />
+							<span className="text-primary">等待钱包确认...</span>
+						</>
+					)}
+					{isConfirming && (
+						<>
+							<Clock className="w-5 h-5 text-primary animate-spin" />
+							<span className="text-primary">交易确认中...</span>
+						</>
+					)}
+					{isConfirmed && (
+						<>
+							<CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+							<span className="text-green-700 dark:text-green-300">交易成功！</span>
+						</>
+					)}
+				</div>
+				<div className="mt-2 text-sm text-primary">交易哈希: {formatAddress(hash)}</div>
+			</div>
+		);
+	};
+
 	return (
 		<div className="min-h-[150vh]">
 			<div className="bg-white m-auto max-w-150 rounded-2xl shadow-lg p-4">
@@ -296,6 +328,7 @@ export default function MetaSwapPage() {
 						<Settings className="w-5 h-5 text-muted-foreground" />
 					</button>
 				</div>
+				<TransactionStatus />
 				{isConnected && address && (
 					<div className="mb-4 p-3 bg-primary/10 rounded-lg">
 						<div className="text-sm text-primary">已连接: {formatAddress(address)}</div>

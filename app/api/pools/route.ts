@@ -1,8 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { connection } from 'next/server';
 
 export async function GET(request: NextRequest) {
 	try {
+		// API Error: Error: Route /api/pools needs to bail out of prerendering at this point because it used nextUrl.searchParams.
+		// at GET (app/api/pools/route.ts:6:11)
+		// 这个报错在 Next.js 的 Route Handler 中通常不是真正的“错误”，而是 Next.js
+		// 在构建时尝试预渲染你的 API 路由，发现你读取了 nextUrl.searchParams（动态请求数据），于是主动中断预渲染的“信号”
+		// 在 Next.js 16（开启 Cache Components / PPR）下，GET 路由处理器在构建时会被“探测”是否可静态化。
+		// 当你访问 request.nextUrl.searchParams 或 request.url 时，Next.js 会抛出这个特殊的中断信号，表示该路由必须动态渲染
+		// 推荐：在 GET 函数顶部加入 await connection()
+		// 这是最干净的修复方式，明确告诉 Next.js 不要尝试预渲染这个路由，直接走动态渲染。
+		await connection(); // Ensure dynamic rendering and bail out of prerendering
+
 		const { searchParams } = request.nextUrl;
 		const limit = parseInt(searchParams.get('limit') || '10');
 		const page = parseInt(searchParams.get('page') || '1');

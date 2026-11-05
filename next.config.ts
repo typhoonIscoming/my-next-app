@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
 	// ⚠️ 关键配置：开启 cacheComponents 以使用 'use cache' 指令
 	// 注意：在 Next.js 16 最新版本中，dynamicIO 已被此选项取代
 	cacheComponents: true,
+	experimental: {
+		hideLogsAfterAbort: true,
+	},
 	turbopack: {
 		rules: {
 			'*.svg': {

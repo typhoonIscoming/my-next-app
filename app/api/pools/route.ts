@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
 	try {
-		const { searchParams } = new URL(request.url);
+		const { searchParams } = request.nextUrl;
 		const limit = parseInt(searchParams.get('limit') || '10');
 		const page = parseInt(searchParams.get('page') || '1');
 		const offset = (page - 1) * limit;

@@ -108,5 +108,77 @@
         renderButton.addEventListener('click', renderList);
         renderList();
     </script>
+
+    /**
+    import { useEffect, useRef, useState } from 'react';
+
+    interface LongListProps<T> {
+    data: T[];
+    batchSize?: number;
+    timeout?: number;
+    }
+
+    function LongList<T>({ data, batchSize = 30, timeout = 800 }: LongListProps<T>) {
+    const [visibleCount, setVisibleCount] = useState(0);
+    const indexRef = useRef(0);
+    const idleIdRef = useRef<number | null>(null);
+    const cancelledRef = useRef(false);
+
+    useEffect(() => {
+        // 数据变化时重置状态
+        indexRef.current = 0;
+        cancelledRef.current = false;
+        setVisibleCount(0);
+
+        const schedule = window.requestIdleCallback
+        ? (cb: IdleRequestCallback, opts?: IdleRequestOptions) =>
+            window.requestIdleCallback(cb, opts)
+        : (cb: IdleRequestCallback) =>
+            setTimeout(() => cb({ timeRemaining: () => 16, didTimeout: false } as IdleDeadline), 1) as unknown as number;
+
+        const cancel = window.cancelIdleCallback
+        ? (id: number) => window.cancelIdleCallback(id)
+        : (id: number) => clearTimeout(id);
+
+        function process(deadline: IdleDeadline) {
+        if (cancelledRef.current) return;
+
+        let processed = 0;
+        // 留 2ms 余量，避免临界点插入后导致下一帧超时
+        while (
+            indexRef.current < data.length &&
+            (deadline.timeRemaining() > 2 || deadline.didTimeout) &&
+            processed < batchSize
+        ) {
+            indexRef.current++;
+            processed++;
+        }
+
+        setVisibleCount(indexRef.current);
+
+        if (indexRef.current < data.length && !cancelledRef.current) {
+            idleIdRef.current = schedule(process, { timeout });
+        }
+        }
+
+        idleIdRef.current = schedule(process, { timeout });
+
+        return () => {
+        cancelledRef.current = true;
+        if (idleIdRef.current !== null) {
+            cancel(idleIdRef.current);
+        }
+        };
+    }, [data, batchSize, timeout]);
+
+    return (
+        <ul>
+        {data.slice(0, visibleCount).map((item, i) => (
+            <li key={i}>{String(item)}</li>
+        ))}
+        </ul>
+    );
+    }
+*/
 </body>
 </html>
